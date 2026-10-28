@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adolf Kim Kim</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=2">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="authScreen"><div class="card auth-card" id="authSignin">
+  <div class="auth-logo" style="display: flex; justify-content: center;">
+     <img src="assets/kimkim4.png" alt="Adolf KimKim Logo" style="width:48px; height:48px; border-radius:50%; object-fit:cover; box-shadow:0 0 20px rgba(59,130,246,.6); -webkit-animation:breathe 3s ease-in-out infinite; animation:breathe 3s ease-in-out infinite;">
+      <span style="font-size: 20px; color: #93a4c3;">ADOLF KIMKIM</span>
+      <img src="assets/kimkim4.png" alt="Adolf KimKim Logo" style="width:48px; height:48px; border-radius:50%; object-fit:cover; box-shadow:0 0 20px rgba(59,130,246,.6); -webkit-animation:breathe 3s ease-in-out infinite; animation:breathe 3s ease-in-out infinite;">
+     </div>
+    <h1 data-i18n="signinTitle">Đăng nhập</h1>
+    <p class="sub" data-i18n="signinSub">Thống trị thế giới cùng Adolf Kim Kim</p>
+    <div class="auth-google" onclick="signInWithGoogle()"> <span data-i18n="signinGoogle">🪐Đăng nhập với Google</span></div>
+    <label data-i18n="emailLbl">Email</label><input id="signinEmail" type="email" autocomplete="email" placeholder="you@company.com">
+    <label data-i18n="pwLbl">Mật khẩu</label><input id="signinPassword" type="password" autocomplete="current-password" placeholder="••••••••">
+    <div id="authError" class="auth-error" role="alert"></div>
+    <button class="btn btn-primary" onclick="signInWithEmail()" data-i18n="signinBtn">Đăng nhập</button>
+    <div class="auth-tabs">
+      <span data-i18n="noAccount">Chưa có tài khoản?</span> <a onclick="showAuth('signup')" data-i18n="signupLink">Đăng ký</a> ·
+      <a onclick="showAuth('forgot')" data-i18n="forgotLink">Quên mật khẩu?</a>
+    </div>
+  </div>
+
+  <div class="card auth-card hidden" id="authSignup">
+     <img src="assets/kimkimBranding.png" alt="Adolf KimKim Logo" style="width:28px; height:28px; border-radius:50%; object-fit:cover; box-shadow:0 0 10px rgba(59,130,246,.6); -webkit-animation:breathe 3s ease-in-out infinite; animation:breathe 3s ease-in-out infinite;">
+    <h1 data-i18n="signupTitle">Tạo tài khoản</h1>
+    <p class="sub" data-i18n="signupSub">Trải nghiệm khả năng ghi chú đẳng cấp của Adolf KimKim</p>
+    <div class="auth-google" onclick="signInWithGoogle()"><span data-i18n="signinGoogle">🪐Đăng nhập với Google</span></div>
+    <label data-i18n="nameLbl">Họ tên</label><input id="signupName" autocomplete="name" placeholder="Sally San San">
+    <label data-i18n="emailLbl">Email</label><input id="signupEmail" type="email" autocomplete="email" placeholder="you@company.com">
+    <label data-i18n="pwLbl">Mật khẩu</label><input id="signupPassword" type="password" autocomplete="new-password" placeholder="••••••••">
+    <div id="signupError" class="auth-error" role="alert"></div>
+    <button class="btn btn-primary" onclick="signUpWithEmail()" data-i18n="signupBtn">Tạo tài khoản</button>
+    <div class="auth-tabs"><a onclick="showAuth('signin')" data-i18n="backSignin">← Quay lại đăng nhập</a></div>
+  </div>
+
+  <div class="card auth-card hidden" id="authForgot">
+         <img src="assets/kimkimBranding.png" alt="Adolf KimKim Logo" style="width:28px; height:28px; border-radius:50%; object-fit:cover; box-shadow:0 0 10px rgba(59,130,246,.6); -webkit-animation:breathe 3s ease-in-out infinite; animation:breathe 3s ease-in-out infinite;">
+
+    <h1 data-i18n="forgotTitle">Quên mật khẩu?</h1>
+    <p class="sub" data-i18n="forgotSub">Nhập email để nhận hướng dẫn đặt lại mật khẩu</p>
+    <label data-i18n="emailLbl">Email</label><input id="resetEmail" type="email" autocomplete="email" placeholder="you@company.com">
+    <div id="resetError" class="auth-error" role="alert"></div>
+    <button class="btn btn-primary" onclick="sendPasswordReset()" data-i18n="forgotBtn">Gửi hướng dẫn</button>
+    <div class="auth-tabs"><a onclick="showAuth('signin')" data-i18n="backSignin">← Quay lại đăng nhập</a></div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app">
+  <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="closeMobileMenu()"></div>
+  <aside class="sidebar">
+     <div style="font-size:20px; color:#93a4c3; font-weight:700; margin-bottom:10px;">  🐶 ADOLF KIMKIM 🐶 </div>
+    <div style="position:relative;">
+      <button class="btn btn-primary side-add" data-i18n="addNew" onclick="toggleAddNewMenu(event)">+ Thêm mới</button>
+      <div id="addNewMenu" class="hidden" style="position:absolute; top:100%; left:0; right:0; z-index:40; background:var(--card,#141a2b); border:1px solid var(--border,#26304a); border-radius:10px; margin-top:4px; overflow:hidden;">
+        <div class="list-row" style="cursor:pointer;padding:8px 8px;" onclick="closeAddNewMenu(); startLiveRecording();"><span data-i18n="addNewMeetingOpt">🔴 Ghi trực tiếp</span></div>
+        <div class="list-row" style="cursor:pointer;padding:8px 8px;" onclick="closeAddNewMenu(); scheduleNewMeeting();"><span data-i18n="addNewScheduleOpt">📆 Lên lịch</span></div>
+        <div class="list-row" style="cursor:pointer;padding:8px 8px;" onclick="closeAddNewMenu(); createNote();"><span data-i18n="addNewNoteOpt">📝 Ghi chú mới</span></div>
+        <div class="list-row" style="cursor:pointer;padding:8px 8px;" onclick="closeAddNewMenu(); showView('uploads',document.querySelector('[data-view=uploads]'));"><span data-i18n="addNewUploadOpt">📤 Upload</span></div>
+      </div>
+    </div>
+    <div class="nav-item active" data-view="home" onclick="showView('home',this)"><span class="ic">🏠</span><span data-i18n="navHome">Trang chủ</span></div>
+    <div class="nav-item" data-view="meetings" onclick="showView('meetings',this)"><span class="ic">📅</span><span data-i18n="navMeetings">Cuộc họp</span></div>
+    <div class="nav-item" data-view="notes" onclick="showView('notes',this)"><span class="ic">📝</span><span data-i18n="navNotes">Ghi chú</span></div>
+    <div class="nav-item" data-view="recording" onclick="showView('recording',this)"><span class="ic">🎙️</span><span data-i18n="navRecording">Recording</span></div>
+    <div class="nav-item" data-view="uploads" onclick="showView('uploads',this)"><span class="ic">📤</span><span data-i18n="navUploads">Tải lên</span></div>
+    <div class="nav-item" data-view="team" onclick="showView('team',this)"><span class="ic">👥</span><span data-i18n="navTeam">Nhóm</span></div>
+    <div class="nav-item" data-view="plan" onclick="showView('plan',this)"><span class="ic">💎</span><span data-i18n="navPlan">Gói cước</span></div>
+    <div class="nav-item" data-view="rules" onclick="showView('rules',this)"><span class="ic">📜</span><span data-i18n="navRules">Quy định</span></div>
+    <div class="nav-item" data-view="settings" onclick="showView('settings',this)"><span class="ic">⚙️</span><span data-i18n="navSettings">Cài đặt</span></div>
+    <div class="nav-spacer"></div>
+    <div class="nav-item" data-view="profile" onclick="showView('profile',this)"><span class="ic">👤</span><span data-i18n="navProfile">Hồ sơ</span></div>
+    <div class="side-user">
+      <div id="sideAvatar" class="avatar" style="background:#3b82f6;background-size:cover;background-position:center;cursor:pointer;" onclick="showView('profile',document.querySelector('[data-view=profile]'))">SM</div>
+      <div style="flex:1;cursor:pointer;" onclick="showView('profile',document.querySelector('[data-view=profile]'))"><div id="sideUserName" class="name">Sally</div><div class="mail" style="opacity:.7">&nbsp;</div></div>
+      <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px;" onclick="event.stopPropagation();logout()" data-i18n="logoutLbl">Đăng xuất</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="mobile-menu-btn" aria-label="Menu" onclick="toggleMobileMenu()">☰</button>
+      <input id="globalSearch" data-i18n-ph="searchPh" placeholder="Tìm kiếm cuộc họp, ghi chú..." oninput="onGlobalSearch(this.value)">
+      <div class="lang-switch">
+        <button id="btnVi" class="active" onclick="setLang('vi')">VIE</button>
+        <button id="btnEn" onclick="setLang('en')">ENG</button>
+      </div>
+    </div>
+
+    <!-- ===== HOME ===== -->
+    <div class="view" id="view-home">
+      <div class="hero-card card">
+        <h2 data-i18n="heroTitle">Hi Sally, chào mừng đến với Adolf KimKim 💙 </h2>
+        <p data-i18n="heroSub">Hãy mời KimKim vào lịch của bạn hoặc chọn ghi âm để bắt đầu ghi lại cuộc họp.</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="showView('recording')" data-i18n="recordLive">🔴 Ghi cuộc họp trực tiếp</button>
+      
+          <button class="btn btn-ghost" onclick="openCreateMeeting('processing')" data-i18n="scheduleNew">📆 Lên lịch cuộc họp mới</button>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card" style="padding:16px;">
+          <div class="view-sub" style="margin-bottom:10px" data-i18n="upcoming">Cuộc họp sắp tới</div>
+          <div id="upcomingList"></div>
+        </div>
+        <div class="card" style="padding:16px;">
+          <div class="view-sub" style="margin-bottom:10px" data-i18n="recentNotes">Ghi chú gần đây</div>
+          <div id="recentNotesList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MEETINGS ===== -->
+    <div class="view hidden" id="view-meetings">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div class="view-title" data-i18n="navMeetings">Cuộc họp</div>
+          <div class="view-sub" data-i18n="meetingsSub">Quản lý toàn bộ cuộc họp đã ghi và đang xử lý</div>
+        </div>
+        <button class="btn btn-primary" onclick="openCreateMeeting('processing')" data-i18n="newMeetingBtn">+ Cuộc họp mới</button>
+      </div>
+      <div class="filters">
+        <button class="active" onclick="filterMeetings('all',this)" data-i18n="fAll">Tất cả</button>
+        <button onclick="filterMeetings('progress',this)" data-i18n="fProgress">Đang diễn ra</button>
+        <button onclick="filterMeetings('processing',this)" data-i18n="fProcessing">Đang xử lý</button>
+        <button onclick="filterMeetings('done',this)" data-i18n="fDone">Hoàn tất</button>
+      </div>
+      <div class="card table-wrap">
+        <table>
+          <thead><tr>
+            <th data-i18n="colName">Tên cuộc họp</th><th data-i18n="colDate">Ngày</th>
+            <th data-i18n="colDur">Thời lượng</th><th data-i18n="colStatus">Trạng thái</th><th></th>
+          </tr></thead>
+          <tbody id="meetingsTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== MEETING DETAIL ===== -->
+    <div class="view hidden" id="view-meetingDetail">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <button class="btn btn-ghost" onclick="showView('meetings',document.querySelector('[data-view=meetings]'))">← Quay lại</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" onclick="editMeeting(currentMeetingId)" data-i18n="editMeeting">✏️ Sửa</button>
+          <button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);" onclick="deleteMeetingHandler(currentMeetingId)" data-i18n="deleteMeeting">🗑️ Xoá</button>
+        </div>
+      </div>
+      <div class="view-title"></div>
+      <div class="view-sub"></div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+          <span id="recordingStatusBadge" class="badge red hidden"><span class="live-dot"></span>ĐANG GHI ÂM</span>
+          <span id="summaryStatusBadge" class="badge amber hidden">⏳ Đang tóm tắt AI...</span>
+          <div id="mdMeetBotBar" class="hidden" style="display:flex;align-items:center;gap:10px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.4);padding:6px 12px;border-radius:8px;font-size:12px;">
+            <span class="live-dot"></span>
+            <span id="mdMeetBotStatusText">🤖 Bot đang kết nối vào Google Meet...</span>
+            <button class="btn btn-ghost" id="mdMeetBotStopBtn" style="padding:3px 10px;font-size:11px;border-color:var(--red);color:var(--red);" onclick="stopActiveMeetBot()">⏹ Kết thúc &amp; Tóm tắt</button>
+          </div>
+        </div>
+      <div id="meetingDetailBody" class="detail-split">
+        <div class="video-col">
+          <div class="video-controls" style="display:flex;gap:8px;margin-bottom:10px;">
+            <div class="vbtn" id="btnMicToggle" onclick="toggleMeetingMic()" title="Bật/Tắt ghi âm STT">🎙️</div>
+            <div class="vbtn end" id="btnEndMeeting" onclick="endMeetingAndSummarize()" title="Kết thúc & Tóm tắt AI">☎</div>
+          </div>
+          <button class="btn btn-primary" id="btnQuickSummarize" onclick="generateSummaryFromCurrentTranscript()" style="width:100%;margin-bottom:12px;">⚡ Tóm tắt cuộc họp với AI</button>
+
+          <div class="card keypoints">
+            <div class="view-sub" style="margin-bottom:8px" data-i18n="participants">Người tham gia</div>
+            <div id="mdParticipants"></div>
+          </div>
+          <div class="card keypoints">
+            <div class="view-sub" style="margin-bottom:8px" data-i18n="keyPoints">Điểm chính</div>
+            <div id="mdKeyPoints"></div>
+          </div>
+          <div class="card keypoints">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <div class="view-sub" style="margin:0" data-i18n="summaryLbl">Tóm tắt</div>
+              <button class="btn btn-ghost" id="mdTranslateBtn" style="padding:3px 8px;font-size:11px;" onclick="toggleMeetingSummaryTranslation()" data-i18n="translateBtn">🌐 Dịch sang tiếng Anh</button>
+            </div>
+            <div id="mdSummary" style="font-size:13px;color:var(--text-1);"></div>
+          </div>
+          <div class="card keypoints">
+            <div class="view-sub" style="margin-bottom:8px" data-i18n="actionItemsLbl">Việc cần làm</div>
+            <div id="mdActionItems"></div>
+          </div>
+          <div class="card keypoints">
+            <div class="view-sub" style="margin-bottom:8px" data-i18n="mdNotesLbl">Ghi chú cuộc họp</div>
+            <textarea id="mdNotesInput" style="width:100%;min-height:70px;resize:vertical;" onblur="saveMeetingNotes()"></textarea>
+          </div>
+          <div class="card keypoints">
+            <div class="view-sub" style="margin-bottom:8px" data-i18n="tabGenerate">Tạo nội dung</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+              <button class="btn btn-ghost" style="font-size:12px;" onclick="requestGenerationHandler('slides')" data-i18n="genSlides">📊 Tạo Slide</button>
+              <button class="btn btn-ghost" style="font-size:12px;" onclick="requestGenerationHandler('mindmap')" data-i18n="genMindmap">🧠 Tạo Sơ đồ tư duy</button>
+              <button class="btn btn-ghost" style="font-size:12px;" onclick="requestGenerationHandler('image')" data-i18n="genImage">🖼️ Tạo hình minh hoạ</button>
+            </div>
+            <div id="mdGenerationJobs" style="font-size:12px;color:var(--text-2);"></div>
+          </div>
+        </div>
+        <div class="trans-col">
+          <div class="trans-tabs">
+            <button class="active" id="mdTabTranscriptBtn" onclick="showMeetingTab('transcript')" data-i18n="tabTranscript">Transcript</button>
+            <button id="mdTabChatBtn" onclick="showMeetingTab('chat')" data-i18n="tabChat">Adolf KimKim</button>
+          </div>
+          <div class="card" id="mdTranscriptPane" style="flex:1;padding:12px;display:flex;flex-direction:column;min-height:0;">
+            <div class="trans-list" id="segList"></div>
+          </div>
+          <div class="card hidden" id="mdChatPane" style="flex:1;padding:12px;display:flex;flex-direction:column;min-height:0;">
+            <div style="font-size:11px;color:var(--text-2);margin-bottom:6px;" data-i18n="scopedChatNote">Chatbot chỉ trả lời trong phạm vi bản ghi và file đã tải lên của cuộc họp này.</div>
+            <div id="mdChatBody" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+            <div style="display:flex;gap:6px;margin-top:8px;">
+              <input id="mdChatInput" data-i18n-ph="mdChatPh" placeholder="Hỏi về cuộc họp này..." style="flex:1;" onkeydown="if(event.key==='Enter')sendMeetingChatMsg()">
+              <button class="btn btn-primary" onclick="sendMeetingChatMsg()">➤</button>
+            </div>
+          </div>
+          <div class="card speaker-stats">
+            <div class="view-sub" style="margin-bottom:8px" data-i18n="speakTime">Thời gian phát biểu</div>
+            <div id="speakerStats"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CREATE / EDIT MEETING ===== -->
+    <div class="view hidden" id="view-createMeeting">
+      <button class="btn btn-ghost" style="margin-bottom:8px" onclick="showView('meetings',document.querySelector('[data-view=meetings]'))">← Quay lại</button>
+      <div class="view-title" id="cmFormTitle" data-i18n="createMeetingTitle">Tạo cuộc họp mới</div>
+      <div class="card" style="max-width:520px;padding:20px;">
+        <div class="field"><label data-i18n="cmTitleLbl">Tiêu đề</label><input id="cmTitle" style="width:100%"></div>
+        <div style="display:flex;gap:10px;">
+          <div class="field" style="flex:1"><label data-i18n="cmDateLbl">Ngày</label><input id="cmDate" type="date" style="width:100%"></div>
+          <div class="field" style="flex:1"><label data-i18n="cmTimeLbl">Giờ</label><input id="cmTime" type="time" style="width:100%"></div>
+        </div>
+        <div class="field"><label data-i18n="cmParticipantsLbl">Người tham gia (email, cách nhau bởi dấu phẩy)</label><input id="cmParticipants" style="width:100%" placeholder="a@x.com, b@x.com"></div>
+        <div class="field"><label>Link Google Meet (tuỳ chọn)</label><input id="cmMeetUrl" style="width:100%" placeholder="https://meet.google.com/xxx-xxxx-xxx"></div>
+        <div class="field"><label data-i18n="cmDescLbl">Mô tả</label><textarea id="cmDescription" style="width:100%;min-height:70px;"></textarea></div>
+        <div class="toggle-row" style="margin:8px 0;">
+          <span data-i18n="inviteKimkimLbl">Mời Adolf KimKim vào lịch</span>
+          <div id="cmInviteKimkim" class="switch on" onclick="this.classList.toggle('on')"><i></i></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-2);margin:-4px 0 8px;" data-i18n="inviteKimkimHint">KimKim sẽ tự động tham gia và ghi âm cuộc họp này</div>
+        <div id="cmError" class="auth-error"></div>
+        <div style="display:flex;gap:10px;margin-top:14px;">
+          <button class="btn btn-ghost" style="flex:1" onclick="cancelCreateMeeting()" data-i18n="cancelBtn">Huỷ</button>
+          <button class="btn btn-primary" style="flex:1" onclick="submitCreateMeeting()" id="cmSubmitBtn" data-i18n="createBtn">Tạo</button>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+    <!-- ===== NOTES ===== -->
+    <div class="view hidden" id="view-notes">
+      <div class="view-title" data-i18n="navNotes">Ghi chú</div>
+      <div class="view-sub" data-i18n="notesSub">Toàn bộ ghi chú được tạo tự động và thủ công</div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+        <button class="btn btn-primary" onclick="createNote()">+ Thêm ghi chú</button>
+      </div>
+      <div style="display:flex;gap:16px;">
+        <div class="card" style="width:260px;flex-shrink:0;padding:10px;" id="notesSidebarList"></div>
+        <div class="card" style="flex:1;padding:20px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+            <button class="btn btn-ghost" id="noteTranslateBtn" onclick="toggleNoteTranslation()" data-i18n="translateBtn">🌐 Dịch sang tiếng Anh</button>
+            <button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);" onclick="deleteNoteHandler()" data-i18n="deleteNoteBtn">🗑️ Xoá ghi chú</button>
+          </div>
+          <div class="editor" contenteditable="true" style="font-size:14px;line-height:1.8;" onblur="saveCurrentNote()">
+            <h1 style="margin:0 0 10px;font-size:19px;"></h1>
+            <p style="color:var(--text-1);"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ===== RECORDING ===== -->
+    <div class="view hidden" id="view-recording">
+      <div class="view-title" data-i18n="navRecording">Recording</div>
+      <div class="view-sub" data-i18n="recordingSub">Ghi âm cuộc họp trực tiếp và tạo bản ghi tự động</div>
+      <div class="grid-2" style="align-items:stretch;">
+        <div class="card" style="padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+          <div class="ic" style="font-size:40px;" id="recIcon">🎙️</div>
+          <p data-i18n="recDesc" style="margin:0;text-align:center;">Bắt đầu ghi âm cuộc họp trực tiếp từ microphone</p>
+          <div id="recTimer" style="font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;display:none;">00:00</div>
+          <div id="recStatus" style="font-size:12px;color:var(--text-2);"></div>
+          <audio id="recPreview" controls style="display:none;width:100%;max-width:360px;margin-top:6px;"></audio>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+            <button class="btn btn-primary" id="recStartBtn" onclick="startRecording()" data-i18n="startRec">🔴 Bắt đầu ghi âm</button>
+            <button class="btn btn-ghost" id="recStopBtn" style="display:none" onclick="stopRecording()" data-i18n="stopRec">⏹ Dừng</button>
+            <button class="btn btn-ghost" id="recCancelBtn" style="display:none" onclick="cancelRecording()" data-i18n="cancelBtn">Huỷ</button>
+            <button class="btn btn-primary" id="recSaveBtn" style="display:none" onclick="saveRecording()" data-i18n="saveRecBtn">💾 Lưu thành cuộc họp</button>
+          </div>
+        </div>
+
+        <div class="card" style="padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+          <div class="ic" style="font-size:40px;" id="recMeetIcon">🤖</div>
+          <div style="font-weight:600;font-size:15px;">Google Meet Bot (Adolf KimKim)</div>
+          <p style="margin:0;font-size:12px;color:var(--text-2);text-align:center;">Dán link Google Meet để Bot tự động vào phòng, ghi âm, nhận diện người nói và tóm tắt với AI</p>
+          <input id="recMeetTitle" style="width:100%;max-width:380px;" placeholder="Tiêu đề cuộc họp (tuỳ chọn)">
+          <input id="recMeetUrl" style="width:100%;max-width:380px;" placeholder="https://meet.google.com/xxx-xxxx-xxx">
+          <div id="recMeetTimer" style="font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;display:none;">00:00</div>
+          <div id="recMeetStatus" style="font-size:12px;color:var(--text-1);text-align:center;"></div>
+          <div id="recMeetParticipants" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;"></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px;">
+            <button class="btn btn-primary" id="recMeetStartBtn" onclick="startMeetBotFromRecording()">🤖 Mời Bot vào Google Meet</button>
+            <button class="btn btn-ghost" id="recMeetStopBtn" style="display:none;border-color:var(--red);color:var(--red);" onclick="stopActiveMeetBot()">⏹ Kết thúc &amp; Tóm tắt AI</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- ===== UPLOADS ===== -->
+    <div class="view hidden" id="view-uploads">
+      <div class="view-title" data-i18n="navUploads">Tải lên</div>
+      <div class="view-sub" data-i18n="uploadSub">Tải file âm thanh hoặc video để tạo bản ghi tự động</div>
+      <div class="card dropzone" ondragover="event.preventDefault()" ondrop="event.preventDefault(); if(event.dataTransfer && event.dataTransfer.files[0]){ handleFileSelected(event.dataTransfer.files[0]); }">
+        <div class="ic">🎧</div>
+        <p data-i18n="dropText">Kéo thả file MP3, WAV hoặc MP4 vào đây, hoặc chọn file để tải lên</p>
+        <button class="btn btn-primary" onclick="selectUploadFile()" data-i18n="selectFile">Chọn file</button>
+        <input type="file" id="hiddenFileInput" accept="audio/*,video/*,.mp3,.wav,.mp4,.m4a,.webm,.ogg,.flac" style="display:none" onchange="if(this.files[0]) handleFileSelected(this.files[0]); this.value='';">
+      </div>
+      <div class="card" id="uploadList"></div>
+    </div>
+
+    <!-- ===== TEAM ===== -->
+    <div class="view hidden" id="view-team">
+      <div class="team-head">
+        <div><div class="view-title" style="margin:0" data-i18n="navTeam">Nhóm</div>
+          <div class="view-sub" style="margin:2px 0 0" data-i18n="teamSub">Quản lý thành viên có quyền truy cập</div></div>
+        <button class="btn btn-primary" onclick="openInviteMemberModal()" data-i18n="inviteBtn">+ Mời thành viên</button>
+      </div>
+      <div class="card table-wrap">
+        <table><thead><tr><th data-i18n="colMember">Thành viên</th><th data-i18n="colEmail">Email</th><th data-i18n="colStatus">Trạng thái</th><th data-i18n="colRole">Vai trò</th><th></th></tr></thead>
+        <tbody id="teamTable"></tbody></table>
+      </div>
+    </div>
+
+    <div id="inviteMemberModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:60;">
+      <div class="card" style="width:360px;padding:20px;">
+        <h3 style="margin:0 0 12px" data-i18n="teamInviteTitle">Mời thành viên</h3>
+        <div class="field"><label data-i18n="teamInviteEmailLbl">Email</label><input id="inviteMemberEmail" style="width:100%" type="email" placeholder="ban@congty.com"></div>
+        <div id="inviteMemberError" class="auth-error"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button class="btn btn-ghost" style="flex:1" onclick="closeInviteMemberModal()" data-i18n="cancelBtn">Huỷ</button>
+          <button class="btn btn-primary" style="flex:1" onclick="submitInviteMember()" data-i18n="teamInviteSendBtn">Gửi lời mời</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SETTINGS ===== -->
+    <div class="view hidden" id="view-settings">
+      <div class="view-title" data-i18n="navSettings">Cài đặt</div>
+      <div class="settings-wrap">
+        <div class="settings-tabs">
+          <div class="nav-item active" data-s="account" onclick="showSettings('account',this)"><span data-i18n="sAccount">Tài khoản</span></div>
+          <div class="nav-item" data-s="meeting" onclick="showSettings('meeting',this)"><span data-i18n="sMeeting">Cuộc họp</span></div>
+          <div class="nav-item" data-s="ai" onclick="showSettings('ai',this)"><span data-i18n="sAI">Tuỳ chỉnh AI</span></div>
+          <div class="nav-item" data-s="password" onclick="showSettings('password',this)"><span data-i18n="sPassword">Mật khẩu</span></div>
+        </div>
+        <div class="card settings-pane" id="settingsAccount">
+          <h3 data-i18n="sAccount">Tài khoản</h3>
+          <div class="field"><label data-i18n="nameLbl">Họ tên</label><input value=""></div>
+          <div class="field"><label data-i18n="emailLbl">Email</label><input value="" disabled></div>
+          <button class="btn btn-primary" onclick="saveAccountSettings()">Lưu</button>
+          <button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);" onclick="deleteAccount()" data-i18n="delAccount">Xoá tài khoản</button>
+        </div>
+        <div class="card settings-pane hidden" id="settingsMeeting">
+          <h3 data-i18n="sMeeting">Cuộc họp</h3>
+          <div class="field"><label>STT WebSocket URL</label><input id="settingSttUrl" value="wss://webmaster-spoke-possibilities-inns.trycloudflare.com/v1/ws/realtime-speech"></div>
+          <div class="field"><label>Backend API URL</label><input id="settingApiUrl" value="https://suit-nationally-principles-legends.trycloudflare.com"></div>
+
+          <div class="field"><label data-i18n="meetLang">Ngôn ngữ ghi</label><select><option>Tiếng Việt</option><option>English</option></select></div>
+          <div class="toggle-row"><span data-i18n="autoJoin">Tự động tham gia</span><div class="switch on" onclick="this.classList.toggle('on')"><i></i></div></div>
+          <div class="toggle-row"><span data-i18n="autoRecord">Tự động ghi âm</span><div class="switch" onclick="this.classList.toggle('on')"><i></i></div></div>
+          <button class="btn btn-primary" onclick="saveMeetingSettings()">Lưu</button>
+        </div>
+        <div class="card settings-pane hidden" id="settingsAI">
+          <h3 data-i18n="sAI">Tuỳ chỉnh AI</h3>
+          <div class="field"><label data-i18n="speechStyle">Phong cách trả lời</label><select><option data-i18n="styleFormal">Trang trọng</option><option data-i18n="styleCasual">Thân mật</option></select></div>
+          <div class="toggle-row"><span data-i18n="vocabDetect">Nhận diện thuật ngữ chuyên ngành</span><div class="switch on" onclick="this.classList.toggle('on')"><i></i></div></div>
+          <button class="btn btn-primary" onclick="saveAISettings()">Lưu</button>
+        </div>
+        <div class="card settings-pane hidden" id="settingsPassword">
+          <h3 data-i18n="sPassword">Mật khẩu</h3>
+          <div class="field"><label data-i18n="curPw">Mật khẩu hiện tại</label><input type="password"></div>
+          <div class="field"><label data-i18n="newPw">Mật khẩu mới</label><input type="password"></div>
+          <button class="btn btn-primary" onclick="updatePasswordSettings()" data-i18n="updatePw">Cập nhật mật khẩu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PROFILE ===== -->
+    <div class="view hidden" id="view-profile">
+      <div class="view-title" data-i18n="navProfile">Hồ sơ</div>
+      <div class="view-sub" data-i18n="profileSub">Ảnh đại diện và thông tin cá nhân của bạn</div>
+      <div class="card" style="padding:24px;max-width:420px;display:flex;flex-direction:column;align-items:center;gap:14px;">
+        <div id="profileAvatar" class="avatar" style="width:88px;height:88px;font-size:28px;background:#3b82f6;background-size:cover;background-position:center;">SM</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" onclick="document.getElementById('avatarInput').click()" data-i18n="changeAvatar">Đổi ảnh đại diện</button>
+          <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="handleAvatarSelected(this)">
+        </div>
+        <div id="avatarUploadStatus" style="font-size:12px;color:var(--text-2);"></div>
+        <div class="field" style="width:100%;"><label data-i18n="nameLbl">Họ tên</label><input id="profileNameInput" style="width:100%"></div>
+        <div class="field" style="width:100%;"><label data-i18n="emailLbl">Email</label><input id="profileEmailInput" style="width:100%" disabled></div>
+        <button class="btn btn-primary" style="width:100%" onclick="saveProfileName()" data-i18n="saveBtn">Lưu</button>
+      </div>
+    </div>
+
+    <!-- ===== PLAN ===== -->
+    <div class="view hidden" id="view-plan">
+      <div class="view-title" data-i18n="navPlan">Gói cước</div>
+      <div class="view-sub" data-i18n="planSub">Bạn đang dùng gói <b>Free</b></div>
+      <div class="plan-grid">
+        <div class="card plan-card">
+          <h4 data-i18n="planFree">Free</h4>
+          <div class="price">$0<span data-i18n="perMonth">/tháng</span></div>
+          <ul><li data-i18n="pf1">3 giờ ghi âm/tháng</li><li data-i18n="pf2">2 người dùng</li><li data-i18n="pf3">Lưu trữ cơ bản</li></ul>
+          <button class="btn btn-ghost" style="width:100%" data-i18n="curPlanBtn">Gói hiện tại</button>
+        </div>
+        <div class="card plan-card pop">
+          <div class="pop-tag" data-i18n="popular">PHỔ BIẾN</div>
+          <h4 data-i18n="planPro">Pro</h4>
+          <div class="price">$49<span data-i18n="perMonth">/tháng</span></div>
+          <ul><li data-i18n="pp1">Ghi âm không giới hạn</li><li data-i18n="pp2">10 người dùng</li><li data-i18n="pp3">AI tóm tắt nâng cao</li><li data-i18n="pp4">Hỗ trợ ưu tiên</li></ul>
+          <button class="btn btn-primary" style="width:100%" onclick="showView('upgrade')" data-i18n="upgradeBtn">Nâng cấp</button>
+        </div>
+        <div class="card plan-card">
+          <h4 data-i18n="planEnt">Enterprise</h4>
+          <div class="price">$99<span data-i18n="perMonth">/tháng</span></div>
+          <ul><li data-i18n="pe1">Tất cả tính năng Pro</li><li data-i18n="pe2">Người dùng không giới hạn</li><li data-i18n="pe3">SSO & bảo mật nâng cao</li></ul>
+          <button class="btn btn-ghost" style="width:100%" onclick="window.location.href='mailto:sales@example.com?subject=Enterprise%20Plan'" data-i18n="contactBtn">Liên hệ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== UPGRADE ===== -->
+    <div class="view hidden" id="view-upgrade">
+      <div class="view-title" data-i18n="upgradeTitle">Nâng cấp gói</div>
+      <div style="display:flex;gap:20px;max-width:700px;">
+        <div class="card" style="flex:1;padding:18px;">
+          <div class="field"><label data-i18n="cardNum">Số thẻ</label><input placeholder="4242 4242 4242 4242"></div>
+          <div style="display:flex;gap:10px;">
+            <div class="field" style="flex:1"><label>Expiry</label><input placeholder="MM/YY"></div>
+            <div class="field" style="flex:1"><label>CVC</label><input placeholder="123"></div>
+          </div>
+          <button class="btn btn-ghost" style="width:100%;opacity:.6;cursor:not-allowed;" disabled title="Coming soon" data-i18n="payBtn">Thanh toán — Sắp ra mắt</button>
+        </div>
+        <div class="card" style="width:240px;padding:18px;">
+          <div class="view-sub" style="margin-bottom:8px" data-i18n="summary">Tóm tắt</div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span data-i18n="planPro">Pro</span><span>$49</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;border-top:1px solid var(--border);padding-top:8px;"><span data-i18n="total">Tổng</span><span>$49</span></div>
+        </div>
+      </div>
+      <div id="paySuccessModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:60;">
+        <div class="card" style="padding:26px;text-align:center;width:280px;">
+          <div style="font-size:34px;">✅</div>
+          <h3 style="margin:10px 0 4px" data-i18n="paySuccess">Thanh toán thành công!</h3>
+          <p style="font-size:12px;color:var(--text-2)" data-i18n="paySuccessSub">Bạn đã nâng cấp lên gói Pro</p>
+          <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="document.getElementById('paySuccessModal').classList.add('hidden')" data-i18n="close">Đóng</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== RULES ===== -->
+    <div class="view hidden" id="view-rules">
+      <div class="view-title" data-i18n="navRules">Quy định sử dụng</div>
+      <div class="rules-text">
+        <h3 data-i18n="r1t">1. Nội dung được phép</h3>
+        <p data-i18n="r1p">Người dùng chỉ được ghi âm các cuộc họp mà tất cả người tham gia đã đồng ý.</p>
+        <h3 data-i18n="r2t">2. Quyền riêng tư & bảo mật</h3>
+        <p data-i18n="r2p">Toàn bộ bản ghi và transcript được mã hoá và chỉ chia sẻ với thành viên được cấp quyền.</p>
+        <h3 data-i18n="r3t">3. Sở hữu trí tuệ</h3>
+        <p data-i18n="r3p">Nội dung do người dùng tạo ra thuộc quyền sở hữu của người dùng đó.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== FLOATING CHAT ===== -->
+<div id="chatToggle" onclick="toggleChat()"><img src="assets/kimkimAI.png"></div>
+<div id="chatPanel" class="card">
+  <div class="chat-header2">
+    <img src="assets/kimkimAI.png">
+    <div style="flex:1;"><div class="n">Adolf KimKim</div><div class="s" data-i18n="agentSub">Thống trị thế giới cùng bạn</div></div>
+    <button class="chat-clear-btn" onclick="clearGlobalChatHistory()" title="Xoá lịch sử chat" style="background:transparent;border:none;color:var(--text-2);cursor:pointer;font-size:14px;padding:4px 6px;border-radius:6px;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'">🗑️</button>
+  </div>
+  <div class="chat-body2" id="chatBody">
+    <div class="bubble agent" data-i18n="greeting">Chào bạn 👋 Tôi là KimKim. Hỏi tôi những gì bạn muốn.</div>
+  </div>
+  <div class="chat-input-row">
+    <input id="chatInput" data-i18n-ph="chatPh" placeholder="Hỏi Adolf KimKim...">
+    <button onclick="sendChat()">➤</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="localizations/vi-vn.js?v=3"></script>
+<script src="localizations/eng-en.js?v=3"></script>
+<script src="services/firebaseClient.js?v=3"></script>
+<script src="services/avatarService.js?v=3"></script>
+<script src="services/authService.js?v=4"></script>
+<script src="services/meetingService.js?v=3"></script>
+<script src="services/noteService.js?v=3"></script>
+<script src="services/recordingService.js?v=3"></script>
+<script src="services/teamService.js?v=3"></script>
+<script src="services/uploadService.js?v=3"></script>
+<script src="services/settingsService.js?v=3"></script>
+<script src="services/aiService.js?v=6"></script>
+<script src="services/translationService.js?v=3"></script>
+<script src="app.js?v=10"></script>
+</body>
+</html>

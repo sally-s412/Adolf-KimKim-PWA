@@ -1,0 +1,2409 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adolf KimKim — World domination</title>
+<style>
+:root{
+  --bg-0:#02040c; --bg-1:#050b1f; --navy-glow:#1e40af;
+  --accent:#3b82f6; --accent-soft:rgba(59,130,246,.14); --border:rgba(59,130,246,.18);
+  --text-0:#e8edf7; --text-1:#93a4c3; --text-2:#5b6a8c;
+  --green:#22c55e; --amber:#f59e0b; --red:#ef4444;
+  --font:'Segoe UI',ui-sans-serif,system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:var(--font);color:var(--text-0);
+  background:radial-gradient(ellipse 80% 50% at 50% 40%,var(--navy-glow) 0%,transparent 60%),
+  linear-gradient(180deg,var(--bg-0) 0%,var(--bg-1) 40%,var(--bg-0) 100%);
+  height:100vh;overflow:hidden;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;}
+::-webkit-scrollbar{width:7px;height:7px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px;}
+input,select,textarea{font-family:inherit;background:rgba(59,130,246,.07);border:1px solid var(--border);
+  color:var(--text-0);border-radius:9px;padding:9px 11px;font-size:13px;outline:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+.card{background:rgba(10,18,40,.55);border:1px solid var(--border);border-radius:16px;}
+.btn{border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:filter .15s;}
+.btn-primary{background:linear-gradient(180deg,var(--accent),#2563eb);color:#fff;}
+.btn-primary:hover{filter:brightness(1.12);}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text-1);}
+.btn-ghost:hover{color:var(--text-0);border-color:var(--accent);}
+.badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;display:inline-block;}
+.badge.green{background:rgba(34,197,94,.15);color:var(--green);}
+.badge.amber{background:rgba(245,158,11,.15);color:var(--amber);}
+.badge.blue{background:var(--accent-soft);color:var(--accent);}
+.badge.red{background:rgba(239,68,68,.15);color:var(--red);}
+.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.hidden{display:none !important;}
+
+/* ---------- AUTH ---------- */
+#authScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:50;}
+.auth-card{width:400px;padding:34px 30px;}
+.auth-logo{display:flex;align-items:center;gap:8px;margin-bottom:22px;}
+.auth-logo img{width:28px;height:28px;border-radius:50%;object-fit:cover;box-shadow:0 0 10px rgba(59,130,246,.6);}
+.auth-logo span{font-weight:700;font-size:15px;}
+.auth-card h1{font-size:20px;margin:0 0 4px;text-align:center;}
+.auth-card p.sub{font-size:12px;color:var(--text-2);text-align:center;margin:0 0 20px;}
+.auth-card label{font-size:11px;color:var(--text-1);display:block;margin:12px 0 5px;}
+.auth-card input{width:100%;}
+.auth-card .btn{width:100%;margin-top:18px;}
+.auth-error{min-height:16px;color:#fca5a5;font-size:11px;margin-top:8px;line-height:1.4;}
+.auth-tabs{display:flex;gap:6px;justify-content:center;margin-top:16px;font-size:12px;color:var(--text-2);}
+.auth-tabs a{color:var(--accent);cursor:pointer;}
+.auth-google{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(255,255,255,.06);
+  border:1px solid var(--border);color:var(--text-0);padding:9px;border-radius:9px;cursor:pointer;font-size:13px;margin-bottom:14px;}
+
+/* ---------- APP SHELL ---------- */
+#app{display:none;height:100vh;}
+#app.active{display:flex;}
+.sidebar{width:220px;flex-shrink:0;border-right:1px solid var(--border);background:rgba(5,10,25,.4);
+  display:flex;flex-direction:column;padding:16px 12px;}
+.side-logo{display:flex;align-items:center;gap:8px;padding:0 4px 18px;}
+.side-logo img{width:30px;height:30px;border-radius:50%;object-fit:cover;box-shadow:0 0 10px rgba(59,130,246,.55);
+  animation:breathe 3s ease-in-out infinite;}
+@keyframes breathe{0%,100%{box-shadow:0 0 8px rgba(59,130,246,.5);}50%{box-shadow:0 0 18px rgba(59,130,246,.85);}}
+.side-logo b{font-size:14px;}
+.side-add{width:100%;margin-bottom:14px;text-align:left;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-size:13px;
+  color:var(--text-1);cursor:pointer;margin-bottom:2px;transition:all .12s;}
+.nav-item:hover{background:var(--accent-soft);color:var(--text-0);}
+.nav-item.active{background:var(--accent-soft);color:var(--text-0);}
+.nav-item .ic{width:16px;text-align:center;}
+.nav-spacer{flex:1;}
+.side-user{display:flex;align-items:center;gap:9px;padding:10px 4px 0;border-top:1px solid var(--border);margin-top:8px;padding-top:12px;}
+.side-user .name{font-size:12px;font-weight:600;}
+.side-user .mail{font-size:10px;color:var(--text-2);}
+.side-user{cursor:pointer;}
+
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+.topbar{height:56px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;border-bottom:1px solid var(--border);background:rgba(2,4,12,.4);backdrop-filter:blur(8px);}
+.topbar input{width:260px;}
+.lang-switch{display:flex;border:1px solid var(--border);border-radius:999px;overflow:hidden;}
+.lang-switch button{background:transparent;border:none;color:var(--text-2);font-size:11px;font-weight:700;padding:6px 12px;cursor:pointer;}
+.lang-switch button.active{background:var(--accent);color:#fff;}
+.view{flex:1;overflow-y:auto;padding:22px 26px;}
+.view-title{font-size:19px;font-weight:700;margin:0 0 2px;}
+.view-sub{font-size:12px;color:var(--text-2);margin:0 0 20px;}
+
+/* HOME */
+.hero-card{padding:26px 28px;margin-bottom:20px;background:linear-gradient(135deg,rgba(59,130,246,.16),rgba(10,18,40,.5));}
+.hero-card h2{margin:0 0 6px;font-size:18px;}
+.hero-card p{margin:0 0 16px;font-size:13px;color:var(--text-1);}
+.hero-actions{display:flex;gap:10px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.list-row{display:flex;align-items:center;gap:12px;padding:12px;border-radius:11px;transition:background .12s;cursor:pointer;}
+.list-row:hover{background:var(--accent-soft);}
+.list-row .info{flex:1;min-width:0;}
+.list-row .t{font-size:13px;font-weight:600;}
+.list-row .d{font-size:11px;color:var(--text-2);margin-top:2px;}
+
+/* MEETINGS TABLE */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;color:var(--text-2);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.03em;
+  padding:10px 12px;border-bottom:1px solid var(--border);}
+td{padding:12px;border-bottom:1px solid var(--border);}
+tr:hover td{background:rgba(59,130,246,.06);}
+.filters{display:flex;gap:8px;margin-bottom:16px;}
+.filters button{padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--text-2);font-size:12px;cursor:pointer;}
+.filters button.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* MEETING DETAIL */
+.detail-split{display:flex;gap:16px;height:100%;}
+.video-col{flex:1.3;display:flex;flex-direction:column;gap:12px;min-width:0;}
+.video-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:#03060f;border-radius:14px;padding:10px;flex:1;}
+.video-tile{border-radius:11px;display:flex;align-items:center;justify-content:center;position:relative;min-height:120px;
+  background:linear-gradient(135deg,#0e1f45,#081029);}
+.video-tile .init{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:16px;}
+.video-tile .lbl{position:absolute;bottom:8px;left:10px;font-size:11px;background:rgba(0,0,0,.5);padding:2px 8px;border-radius:6px;}
+.video-controls{display:flex;justify-content:center;gap:10px;}
+.vbtn{width:38px;height:38px;border-radius:50%;background:rgba(59,130,246,.15);border:1px solid var(--border);
+  color:var(--text-0);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;}
+.vbtn.end{background:var(--red);border-color:var(--red);color:#fff;}
+.keypoints{padding:14px;}
+.keypoints .tag{display:inline-block;background:var(--accent-soft);color:var(--accent);font-size:11px;padding:4px 10px;border-radius:999px;margin:3px 4px 0 0;}
+
+.trans-col{flex:1;display:flex;flex-direction:column;min-width:0;}
+.trans-tabs{display:flex;gap:8px;margin-bottom:10px;}
+.trans-tabs button{padding:6px 13px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-2);font-size:12px;cursor:pointer;}
+.trans-tabs button.active{background:var(--accent-soft);color:var(--accent);border-color:var(--accent);}
+.trans-list{flex:1;overflow-y:auto;padding-right:4px;}
+.seg{padding:8px 9px;border-radius:9px;cursor:pointer;margin-bottom:3px;}
+.seg:hover{background:var(--accent-soft);}
+.seg .meta{display:flex;gap:8px;font-size:11px;margin-bottom:2px;align-items:center;}
+.seg .dot{width:8px;height:8px;border-radius:50%;}
+.seg .time{color:var(--text-2);}
+.seg p{margin:0;font-size:13px;line-height:1.45;color:var(--text-0);}
+.speaker-stats{padding:12px;margin-top:10px;}
+.sp-row{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:8px;}
+.sp-bar{flex:1;height:6px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden;}
+.sp-bar i{display:block;height:100%;background:var(--accent);}
+
+/* CHAT WIDGET (global floating) */
+#chatToggle{position:fixed;right:20px;bottom:20px;width:76px;height:76px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:40;
+  animation:kimFloat 3.2s ease-in-out infinite;transition:transform .15s;}
+#chatToggle:hover{transform:scale(1.06);}
+#chatToggle img{width:100%;height:100%;object-fit:contain;
+  filter:drop-shadow(0 0 10px rgba(59,130,246,.75)) drop-shadow(0 4px 10px rgba(0,0,0,.45));}
+@keyframes kimFloat{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-8px) rotate(-2deg);}}
+#chatPanel{position:fixed;right:24px;bottom:88px;width:300px;height:420px;z-index:40;display:none;flex-direction:column;overflow:hidden;}
+#chatPanel.open{display:flex;}
+.chat-header2{padding:12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);}
+.chat-header2 img{width:26px;height:26px;border-radius:50%;object-fit:cover;}
+.chat-header2 .n{font-size:13px;font-weight:700;}
+.chat-header2 .s{font-size:10px;color:var(--text-2);}
+.chat-body2{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
+.bubble{max-width:88%;padding:8px 11px;border-radius:12px;font-size:12.5px;line-height:1.4;}
+.bubble.agent{background:rgba(59,130,246,.12);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:3px;}
+.bubble.user{background:var(--accent);color:#fff;align-self:flex-end;border-bottom-right-radius:3px;}
+.chat-input-row{padding:10px;display:flex;gap:8px;border-top:1px solid var(--border);}
+.chat-input-row input{flex:1;}
+.chat-input-row button{background:var(--accent);border:none;border-radius:9px;width:36px;color:#fff;cursor:pointer;}
+
+/* UPLOADS */
+.dropzone{border:1.5px dashed var(--border);border-radius:14px;padding:44px 20px;text-align:center;margin-bottom:18px;}
+.dropzone .ic{font-size:30px;margin-bottom:10px;}
+.dropzone p{color:var(--text-2);font-size:12px;margin:4px 0 14px;}
+.upload-row{display:flex;align-items:center;gap:12px;padding:12px;}
+.upload-row .prog{flex:1;height:6px;border-radius:4px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:5px;}
+.upload-row .prog i{display:block;height:100%;background:var(--accent);}
+
+/* TEAM */
+.team-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+
+/* SETTINGS */
+.settings-wrap{display:flex;gap:20px;}
+.settings-tabs{width:180px;flex-shrink:0;}
+.settings-tabs .nav-item{color:var(--text-1);}
+.settings-pane{flex:1;padding:20px;}
+.settings-pane h3{margin:0 0 16px;font-size:15px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;color:var(--text-1);margin-bottom:5px;}
+.field input,.field select{width:100%;max-width:360px;}
+.toggle-row{display:flex;justify-content:space-between;align-items:center;max-width:400px;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.switch{width:38px;height:20px;border-radius:999px;background:rgba(255,255,255,.1);position:relative;cursor:pointer;flex-shrink:0;}
+.switch.on{background:var(--accent);}
+.switch i{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s;}
+.switch.on i{left:20px;}
+
+/* PLANS */
+.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px;}
+.plan-card{padding:22px;position:relative;}
+.plan-card.pop{border-color:var(--accent);}
+.plan-card .pop-tag{position:absolute;top:-10px;right:16px;background:var(--accent);color:#fff;font-size:10px;padding:3px 10px;border-radius:999px;font-weight:700;}
+.plan-card h4{margin:0 0 4px;font-size:14px;}
+.plan-card .price{font-size:26px;font-weight:800;margin:10px 0 14px;}
+.plan-card .price span{font-size:12px;font-weight:500;color:var(--text-2);}
+.plan-card ul{list-style:none;padding:0;margin:0 0 18px;font-size:12px;color:var(--text-1);}
+.plan-card li{padding:5px 0;display:flex;gap:7px;}
+.plan-card li:before{content:"✓";color:var(--green);}
+
+/* RULES */
+.rules-text{font-size:13px;line-height:1.8;color:var(--text-1);max-width:720px;}
+.rules-text h3{color:var(--text-0);font-size:14px;margin:20px 0 6px;}
+
+
+/* ================= MOBILE / RESPONSIVE ================= */
+html,body{min-height:100%;}
+body{height:100dvh;overflow:hidden;}
+.auth-card{max-width:calc(100vw - 32px);}
+
+.mobile-menu-btn{display:none;background:transparent;border:1px solid var(--border);color:var(--text-0);
+  width:38px;height:38px;border-radius:9px;align-items:center;justify-content:center;cursor:pointer;font-size:18px;}
+.sidebar-backdrop{display:none;}
+
+@media (max-width: 980px){
+  .sidebar{width:190px;}
+  .view{padding:18px;}
+  .topbar{padding:0 14px;}
+  .topbar input{width:min(38vw,240px);}
+  .detail-split{height:auto;min-height:100%;}
+  .video-col{min-height:420px;}
+  .plan-grid{grid-template-columns:1fr 1fr;}
+}
+
+@media (max-width: 760px){
+  body{overflow:hidden;}
+  #app.active{display:flex;position:relative;}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:min(82vw,300px);z-index:60;
+    transform:translateX(-105%);transition:transform .2s ease;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .sidebar.open{transform:translateX(0);}
+  .sidebar-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:55;display:none;}
+  .sidebar-backdrop.open{display:block;}
+  .mobile-menu-btn{display:flex;flex-shrink:0;}
+  .topbar{height:58px;gap:10px;padding:0 12px;}
+  .topbar input{width:auto;flex:1;min-width:0;}
+  .lang-switch button{padding:6px 9px;}
+  .view{padding:16px 12px 90px;}
+  .hero-card{padding:20px 16px;}
+  .hero-actions{flex-direction:column;}
+  .hero-actions .btn{width:100%;}
+  .grid-2{grid-template-columns:1fr;}
+  .detail-split{display:flex;flex-direction:column;height:auto;gap:12px;}
+  .video-col{min-height:360px;}
+  .video-grid{min-height:300px;}
+  .video-tile{min-height:110px;}
+  .trans-col{min-height:420px;}
+  .team-head{align-items:flex-start;gap:10px;}
+  .settings-wrap{flex-direction:column;gap:10px;}
+  .settings-tabs{width:100%;display:flex;overflow-x:auto;gap:6px;padding-bottom:2px;}
+  .settings-tabs .nav-item{white-space:nowrap;margin:0;}
+  .settings-pane{padding:16px;}
+  .plan-grid{grid-template-columns:1fr;}
+  .table-wrap{margin-right:-12px;margin-left:-12px;border-radius:0;}
+  table{min-width:620px;}
+  .filters{overflow-x:auto;padding-bottom:4px;}
+  .filters button{white-space:nowrap;}
+  #chatToggle{right:12px;bottom:12px;width:62px;height:62px;}
+  #chatPanel{right:10px;left:10px;bottom:82px;width:auto;height:min(68dvh,500px);}
+  .dropzone{padding:34px 14px;}
+  .auth-card{width:100%;padding:26px 20px;}
+  .auth-tabs{flex-wrap:wrap;line-height:1.7;}
+}
+
+@media (max-width: 420px){
+  .topbar input{font-size:12px;padding:8px 9px;}
+  .lang-switch button{font-size:10px;padding:6px 7px;}
+  .view-title{font-size:18px;}
+  .view-sub{font-size:11px;}
+  .list-row{padding:10px 8px;gap:9px;}
+  .avatar{width:30px;height:30px;}
+  .video-grid{grid-template-columns:1fr;}
+  .video-tile{min-height:120px;}
+}
+
+</style>
+</head>
+<body>
+
+<!-- ================= AUTH ================= -->
+<div id="authScreen">
+  <div class="card auth-card" id="authSignin">
+  <div class="auth-logo" style="display: flex; justify-content: center;">
+     <img src="assets/kimkim4.png" alt="Adolf KimKim Logo" style="width:48px; height:48px; border-radius:50%; object-fit:cover; box-shadow:0 0 20px rgba(59,130,246,.6); -webkit-animation:breathe 3s ease-in-out infinite; animation:breathe 3s ease-in-out infinite;">
+      <span style="font-size: 20px; color: #93a4c3;">ADOLF KIMKIM</span>
+      <img src="assets/kimkim4.png" alt="Adolf KimKim Logo" style="width:48px; height:48px; border-radius:50%; object-fit:cover; box-shadow:0 0 20px rgba(59,130,246,.6); -webkit-animation:breathe 3s ease-in-out infinite; animation:breathe 3s ease-in-out infinite;">
+     </div>
+    <h1 data-i18n="signinTitle">Đăng nhập</h1>
+    <p class="sub" data-i18n="signinSub">Thống trị thế giới cùng Adolf Kim Kim</p>
+    <div class="auth-google" onclick="signInWithGoogle()"> <span data-i18n="signinGoogle">🪐Đăng nhập với Google</span></div>
+    <label data-i18n="emailLbl">Email</label><input id="signinEmail" type="email" autocomplete="email" placeholder="you@company.com">
+    <label data-i18n="pwLbl">Mật khẩu</label><input id="signinPassword" type="password" autocomplete="current-password" placeholder="••••••••">
+    <div id="authError" class="auth-error" role="alert"></div>
+    <button class="btn btn-primary" onclick="signInWithEmail()" data-i18n="signinBtn">Đăng nhập</button>
+    <div class="auth-tabs">
+      <span data-i18n="noAccount">Chưa có tài khoản?</span> <a onclick="showAuth('signup')" data-i18n="signupLink">Đăng ký</a> ·
+      <a onclick="showAuth('forgot')" data-i18n="forgotLink">Quên mật khẩu?</a>
+    </div>
+  </div>
+
+  <div class="card auth-card hidden" id="authSignup">
+     <img src="assets/kimkimBranding.png" alt="Adolf KimKim Logo" style="width:28px; height:28px; border-radius:50%; object-fit:cover; box-shadow:0 0 10px rgba(59,130,246,.6); -webkit-animation:breathe 3s ease-in-out infinite; animation:breathe 3s ease-in-out infinite;">
+    <h1 data-i18n="signupTitle">Tạo tài khoản</h1>
+    <p class="sub" data-i18n="signupSub">Trải nghiệm khả năng ghi chú đẳng cấp của Adolf KimKim</p>
+    <div class="auth-google" onclick="signInWithGoogle()"><span data-i18n="signinGoogle">🪐Đăng nhập với Google</span></div>
+    <label data-i18n="nameLbl">Họ tên</label><input id="signupName" autocomplete="name" placeholder="Sally San San">
+    <label data-i18n="emailLbl">Email</label><input id="signupEmail" type="email" autocomplete="email" placeholder="you@company.com">
+    <label data-i18n="pwLbl">Mật khẩu</label><input id="signupPassword" type="password" autocomplete="new-password" placeholder="••••••••">
+    <div id="signupError" class="auth-error" role="alert"></div>
+    <button class="btn btn-primary" onclick="signUpWithEmail()" data-i18n="signupBtn">Tạo tài khoản</button>
+    <div class="auth-tabs"><a onclick="showAuth('signin')" data-i18n="backSignin">← Quay lại đăng nhập</a></div>
+  </div>
+
+  <div class="card auth-card hidden" id="authForgot">
+         <img src="assets/kimkimBranding.png" alt="Adolf KimKim Logo" style="width:28px; height:28px; border-radius:50%; object-fit:cover; box-shadow:0 0 10px rgba(59,130,246,.6); -webkit-animation:breathe 3s ease-in-out infinite; animation:breathe 3s ease-in-out infinite;">
+
+    <h1 data-i18n="forgotTitle">Quên mật khẩu?</h1>
+    <p class="sub" data-i18n="forgotSub">Nhập email để nhận hướng dẫn đặt lại mật khẩu</p>
+    <label data-i18n="emailLbl">Email</label><input id="resetEmail" type="email" autocomplete="email" placeholder="you@company.com">
+    <div id="resetError" class="auth-error" role="alert"></div>
+    <button class="btn btn-primary" onclick="sendPasswordReset()" data-i18n="forgotBtn">Gửi hướng dẫn</button>
+    <div class="auth-tabs"><a onclick="showAuth('signin')" data-i18n="backSignin">← Quay lại đăng nhập</a></div>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app">
+  <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="closeMobileMenu()"></div>
+  <aside class="sidebar">
+     <div style="font-size:20px; color:#93a4c3; font-weight:700; margin-bottom:10px;">  🐶 ADOLF KIMKIM 🐶 </div>
+    <div style="position:relative;">
+      <button class="btn btn-primary side-add" data-i18n="addNew" onclick="toggleAddNewMenu(event)">+ Thêm mới</button>
+      <div id="addNewMenu" class="hidden" style="position:absolute; top:100%; left:0; right:0; z-index:40; background:var(--card,#141a2b); border:1px solid var(--border,#26304a); border-radius:10px; margin-top:4px; overflow:hidden;">
+        <div class="list-row" style="cursor:pointer;padding:8px 8px;" onclick="closeAddNewMenu(); startLiveRecording();"><span data-i18n="addNewMeetingOpt">🔴 Ghi trực tiếp</span></div>
+        <div class="list-row" style="cursor:pointer;padding:8px 8px;" onclick="closeAddNewMenu(); scheduleNewMeeting();"><span data-i18n="addNewScheduleOpt">📆 Lên lịch</span></div>
+        <div class="list-row" style="cursor:pointer;padding:8px 8px;" onclick="closeAddNewMenu(); createNote();"><span data-i18n="addNewNoteOpt">📝 Ghi chú mới</span></div>
+        <div class="list-row" style="cursor:pointer;padding:8px 8px;" onclick="closeAddNewMenu(); showView('uploads',document.querySelector('[data-view=uploads]'));"><span data-i18n="addNewUploadOpt">📤 Upload</span></div>
+      </div>
+    </div>
+    <div class="nav-item active" data-view="home" onclick="showView('home',this)"><span class="ic">🏠</span><span data-i18n="navHome">Trang chủ</span></div>
+    <div class="nav-item" data-view="meetings" onclick="showView('meetings',this)"><span class="ic">📅</span><span data-i18n="navMeetings">Cuộc họp</span></div>
+    <div class="nav-item" data-view="notes" onclick="showView('notes',this)"><span class="ic">📝</span><span data-i18n="navNotes">Ghi chú</span></div>
+    <div class="nav-item" data-view="recording" onclick="showView('recording',this)"><span class="ic">🎙️</span><span data-i18n="navRecording">Recording</span></div>
+    <div class="nav-item" data-view="uploads" onclick="showView('uploads',this)"><span class="ic">📤</span><span data-i18n="navUploads">Tải lên</span></div>
+    <div class="nav-item" data-view="team" onclick="showView('team',this)"><span class="ic">👥</span><span data-i18n="navTeam">Nhóm</span></div>
+    <div class="nav-item" data-view="plan" onclick="showView('plan',this)"><span class="ic">💎</span><span data-i18n="navPlan">Gói cước</span></div>
+    <div class="nav-item" data-view="rules" onclick="showView('rules',this)"><span class="ic">📜</span><span data-i18n="navRules">Quy định</span></div>
+    <div class="nav-item" data-view="settings" onclick="showView('settings',this)"><span class="ic">⚙️</span><span data-i18n="navSettings">Cài đặt</span></div>
+    <div class="nav-spacer"></div>
+    <div class="nav-item" data-view="profile" onclick="showView('profile',this)"><span class="ic">👤</span><span data-i18n="navProfile">Hồ sơ</span></div>
+    <div class="side-user">
+      <div id="sideAvatar" class="avatar" style="background:#3b82f6;background-size:cover;background-position:center;cursor:pointer;" onclick="showView('profile',document.querySelector('[data-view=profile]'))">SM</div>
+      <div style="flex:1;cursor:pointer;" onclick="showView('profile',document.querySelector('[data-view=profile]'))"><div id="sideUserName" class="name">Sally</div><div class="mail" style="opacity:.7">&nbsp;</div></div>
+      <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px;" onclick="event.stopPropagation();logout()" data-i18n="logoutLbl">Đăng xuất</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="mobile-menu-btn" aria-label="Menu" onclick="toggleMobileMenu()">☰</button>
+      <input id="globalSearch" data-i18n-ph="searchPh" placeholder="Tìm kiếm cuộc họp, ghi chú..." oninput="onGlobalSearch(this.value)">
+      <div class="lang-switch">
+        <button id="btnVi" class="active" onclick="setLang('vi')">VIE</button>
+        <button id="btnEn" onclick="setLang('en')">ENG</button>
+      </div>
+    </div>
+
+    <!-- ===== HOME ===== -->
+    <div class="view" id="view-home">
+      <div class="hero-card card">
+        <h2 data-i18n="heroTitle">Hi Sally, chào mừng đến với Adolf KimKim 💙 </h2>
+        <p data-i18n="heroSub">Hãy mời KimKim vào lịch của bạn hoặc chọn ghi âm để bắt đầu ghi lại cuộc họp.</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="showView('recording')" data-i18n="recordLive">🔴 Ghi cuộc họp trực tiếp</button>
+      
+          <button class="btn btn-ghost" onclick="openCreateMeeting('processing')" data-i18n="scheduleNew">📆 Lên lịch cuộc họp mới</button>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card" style="padding:16px;">
+          <div class="view-sub" style="margin-bottom:10px" data-i18n="upcoming">Cuộc họp sắp tới</div>
+          <div id="upcomingList"></div>
+        </div>
+        <div class="card" style="padding:16px;">
+          <div class="view-sub" style="margin-bottom:10px" data-i18n="recentNotes">Ghi chú gần đây</div>
+          <div id="recentNotesList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MEETINGS ===== -->
+    <div class="view hidden" id="view-meetings">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div class="view-title" data-i18n="navMeetings">Cuộc họp</div>
+          <div class="view-sub" data-i18n="meetingsSub">Quản lý toàn bộ cuộc họp đã ghi và đang xử lý</div>
+        </div>
+        <button class="btn btn-primary" onclick="openCreateMeeting('processing')" data-i18n="newMeetingBtn">+ Cuộc họp mới</button>
+      </div>
+      <div class="filters">
+        <button class="active" onclick="filterMeetings('all',this)" data-i18n="fAll">Tất cả</button>
+        <button onclick="filterMeetings('progress',this)" data-i18n="fProgress">Đang diễn ra</button>
+        <button onclick="filterMeetings('processing',this)" data-i18n="fProcessing">Đang xử lý</button>
+        <button onclick="filterMeetings('done',this)" data-i18n="fDone">Hoàn tất</button>
+      </div>
+      <div class="card table-wrap">
+        <table>
+          <thead><tr>
+            <th data-i18n="colName">Tên cuộc họp</th><th data-i18n="colDate">Ngày</th>
+            <th data-i18n="colDur">Thời lượng</th><th data-i18n="colStatus">Trạng thái</th><th></th>
+          </tr></thead>
+          <tbody id="meetingsTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== MEETING DETAIL ===== -->
+    <div class="view hidden" id="view-meetingDetail">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <button class="btn btn-ghost" onclick="showView('meetings',document.querySelector('[data-view=meetings]'))">← Quay lại</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" onclick="editMeeting(currentMeetingId)" data-i18n="editMeeting">✏️ Sửa</button>
+          <button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);" onclick="deleteMeetingHandler(currentMeetingId)" data-i18n="deleteMeeting">🗑️ Xoá</button>
+        </div>
+      </div>
+      <div class="view-title"></div>
+      <div class="view-sub"></div>
+      <div id="meetingDetailBody" class="detail-split">
+        <div class="video-col">
+          <div class="card keypoints">
+            <div class="view-sub" style="margin-bottom:8px" data-i18n="participants">Người tham gia</div>
+            <div id="mdParticipants"></div>
+          </div>
+          <div class="card keypoints">
+            <div class="view-sub" style="margin-bottom:8px" data-i18n="keyPoints">Điểm chính</div>
+            <div id="mdKeyPoints"></div>
+          </div>
+          <div class="card keypoints">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <div class="view-sub" style="margin:0" data-i18n="summaryLbl">Tóm tắt</div>
+              <button class="btn btn-ghost" id="mdTranslateBtn" style="padding:3px 8px;font-size:11px;" onclick="toggleMeetingSummaryTranslation()" data-i18n="translateBtn">🌐 Dịch sang tiếng Anh</button>
+            </div>
+            <div id="mdSummary" style="font-size:13px;color:var(--text-1);"></div>
+          </div>
+          <div class="card keypoints">
+            <div class="view-sub" style="margin-bottom:8px" data-i18n="actionItemsLbl">Việc cần làm</div>
+            <div id="mdActionItems"></div>
+          </div>
+          <div class="card keypoints">
+            <div class="view-sub" style="margin-bottom:8px" data-i18n="mdNotesLbl">Ghi chú cuộc họp</div>
+            <textarea id="mdNotesInput" style="width:100%;min-height:70px;resize:vertical;" onblur="saveMeetingNotes()"></textarea>
+          </div>
+          <div class="card keypoints">
+            <div class="view-sub" style="margin-bottom:8px" data-i18n="tabGenerate">Tạo nội dung</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+              <button class="btn btn-ghost" style="font-size:12px;" onclick="requestGenerationHandler('slides')" data-i18n="genSlides">📊 Tạo Slide</button>
+              <button class="btn btn-ghost" style="font-size:12px;" onclick="requestGenerationHandler('mindmap')" data-i18n="genMindmap">🧠 Tạo Sơ đồ tư duy</button>
+              <button class="btn btn-ghost" style="font-size:12px;" onclick="requestGenerationHandler('image')" data-i18n="genImage">🖼️ Tạo hình minh hoạ</button>
+            </div>
+            <div id="mdGenerationJobs" style="font-size:12px;color:var(--text-2);"></div>
+          </div>
+        </div>
+        <div class="trans-col">
+          <div class="trans-tabs">
+            <button class="active" id="mdTabTranscriptBtn" onclick="showMeetingTab('transcript')" data-i18n="tabTranscript">Transcript</button>
+            <button id="mdTabChatBtn" onclick="showMeetingTab('chat')" data-i18n="tabChat">Adolf KimKim</button>
+          </div>
+          <div class="card" id="mdTranscriptPane" style="flex:1;padding:12px;display:flex;flex-direction:column;min-height:0;">
+            <div class="trans-list" id="segList"></div>
+          </div>
+          <div class="card hidden" id="mdChatPane" style="flex:1;padding:12px;display:flex;flex-direction:column;min-height:0;">
+            <div style="font-size:11px;color:var(--text-2);margin-bottom:6px;" data-i18n="scopedChatNote">Chatbot chỉ trả lời trong phạm vi bản ghi và file đã tải lên của cuộc họp này.</div>
+            <div id="mdChatBody" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+            <div style="display:flex;gap:6px;margin-top:8px;">
+              <input id="mdChatInput" data-i18n-ph="mdChatPh" placeholder="Hỏi về cuộc họp này..." style="flex:1;" onkeydown="if(event.key==='Enter')sendMeetingChatMsg()">
+              <button class="btn btn-primary" onclick="sendMeetingChatMsg()">➤</button>
+            </div>
+          </div>
+          <div class="card speaker-stats">
+            <div class="view-sub" style="margin-bottom:8px" data-i18n="speakTime">Thời gian phát biểu</div>
+            <div id="speakerStats"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CREATE / EDIT MEETING ===== -->
+    <div class="view hidden" id="view-createMeeting">
+      <button class="btn btn-ghost" style="margin-bottom:8px" onclick="showView('meetings',document.querySelector('[data-view=meetings]'))">← Quay lại</button>
+      <div class="view-title" id="cmFormTitle" data-i18n="createMeetingTitle">Tạo cuộc họp mới</div>
+      <div class="card" style="max-width:520px;padding:20px;">
+        <div class="field"><label data-i18n="cmTitleLbl">Tiêu đề</label><input id="cmTitle" style="width:100%"></div>
+        <div style="display:flex;gap:10px;">
+          <div class="field" style="flex:1"><label data-i18n="cmDateLbl">Ngày</label><input id="cmDate" type="date" style="width:100%"></div>
+          <div class="field" style="flex:1"><label data-i18n="cmTimeLbl">Giờ</label><input id="cmTime" type="time" style="width:100%"></div>
+        </div>
+        <div class="field"><label data-i18n="cmParticipantsLbl">Người tham gia (email, cách nhau bởi dấu phẩy)</label><input id="cmParticipants" style="width:100%" placeholder="a@x.com, b@x.com"></div>
+        <div class="field"><label data-i18n="cmDescLbl">Mô tả</label><textarea id="cmDescription" style="width:100%;min-height:70px;"></textarea></div>
+        <div class="toggle-row" style="margin:8px 0;">
+          <span data-i18n="inviteKimkimLbl">Mời Adolf KimKim vào lịch</span>
+          <div id="cmInviteKimkim" class="switch on" onclick="this.classList.toggle('on')"><i></i></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-2);margin:-4px 0 8px;" data-i18n="inviteKimkimHint">KimKim sẽ tự động tham gia và ghi âm cuộc họp này</div>
+        <div id="cmError" class="auth-error"></div>
+        <div style="display:flex;gap:10px;margin-top:14px;">
+          <button class="btn btn-ghost" style="flex:1" onclick="cancelCreateMeeting()" data-i18n="cancelBtn">Huỷ</button>
+          <button class="btn btn-primary" style="flex:1" onclick="submitCreateMeeting()" id="cmSubmitBtn" data-i18n="createBtn">Tạo</button>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+    <!-- ===== NOTES ===== -->
+    <div class="view hidden" id="view-notes">
+      <div class="view-title" data-i18n="navNotes">Ghi chú</div>
+      <div class="view-sub" data-i18n="notesSub">Toàn bộ ghi chú được tạo tự động và thủ công</div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+        <button class="btn btn-primary" onclick="createNote()">+ Thêm ghi chú</button>
+      </div>
+      <div style="display:flex;gap:16px;">
+        <div class="card" style="width:260px;flex-shrink:0;padding:10px;" id="notesSidebarList"></div>
+        <div class="card" style="flex:1;padding:20px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+            <button class="btn btn-ghost" id="noteTranslateBtn" onclick="toggleNoteTranslation()" data-i18n="translateBtn">🌐 Dịch sang tiếng Anh</button>
+            <button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);" onclick="deleteNoteHandler()" data-i18n="deleteNoteBtn">🗑️ Xoá ghi chú</button>
+          </div>
+          <div class="editor" contenteditable="true" style="font-size:14px;line-height:1.8;" onblur="saveCurrentNote()">
+            <h1 style="margin:0 0 10px;font-size:19px;"></h1>
+            <p style="color:var(--text-1);"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ===== RECORDING ===== -->
+    <div class="view hidden" id="view-recording">
+      <div class="view-title" data-i18n="navRecording">Recording</div>
+      <div class="view-sub" data-i18n="recordingSub">Ghi âm cuộc họp trực tiếp và tạo bản ghi tự động</div>
+      <div class="card" style="padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+        <div class="ic" style="font-size:40px;" id="recIcon">🎙️</div>
+        <p data-i18n="recDesc">Bắt đầu ghi âm cuộc họp trực tiếp và tạo bản ghi tự động</p>
+        <div id="recTimer" style="font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;display:none;">00:00</div>
+        <div id="recStatus" style="font-size:12px;color:var(--text-2);"></div>
+        <audio id="recPreview" controls style="display:none;width:100%;max-width:360px;margin-top:6px;"></audio>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+          <button class="btn btn-primary" id="recStartBtn" onclick="startRecording()" data-i18n="startRec">🔴 Bắt đầu ghi âm</button>
+          <button class="btn btn-ghost" id="recStopBtn" style="display:none" onclick="stopRecording()" data-i18n="stopRec">⏹ Dừng</button>
+          <button class="btn btn-ghost" id="recCancelBtn" style="display:none" onclick="cancelRecording()" data-i18n="cancelBtn">Huỷ</button>
+          <button class="btn btn-primary" id="recSaveBtn" style="display:none" onclick="saveRecording()" data-i18n="saveRecBtn">💾 Lưu thành cuộc họp</button>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- ===== UPLOADS ===== -->
+    <div class="view hidden" id="view-uploads">
+      <div class="view-title" data-i18n="navUploads">Tải lên</div>
+      <div class="view-sub" data-i18n="uploadSub">Tải file âm thanh hoặc video để tạo bản ghi tự động</div>
+      <div class="card dropzone" ondragover="event.preventDefault()" ondrop="event.preventDefault(); if(event.dataTransfer.files[0]){document.getElementById('hiddenFileInput').files=event.dataTransfer.files; handleFileSelected(document.getElementById('hiddenFileInput'));}">
+        <div class="ic">🎧</div>
+        <p data-i18n="dropText">Kéo thả file MP3, WAV hoặc MP4 vào đây, hoặc chọn file để tải lên</p>
+        <button class="btn btn-primary" onclick="selectUploadFile()" data-i18n="selectFile">Chọn file</button>
+        <input type="file" id="hiddenFileInput" accept="audio/*,video/*,application/pdf,.doc,.docx,.txt" style="display:none" onchange="handleFileSelected(this)">
+      </div>
+      <div class="card" id="uploadList"></div>
+    </div>
+
+    <!-- ===== TEAM ===== -->
+    <div class="view hidden" id="view-team">
+      <div class="team-head">
+        <div><div class="view-title" style="margin:0" data-i18n="navTeam">Nhóm</div>
+          <div class="view-sub" style="margin:2px 0 0" data-i18n="teamSub">Quản lý thành viên có quyền truy cập</div></div>
+        <button class="btn btn-primary" onclick="openInviteMemberModal()" data-i18n="inviteBtn">+ Mời thành viên</button>
+      </div>
+      <div class="card table-wrap">
+        <table><thead><tr><th data-i18n="colMember">Thành viên</th><th data-i18n="colEmail">Email</th><th data-i18n="colStatus">Trạng thái</th><th data-i18n="colRole">Vai trò</th><th></th></tr></thead>
+        <tbody id="teamTable"></tbody></table>
+      </div>
+    </div>
+
+    <div id="inviteMemberModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:60;">
+      <div class="card" style="width:360px;padding:20px;">
+        <h3 style="margin:0 0 12px" data-i18n="teamInviteTitle">Mời thành viên</h3>
+        <div class="field"><label data-i18n="teamInviteEmailLbl">Email</label><input id="inviteMemberEmail" style="width:100%" type="email" placeholder="ban@congty.com"></div>
+        <div id="inviteMemberError" class="auth-error"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button class="btn btn-ghost" style="flex:1" onclick="closeInviteMemberModal()" data-i18n="cancelBtn">Huỷ</button>
+          <button class="btn btn-primary" style="flex:1" onclick="submitInviteMember()" data-i18n="teamInviteSendBtn">Gửi lời mời</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== SETTINGS ===== -->
+    <div class="view hidden" id="view-settings">
+      <div class="view-title" data-i18n="navSettings">Cài đặt</div>
+      <div class="settings-wrap">
+        <div class="settings-tabs">
+          <div class="nav-item active" data-s="account" onclick="showSettings('account',this)"><span data-i18n="sAccount">Tài khoản</span></div>
+          <div class="nav-item" data-s="meeting" onclick="showSettings('meeting',this)"><span data-i18n="sMeeting">Cuộc họp</span></div>
+          <div class="nav-item" data-s="ai" onclick="showSettings('ai',this)"><span data-i18n="sAI">Tuỳ chỉnh AI</span></div>
+          <div class="nav-item" data-s="password" onclick="showSettings('password',this)"><span data-i18n="sPassword">Mật khẩu</span></div>
+        </div>
+        <div class="card settings-pane" id="settingsAccount">
+          <h3 data-i18n="sAccount">Tài khoản</h3>
+          <div class="field"><label data-i18n="nameLbl">Họ tên</label><input value=""></div>
+          <div class="field"><label data-i18n="emailLbl">Email</label><input value="" disabled></div>
+          <button class="btn btn-primary" onclick="saveAccountSettings()">Lưu</button>
+          <button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);" onclick="deleteAccount()" data-i18n="delAccount">Xoá tài khoản</button>
+        </div>
+        <div class="card settings-pane hidden" id="settingsMeeting">
+          <h3 data-i18n="sMeeting">Cuộc họp</h3>
+          <div class="field"><label data-i18n="meetLang">Ngôn ngữ ghi</label><select><option>Tiếng Việt</option><option>English</option></select></div>
+          <div class="toggle-row"><span data-i18n="autoJoin">Tự động tham gia</span><div class="switch on" onclick="this.classList.toggle('on')"><i></i></div></div>
+          <div class="toggle-row"><span data-i18n="autoRecord">Tự động ghi âm</span><div class="switch" onclick="this.classList.toggle('on')"><i></i></div></div>
+          <button class="btn btn-primary" onclick="saveMeetingSettings()">Lưu</button>
+        </div>
+        <div class="card settings-pane hidden" id="settingsAI">
+          <h3 data-i18n="sAI">Tuỳ chỉnh AI</h3>
+          <div class="field"><label data-i18n="speechStyle">Phong cách trả lời</label><select><option data-i18n="styleFormal">Trang trọng</option><option data-i18n="styleCasual">Thân mật</option></select></div>
+          <div class="toggle-row"><span data-i18n="vocabDetect">Nhận diện thuật ngữ chuyên ngành</span><div class="switch on" onclick="this.classList.toggle('on')"><i></i></div></div>
+          <button class="btn btn-primary" onclick="saveAISettings()">Lưu</button>
+        </div>
+        <div class="card settings-pane hidden" id="settingsPassword">
+          <h3 data-i18n="sPassword">Mật khẩu</h3>
+          <div class="field"><label data-i18n="curPw">Mật khẩu hiện tại</label><input type="password"></div>
+          <div class="field"><label data-i18n="newPw">Mật khẩu mới</label><input type="password"></div>
+          <button class="btn btn-primary" onclick="updatePasswordSettings()" data-i18n="updatePw">Cập nhật mật khẩu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PROFILE ===== -->
+    <div class="view hidden" id="view-profile">
+      <div class="view-title" data-i18n="navProfile">Hồ sơ</div>
+      <div class="view-sub" data-i18n="profileSub">Ảnh đại diện và thông tin cá nhân của bạn</div>
+      <div class="card" style="padding:24px;max-width:420px;display:flex;flex-direction:column;align-items:center;gap:14px;">
+        <div id="profileAvatar" class="avatar" style="width:88px;height:88px;font-size:28px;background:#3b82f6;background-size:cover;background-position:center;">SM</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" onclick="document.getElementById('avatarInput').click()" data-i18n="changeAvatar">Đổi ảnh đại diện</button>
+          <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="handleAvatarSelected(this)">
+        </div>
+        <div id="avatarUploadStatus" style="font-size:12px;color:var(--text-2);"></div>
+        <div class="field" style="width:100%;"><label data-i18n="nameLbl">Họ tên</label><input id="profileNameInput" style="width:100%"></div>
+        <div class="field" style="width:100%;"><label data-i18n="emailLbl">Email</label><input id="profileEmailInput" style="width:100%" disabled></div>
+        <button class="btn btn-primary" style="width:100%" onclick="saveProfileName()" data-i18n="saveBtn">Lưu</button>
+      </div>
+    </div>
+
+    <!-- ===== PLAN ===== -->
+    <div class="view hidden" id="view-plan">
+      <div class="view-title" data-i18n="navPlan">Gói cước</div>
+      <div class="view-sub" data-i18n="planSub">Bạn đang dùng gói <b>Free</b></div>
+      <div class="plan-grid">
+        <div class="card plan-card">
+          <h4 data-i18n="planFree">Free</h4>
+          <div class="price">$0<span data-i18n="perMonth">/tháng</span></div>
+          <ul><li data-i18n="pf1">3 giờ ghi âm/tháng</li><li data-i18n="pf2">2 người dùng</li><li data-i18n="pf3">Lưu trữ cơ bản</li></ul>
+          <button class="btn btn-ghost" style="width:100%" data-i18n="curPlanBtn">Gói hiện tại</button>
+        </div>
+        <div class="card plan-card pop">
+          <div class="pop-tag" data-i18n="popular">PHỔ BIẾN</div>
+          <h4 data-i18n="planPro">Pro</h4>
+          <div class="price">$49<span data-i18n="perMonth">/tháng</span></div>
+          <ul><li data-i18n="pp1">Ghi âm không giới hạn</li><li data-i18n="pp2">10 người dùng</li><li data-i18n="pp3">AI tóm tắt nâng cao</li><li data-i18n="pp4">Hỗ trợ ưu tiên</li></ul>
+          <button class="btn btn-primary" style="width:100%" onclick="showView('upgrade')" data-i18n="upgradeBtn">Nâng cấp</button>
+        </div>
+        <div class="card plan-card">
+          <h4 data-i18n="planEnt">Enterprise</h4>
+          <div class="price">$99<span data-i18n="perMonth">/tháng</span></div>
+          <ul><li data-i18n="pe1">Tất cả tính năng Pro</li><li data-i18n="pe2">Người dùng không giới hạn</li><li data-i18n="pe3">SSO & bảo mật nâng cao</li></ul>
+          <button class="btn btn-ghost" style="width:100%" onclick="window.location.href='mailto:sales@example.com?subject=Enterprise%20Plan'" data-i18n="contactBtn">Liên hệ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== UPGRADE ===== -->
+    <div class="view hidden" id="view-upgrade">
+      <div class="view-title" data-i18n="upgradeTitle">Nâng cấp gói</div>
+      <div style="display:flex;gap:20px;max-width:700px;">
+        <div class="card" style="flex:1;padding:18px;">
+          <div class="field"><label data-i18n="cardNum">Số thẻ</label><input placeholder="4242 4242 4242 4242"></div>
+          <div style="display:flex;gap:10px;">
+            <div class="field" style="flex:1"><label>Expiry</label><input placeholder="MM/YY"></div>
+            <div class="field" style="flex:1"><label>CVC</label><input placeholder="123"></div>
+          </div>
+          <button class="btn btn-ghost" style="width:100%;opacity:.6;cursor:not-allowed;" disabled title="Coming soon" data-i18n="payBtn">Thanh toán — Sắp ra mắt</button>
+        </div>
+        <div class="card" style="width:240px;padding:18px;">
+          <div class="view-sub" style="margin-bottom:8px" data-i18n="summary">Tóm tắt</div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span data-i18n="planPro">Pro</span><span>$49</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;border-top:1px solid var(--border);padding-top:8px;"><span data-i18n="total">Tổng</span><span>$49</span></div>
+        </div>
+      </div>
+      <div id="paySuccessModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:60;">
+        <div class="card" style="padding:26px;text-align:center;width:280px;">
+          <div style="font-size:34px;">✅</div>
+          <h3 style="margin:10px 0 4px" data-i18n="paySuccess">Thanh toán thành công!</h3>
+          <p style="font-size:12px;color:var(--text-2)" data-i18n="paySuccessSub">Bạn đã nâng cấp lên gói Pro</p>
+          <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="document.getElementById('paySuccessModal').classList.add('hidden')" data-i18n="close">Đóng</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== RULES ===== -->
+    <div class="view hidden" id="view-rules">
+      <div class="view-title" data-i18n="navRules">Quy định sử dụng</div>
+      <div class="rules-text">
+        <h3 data-i18n="r1t">1. Nội dung được phép</h3>
+        <p data-i18n="r1p">Người dùng chỉ được ghi âm các cuộc họp mà tất cả người tham gia đã đồng ý.</p>
+        <h3 data-i18n="r2t">2. Quyền riêng tư & bảo mật</h3>
+        <p data-i18n="r2p">Toàn bộ bản ghi và transcript được mã hoá và chỉ chia sẻ với thành viên được cấp quyền.</p>
+        <h3 data-i18n="r3t">3. Sở hữu trí tuệ</h3>
+        <p data-i18n="r3p">Nội dung do người dùng tạo ra thuộc quyền sở hữu của người dùng đó.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== FLOATING CHAT ===== -->
+<div id="chatToggle" onclick="toggleChat()"><img src="assets/kimkimAI.png"></div>
+<div id="chatPanel" class="card">
+  <div class="chat-header2">
+    <img src="assets/kimkimAI.png">
+    <div><div class="n">Adolf KimKim</div><div class="s" data-i18n="agentSub">Thống trị thế giới cùng bạn</div></div>
+  </div>
+  <div class="chat-body2" id="chatBody">
+    <div class="bubble agent" data-i18n="greeting">Chào bạn 👋 Tôi là KimKim. Hỏi tôi những gì bạn muốn.</div>
+  </div>
+  <div class="chat-input-row">
+    <input id="chatInput" data-i18n-ph="chatPh" placeholder="Hỏi Adolf KimKim...">
+    <button onclick="sendChat()">➤</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+<!-- ============ Data / Service layer (Firebase today, swappable for REST later) ============ -->
+<script>
+/* ============================================================
+   firebaseClient.js
+   Single place that owns the Firebase SDK instances.
+   Every service below reads db/auth/storage/ready from here.
+   Swapping Firebase for a REST backend later = rewrite this file
+   (and the *Service.js files) — UI code never touches this.
+   ============================================================ */
+(function (global) {
+  const firebaseConfig = {
+    apiKey: "AIzaSyD6opc9sUjmdSjCY9Vfs1ceUYZRE8Ou1vs",
+    authDomain: "adolfkimkim.firebaseapp.com",
+    projectId: "adolfkimkim",
+    storageBucket: "adolfkimkim.firebasestorage.app",
+    messagingSenderId: "854811459406",
+    appId: "1:854811459406:web:4ab496111eace1b4c4681f"
+  };
+
+  let ready = false;
+  let db = null;
+  let storage = null;
+
+  try {
+    if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+      storage = firebase.storage();
+      ready = true;
+    }
+  } catch (err) {
+    console.error("Firebase initialization failed:", err);
+  }
+
+  function uid() {
+    return firebase.auth().currentUser ? firebase.auth().currentUser.uid : null;
+  }
+
+  /** Convenience accessor for a per-user Firestore collection: users/{uid}/{name} */
+  function userCol(name) {
+    const u = uid();
+    if (!db || !u) return null;
+    return db.collection('users').doc(u).collection(name);
+  }
+
+  function serverTimestamp() {
+    return firebase.firestore.FieldValue.serverTimestamp();
+  }
+
+  global.FirebaseClient = { get ready() { return ready; }, get db() { return db; }, get storage() { return storage; }, uid, userCol, serverTimestamp };
+})(window);
+
+</script>
+<script>
+/* ============================================================
+   avatarService.js
+   Contract:
+     uploadAvatar(file) -> Promise<url>   uploads to Storage, updates
+                                           auth profile + users/{uid}.avatarUrl
+   Swap the body of uploadAvatar for a REST multipart call later —
+   UI (handleAvatarSelected) never touches Storage/Firestore directly.
+   ============================================================ */
+(function (global) {
+  const FC = global.FirebaseClient;
+  const MAX_BYTES = 5 * 1024 * 1024;
+
+  function validate(file) {
+    if (!file) return (typeof t === 'function' ? t('errNoFile') : 'Không có file nào được chọn.');
+    if (!file.type.startsWith('image/')) return (typeof t === 'function' ? t('errInvalidImageType') : 'Chỉ hỗ trợ file ảnh (jpg, png, webp...).');
+    if (file.size > MAX_BYTES) return (typeof t === 'function' ? t('errFileTooLarge') : 'Ảnh vượt quá dung lượng cho phép (5MB).');
+    return null;
+  }
+
+  // Resize/re-encode any input image to a JPEG blob capped at maxDim px on
+  // the long edge. This avoids storage/unknown errors caused by huge
+  // originals, unsupported formats (HEIC, etc.), or broken EXIF orientation.
+  function resizeToJpeg(file, maxDim) {
+    maxDim = maxDim || 512;
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        try {
+          let { width, height } = img;
+          if (width > maxDim || height > maxDim) {
+            if (width >= height) { height = Math.round(height * (maxDim / width)); width = maxDim; }
+            else { width = Math.round(width * (maxDim / height)); height = maxDim; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(blob => {
+            URL.revokeObjectURL(url);
+            if (!blob) return reject(new Error(typeof t === 'function' ? t('errImageProcessFailed') : 'Không xử lý được ảnh.'));
+            resolve(blob);
+          }, 'image/jpeg', 0.88);
+        } catch (e) { URL.revokeObjectURL(url); reject(e); }
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(typeof t === 'function' ? t('errImageProcessFailed') : 'Không đọc được ảnh.')); };
+      img.src = url;
+    });
+  }
+
+  function friendlyStorageError(err) {
+    const code = err && err.code ? err.code : '';
+    const base = (typeof t === 'function' ? t('errAvatarUploadFailed') : 'Tải ảnh đại diện thất bại') + (code ? ' (' + code + ')' : '') + ': ' + (err && err.message ? err.message : err);
+    const hint = typeof t === 'function' ? t('errStorageCheckHint') : 'Kiểm tra: đã bật Cloud Storage cho project, đúng storageBucket trong cấu hình, và đã deploy storage.rules cho phép user ghi vào avatars/{uid}/.';
+    return base + '\n' + hint;
+  }
+
+  async function uploadAvatar(file) {
+    const err = validate(file);
+    if (err) throw new Error(err);
+    const user = firebase.auth().currentUser;
+    if (!user || !FC.storage) throw new Error(typeof t === 'function' ? t('notLoggedIn') : 'Chưa đăng nhập.');
+    let blob;
+    try {
+      blob = await resizeToJpeg(file, 512);
+    } catch (e) {
+      // Fall back to the original file if resizing fails for any reason
+      // (e.g. unsupported browser API) rather than blocking the upload.
+      blob = file;
+    }
+    const ref = FC.storage.ref().child('avatars/' + user.uid + '/avatar.jpg');
+    try {
+      await ref.put(blob, { contentType: 'image/jpeg' });
+    } catch (e) {
+      throw new Error(friendlyStorageError(e));
+    }
+    const url = await ref.getDownloadURL();
+    await user.updateProfile({ photoURL: url });
+    if (FC.db) await FC.db.collection('users').doc(user.uid).set({ avatarUrl: url }, { merge: true });
+    return url;
+  }
+
+  global.AvatarService = { uploadAvatar, validate };
+})(window);
+
+</script>
+<script>
+/* ============================================================
+   authService.js
+   UI never calls firebase.auth() directly — only these methods.
+   Contract (kept stable so a future REST implementation is a
+   drop-in replacement):
+     signInEmail(email, password) -> Promise<User>
+     signUpEmail(name, email, password) -> Promise<User>
+     signInGoogle() -> Promise<User>
+     sendPasswordReset(email) -> Promise<void>
+     signOut() -> Promise<void>
+     onAuthChange(cb) -> unsubscribe()
+     ensureUserDoc(user) -> Promise<void>
+     getUserProfile() -> Promise<{name,email,plan}>
+     updateProfileName(name) -> Promise<void>
+     changePassword(currentPassword, newPassword) -> Promise<void>
+     deleteAccount() -> Promise<void>
+   ============================================================ */
+(function (global) {
+  const FC = global.FirebaseClient;
+
+  function requireReady() {
+    if (!FC.ready) {
+      const err = new Error('Firebase chưa được cấu hình.');
+      err.code = 'app/not-configured';
+      throw err;
+    }
+  }
+
+  function mapError(error) {
+    const map = {
+      'auth/invalid-email': 'Email không hợp lệ.',
+      'auth/missing-password': 'Vui lòng nhập mật khẩu.',
+      'auth/invalid-credential': 'Email hoặc mật khẩu không đúng.',
+      'auth/user-not-found': 'Không tìm thấy tài khoản này.',
+      'auth/wrong-password': 'Email hoặc mật khẩu không đúng.',
+      'auth/email-already-in-use': 'Email này đã được đăng ký.',
+      'auth/weak-password': 'Mật khẩu cần ít nhất 6 ký tự.',
+      'auth/popup-closed-by-user': 'Cửa sổ Google đã được đóng.',
+      'auth/popup-blocked': 'Trình duyệt đã chặn cửa sổ đăng nhập Google.',
+      'auth/operation-not-allowed': 'Phương thức đăng nhập này chưa được bật trong Firebase.',
+      'auth/too-many-requests': 'Có quá nhiều lần thử. Hãy đợi một lúc rồi thử lại.',
+      'app/not-configured': 'Bạn chưa cấu hình Firebase.'
+    };
+    const e = new Error(map[error.code] || error.message || 'Đã xảy ra lỗi đăng nhập.');
+    e.code = error.code;
+    return e;
+  }
+
+  async function signInEmail(email, password) {
+    requireReady();
+    try {
+      const cred = await firebase.auth().signInWithEmailAndPassword(email, password);
+      return cred.user;
+    } catch (err) { throw mapError(err); }
+  }
+
+  async function signUpEmail(name, email, password) {
+    requireReady();
+    try {
+      const cred = await firebase.auth().createUserWithEmailAndPassword(email, password);
+      await cred.user.updateProfile({ displayName: name });
+      await ensureUserDoc(cred.user);
+      return cred.user;
+    } catch (err) { throw mapError(err); }
+  }
+
+  async function signInGoogle() {
+    requireReady();
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const cred = await firebase.auth().signInWithPopup(provider);
+      await ensureUserDoc(cred.user);
+      return cred.user;
+    } catch (err) { throw mapError(err); }
+  }
+
+  async function sendPasswordReset(email) {
+    requireReady();
+    try { await firebase.auth().sendPasswordResetEmail(email); }
+    catch (err) { throw mapError(err); }
+  }
+
+  async function signOut() {
+    if (!FC.ready) return;
+    await firebase.auth().signOut();
+  }
+
+  function onAuthChange(cb) {
+    if (!FC.ready) return () => {};
+    return firebase.auth().onAuthStateChanged(cb);
+  }
+
+  async function ensureUserDoc(user) {
+    if (!FC.db) return;
+    const ref = FC.db.collection('users').doc(user.uid);
+    const snap = await ref.get();
+    if (!snap.exists) {
+      await ref.set({
+        name: user.displayName || (user.email ? user.email.split('@')[0] : 'User'),
+        email: user.email || '',
+        plan: 'free',
+        createdAt: FC.serverTimestamp()
+      });
+    }
+  }
+
+  async function getUserProfile() {
+    if (!FC.db || !FC.uid()) return null;
+    const snap = await FC.db.collection('users').doc(FC.uid()).get();
+    return snap.exists ? { id: snap.id, ...snap.data() } : null;
+  }
+
+  async function updateProfileName(name) {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+    await user.updateProfile({ displayName: name });
+    await FC.db.collection('users').doc(user.uid).set({ name }, { merge: true });
+  }
+
+  async function changePassword(currentPassword, newPassword) {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+    try {
+      const cred = firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
+      await user.reauthenticateWithCredential(cred);
+      await user.updatePassword(newPassword);
+    } catch (err) { throw mapError(err); }
+  }
+
+  async function deleteAccount() {
+    const user = firebase.auth().currentUser;
+    if (!user) return;
+    try {
+      await FC.db.collection('users').doc(user.uid).delete();
+      await user.delete();
+    } catch (err) { throw mapError(err); }
+  }
+
+  global.AuthService = {
+    signInEmail, signUpEmail, signInGoogle, sendPasswordReset, signOut,
+    onAuthChange, ensureUserDoc, getUserProfile, updateProfileName,
+    changePassword, deleteAccount
+  };
+})(window);
+
+</script>
+<script>
+/* ============================================================
+   meetingService.js
+   Contract:
+     watchMeetings(cb) -> unsubscribe()          realtime list
+     getMeeting(id) -> Promise<meeting|null>
+     createMeeting(data) -> Promise<id>
+     updateMeeting(id, data) -> Promise<void>
+     deleteMeeting(id) -> Promise<void>
+   Meeting shape: { id, title, date, time, dur, status, participants:[],
+                    description, transcript:[], summary, keyPoints:[],
+                    actionItems:[], notes, createdAt }
+   status: 'progress' | 'processing' | 'done'
+   ============================================================ */
+(function (global) {
+  const FC = global.FirebaseClient;
+
+  function watchMeetings(cb, onError) {
+    const col = FC.userCol('meetings');
+    if (!col) { cb([]); return () => {}; }
+    return col.orderBy('createdAt', 'desc').onSnapshot(
+      snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+      err => { console.error('meetings listener', err); if (onError) onError(err); }
+    );
+  }
+
+  async function getMeeting(id) {
+    const col = FC.userCol('meetings');
+    if (!col) return null;
+    const snap = await col.doc(id).get();
+    return snap.exists ? { id: snap.id, ...snap.data() } : null;
+  }
+
+  async function createMeeting(data) {
+    const col = FC.userCol('meetings');
+    if (!col) throw new Error('Chưa đăng nhập.');
+    const ref = await col.add({
+      title: data.title || 'Untitled meeting',
+      date: data.date || '',
+      time: data.time || '',
+      dur: data.dur || '00:00',
+      status: data.status || 'processing',
+      participants: data.participants || [],
+      description: data.description || '',
+      transcript: [],
+      summary: '',
+      keyPoints: [],
+      actionItems: [],
+      notes: '',
+      createdAt: FC.serverTimestamp()
+    });
+    return ref.id;
+  }
+
+  async function updateMeeting(id, data) {
+    const col = FC.userCol('meetings');
+    if (!col) throw new Error('Chưa đăng nhập.');
+    await col.doc(id).set(data, { merge: true });
+  }
+
+  async function deleteMeeting(id) {
+    const col = FC.userCol('meetings');
+    if (!col) throw new Error('Chưa đăng nhập.');
+    await col.doc(id).delete();
+  }
+
+  global.MeetingService = { watchMeetings, getMeeting, createMeeting, updateMeeting, deleteMeeting };
+})(window);
+
+</script>
+<script>
+/* ============================================================
+   noteService.js
+   Contract:
+     watchNotes(cb) -> unsubscribe()
+     createNote(title) -> Promise<id>
+     updateNote(id, data) -> Promise<void>
+     deleteNote(id) -> Promise<void>
+   ============================================================ */
+(function (global) {
+  const FC = global.FirebaseClient;
+
+  function watchNotes(cb, onError) {
+    const col = FC.userCol('notes');
+    if (!col) { cb([]); return () => {}; }
+    return col.orderBy('createdAt', 'desc').onSnapshot(
+      snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+      err => { console.error('notes listener', err); if (onError) onError(err); }
+    );
+  }
+
+  async function createNote(title) {
+    const col = FC.userCol('notes');
+    if (!col) throw new Error('Chưa đăng nhập.');
+    const ref = await col.add({ title: title || 'Untitled note', content: '', createdAt: FC.serverTimestamp() });
+    return ref.id;
+  }
+
+  async function updateNote(id, data) {
+    const col = FC.userCol('notes');
+    if (!col) throw new Error('Chưa đăng nhập.');
+    await col.doc(id).set(data, { merge: true });
+  }
+
+  async function deleteNote(id) {
+    const col = FC.userCol('notes');
+    if (!col) throw new Error('Chưa đăng nhập.');
+    await col.doc(id).delete();
+  }
+
+  global.NoteService = { watchNotes, createNote, updateNote, deleteNote };
+})(window);
+
+
+</script>
+<script>
+/* ============================================================
+   recordingService.js
+   Real MediaRecorder-based capture. Produces a Blob which is
+   uploaded through UploadService (same abstraction as file
+   uploads), then a Meeting doc is created from it. Swappable
+   for a server-side STT pipeline later — UI only calls the
+   functions below.
+   ============================================================ */
+(function (global) {
+  let mediaRecorder = null;
+  let mediaStream = null;
+  let chunks = [];
+  let startedAt = null;
+  let timerInt = null;
+  let lastBlob = null;
+
+  function fmtTimer(ms) {
+    const s = Math.floor(ms / 1000);
+    return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+  }
+  let lastStatusKey = null, lastStatusFallback = '';
+  function setStatus(key, fallback) {
+    lastStatusKey = key; lastStatusFallback = fallback;
+    const el = document.getElementById('recStatus');
+    if (el) el.textContent = (key && typeof I18N !== 'undefined' && I18N[lang][key]) ? I18N[lang][key] : fallback;
+  }
+  function refreshStatusLang() {
+    if (lastStatusKey) setStatus(lastStatusKey, lastStatusFallback);
+  }
+  global.RecordingRefreshLang = refreshStatusLang;
+
+  async function startRecording() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert(typeof t === 'function' ? t('recNoMic') : 'Microphone not available.');
+      return;
+    }
+    try {
+      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err) {
+      setStatus('recPermDenied', 'Microphone permission denied.');
+      return;
+    }
+    chunks = [];
+    lastBlob = null;
+    mediaRecorder = new MediaRecorder(mediaStream);
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      lastBlob = new Blob(chunks, { type: 'audio/webm' });
+      const preview = document.getElementById('recPreview');
+      if (preview) { preview.src = URL.createObjectURL(lastBlob); preview.style.display = 'block'; }
+      document.getElementById('recSaveBtn').style.display = 'inline-flex';
+    };
+    mediaRecorder.start();
+    startedAt = Date.now();
+    document.getElementById('recIcon').textContent = '⏺️';
+    document.getElementById('recTimer').style.display = 'block';
+    document.getElementById('recStartBtn').style.display = 'none';
+    document.getElementById('recStopBtn').style.display = 'inline-flex';
+    document.getElementById('recCancelBtn').style.display = 'inline-flex';
+    document.getElementById('recSaveBtn').style.display = 'none';
+    document.getElementById('recPreview').style.display = 'none';
+    setStatus('recRecording', 'Recording...');
+    timerInt = setInterval(() => {
+      document.getElementById('recTimer').textContent = fmtTimer(Date.now() - startedAt);
+    }, 250);
+  }
+
+  function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+    if (mediaStream) mediaStream.getTracks().forEach(tr => tr.stop());
+    clearInterval(timerInt);
+    document.getElementById('recIcon').textContent = '🎙️';
+    document.getElementById('recStopBtn').style.display = 'none';
+    document.getElementById('recStartBtn').style.display = 'inline-flex';
+    setStatus('recStopped', 'Recording stopped.');
+  }
+
+  function cancelRecording() {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+    if (mediaStream) mediaStream.getTracks().forEach(tr => tr.stop());
+    clearInterval(timerInt);
+    chunks = []; lastBlob = null;
+    document.getElementById('recIcon').textContent = '🎙️';
+    document.getElementById('recTimer').style.display = 'none';
+    document.getElementById('recTimer').textContent = '00:00';
+    document.getElementById('recStartBtn').style.display = 'inline-flex';
+    document.getElementById('recStopBtn').style.display = 'none';
+    document.getElementById('recCancelBtn').style.display = 'none';
+    document.getElementById('recSaveBtn').style.display = 'none';
+    document.getElementById('recPreview').style.display = 'none';
+    setStatus('recCanceled', 'Recording canceled.');
+  }
+
+  async function saveRecording() {
+    if (!lastBlob) return;
+    setStatus('recUploading', 'Uploading recording...');
+    const file = new File([lastBlob], 'recording-' + Date.now() + '.webm', { type: 'audio/webm' });
+    try {
+      await UploadService.uploadFile(file);
+      const now = new Date();
+      const id = await MeetingService.createMeeting({
+        title: (typeof I18N !== 'undefined' && I18N[lang].recDefaultTitle ? I18N[lang].recDefaultTitle : 'Live recording') + ' ' + now.toLocaleString(),
+        date: now.toISOString().slice(0, 10),
+        time: now.toTimeString().slice(0, 5),
+        status: 'processing'
+      });
+      setStatus('recSaved', 'Recording saved.');
+      cancelRecording();
+      showView('meetings', document.querySelector('[data-view=meetings]'));
+      openMeeting(id);
+    } catch (err) {
+      setStatus(null, 'Upload failed: ' + err.message);
+    }
+  }
+
+  global.RecordingService = { startRecording, stopRecording, cancelRecording, saveRecording };
+  global.startRecording = startRecording;
+  global.stopRecording = stopRecording;
+  global.cancelRecording = cancelRecording;
+  global.saveRecording = saveRecording;
+})(window);
+</script>
+<script>
+/* ============================================================
+   teamService.js
+   Contract:
+     watchMembers(cb) -> unsubscribe()
+     inviteMember(email) -> Promise<id>      creates status='pending' record only
+     removeMember(id) -> Promise<void>
+     changeRole(id, role) -> Promise<void>
+   No real email is sent (no email service available in this
+   environment) — invitation is just a Firestore record.
+   ============================================================ */
+(function (global) {
+  const FC = global.FirebaseClient;
+  const COLORS = ['#3b82f6', '#f59e0b', '#22c55e', '#ef4444', '#a855f7'];
+
+  function watchMembers(cb, onError) {
+    const col = FC.userCol('team');
+    if (!col) { cb([]); return () => {}; }
+    return col.onSnapshot(
+      snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+      err => { console.error('team listener', err); if (onError) onError(err); }
+    );
+  }
+
+  async function inviteMember(email) {
+    const col = FC.userCol('team');
+    if (!col) throw new Error('Chưa đăng nhập.');
+    const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+    const ref = await col.add({
+      name: email.split('@')[0], email, role: 'member', status: 'pending', color,
+      createdAt: FC.serverTimestamp()
+    });
+    return ref.id;
+  }
+
+  async function removeMember(id) {
+    const col = FC.userCol('team');
+    if (!col) throw new Error('Chưa đăng nhập.');
+    await col.doc(id).delete();
+  }
+
+  async function changeRole(id, role) {
+    const col = FC.userCol('team');
+    if (!col) throw new Error('Chưa đăng nhập.');
+    await col.doc(id).set({ role }, { merge: true });
+  }
+
+  global.TeamService = { watchMembers, inviteMember, removeMember, changeRole };
+})(window);
+
+</script>
+<script>
+/* ============================================================
+   uploadService.js
+
+   Firebase Storage is NOT available in this environment, so we
+   never pretend to upload to real cloud storage. Instead we
+   expose a stable abstraction:
+
+       uploadApi.uploadFile(file, { onProgress }) -> Promise<{ url, path }>
+
+   Today it's backed by a "local mock adapter" (simulated progress,
+   object URL). Later a BE/AI engineer can swap MOCK_ADAPTER for a
+   real REST adapter (e.g. POST /uploads) WITHOUT touching the UI,
+   because the UI only ever calls UploadService.* below.
+   ============================================================ */
+(function (global) {
+  const FC = global.FirebaseClient;
+
+  const ALLOWED_TYPES = ['audio/', 'video/'];
+  const ALLOWED_EXACT = ['application/pdf', 'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+  const MAX_SIZE_BYTES = 500 * 1024 * 1024; // 500MB prototype limit
+
+  function validateFile(file) {
+    if (!file) return 'Không có file nào được chọn.';
+    const okType = ALLOWED_TYPES.some(t => file.type.startsWith(t)) || ALLOWED_EXACT.includes(file.type);
+    if (!okType) return 'Chỉ hỗ trợ file âm thanh, video, PDF hoặc Word (mp3, wav, mp4, pdf, docx...).';
+    if (file.size > MAX_SIZE_BYTES) return 'File vượt quá dung lượng cho phép (500MB).';
+    return null;
+  }
+
+  /** Mock adapter: simulates a network upload with progress events. */
+  const mockAdapter = {
+    uploadFile(file, { onProgress } = {}) {
+      return new Promise((resolve, reject) => {
+        let pct = 0;
+        const willFail = false; // deterministic for prototype; real adapter reports real failures
+        const timer = setInterval(() => {
+          pct += Math.random() * 25 + 10;
+          if (pct >= 100) {
+            pct = 100;
+            clearInterval(timer);
+            onProgress && onProgress(100);
+            if (willFail) reject(new Error('Upload thất bại (mô phỏng).'));
+            else resolve({ url: URL.createObjectURL(file), path: 'local-mock/' + Date.now() + '_' + file.name });
+          } else {
+            onProgress && onProgress(Math.round(pct));
+          }
+        }, 250);
+      });
+    }
+  };
+
+  // Swap this single line to point at a real REST adapter later.
+  const uploadApi = mockAdapter;
+
+  function watchUploads(cb, onError) {
+    const col = FC.userCol('uploads');
+    if (!col) { cb([]); return () => {}; }
+    return col.orderBy('createdAt', 'desc').onSnapshot(
+      snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+      err => { console.error('uploads listener', err); if (onError) onError(err); }
+    );
+  }
+
+  async function uploadFile(file) {
+    const error = validateFile(file);
+    const col = FC.userCol('uploads');
+    if (!col) throw new Error('Chưa đăng nhập.');
+
+    if (error) {
+      await col.add({ name: file ? file.name : 'unknown', progressPct: 0, status: 'error', errorMessage: error, createdAt: FC.serverTimestamp() });
+      throw new Error(error);
+    }
+
+    const ref = await col.add({ name: file.name, progressPct: 0, status: 'uploading', createdAt: FC.serverTimestamp() });
+    try {
+      const result = await uploadApi.uploadFile(file, {
+        onProgress: pct => col.doc(ref.id).update({ progressPct: pct })
+      });
+      await col.doc(ref.id).update({ progressPct: 100, status: 'done', url: result.url, path: result.path });
+      return ref.id;
+    } catch (err) {
+      await col.doc(ref.id).update({ status: 'error', errorMessage: err.message });
+      throw err;
+    }
+  }
+
+  global.UploadService = { watchUploads, uploadFile, validateFile };
+})(window);
+
+</script>
+<script>
+/* ============================================================
+   settingsService.js
+   Contract:
+     getSettings() -> Promise<{meetingLang,autoJoin,autoRecord,speechStyle,vocabDetect}>
+     saveMeetingSettings(data) -> Promise<void>
+     saveAISettings(data) -> Promise<void>
+     getPlan() -> Promise<string>
+   ============================================================ */
+(function (global) {
+  const FC = global.FirebaseClient;
+  const DEFAULTS = { meetingLang: 'vi', autoJoin: true, autoRecord: false, speechStyle: 'formal', vocabDetect: true };
+
+  function ref() {
+    const u = FC.uid();
+    if (!FC.db || !u) return null;
+    return FC.db.collection('users').doc(u).collection('settings').doc('general');
+  }
+
+  async function getSettings() {
+    const r = ref();
+    if (!r) return DEFAULTS;
+    const snap = await r.get();
+    return snap.exists ? { ...DEFAULTS, ...snap.data() } : DEFAULTS;
+  }
+
+  async function saveMeetingSettings(data) {
+    const r = ref();
+    if (!r) return;
+    await r.set(data, { merge: true });
+  }
+
+  async function saveAISettings(data) {
+    const r = ref();
+    if (!r) return;
+    await r.set(data, { merge: true });
+  }
+
+  async function getPlan() {
+    const u = FC.uid();
+    if (!FC.db || !u) return 'free';
+    const snap = await FC.db.collection('users').doc(u).get();
+    return snap.exists && snap.data().plan ? snap.data().plan : 'free';
+  }
+
+  global.SettingsService = { getSettings, saveMeetingSettings, saveAISettings, getPlan };
+})(window);
+
+</script>
+<script>
+/* ============================================================
+   aiService.js
+
+   NO real AI backend exists yet. This file intentionally contains
+   NO logic that fabricates an intelligent-looking answer. It only
+   persists the conversation and returns a fixed placeholder so the
+   UI has real, wireable behavior once an AI engineer implements
+   the backend (e.g. POST /ai/chat, POST /ai/meetings/:id/chat).
+
+   Contract:
+     watchChatHistory(cb) -> unsubscribe()
+     sendChat(text) -> Promise<{ role:'agent', text: string }>
+     watchMeetingIntelligence(meetingId, cb) -> unsubscribe()
+        (summary / keyPoints / actionItems for a meeting; placeholder
+         'processing' state until a real AI pipeline writes results)
+   ============================================================ */
+(function (global) {
+  const FC = global.FirebaseClient;
+  const PLACEHOLDER = 'AI integration coming soon.';
+
+  function watchChatHistory(cb) {
+    const col = FC.userCol('chatMessages');
+    if (!col) { cb([]); return () => {}; }
+    return col.orderBy('createdAt').limit(50).onSnapshot(
+      snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+      err => console.error('chat listener', err)
+    );
+  }
+
+  async function sendChat(text) {
+    const col = FC.userCol('chatMessages');
+    if (!col) throw new Error('Chưa đăng nhập.');
+    await col.add({ role: 'user', text, createdAt: FC.serverTimestamp() });
+    // Placeholder only — real AI wiring happens server-side later.
+    await col.add({ role: 'system', text: PLACEHOLDER, createdAt: FC.serverTimestamp() });
+    return { role: 'system', text: PLACEHOLDER };
+  }
+
+  /* ---- Meeting-scoped chat (RAG over transcript/uploaded files) ----
+     Same "no fake AI" rule: persists messages under the meeting doc
+     and returns a fixed placeholder until a real backend (server-side
+     RAG over transcript + uploaded docs) is wired in. */
+  async function sendMeetingChat(meetingId, text) {
+    const col = FC.userCol('meetings');
+    if (!col) throw new Error('Chưa đăng nhập.');
+    const msgCol = col.doc(meetingId).collection('chatMessages');
+    await msgCol.add({ role: 'user', text, createdAt: FC.serverTimestamp() });
+    await msgCol.add({ role: 'system', text: PLACEHOLDER, createdAt: FC.serverTimestamp() });
+    return { role: 'system', text: PLACEHOLDER };
+  }
+  function watchMeetingChat(meetingId, cb) {
+    const col = FC.userCol('meetings');
+    if (!col) { cb([]); return () => {}; }
+    return col.doc(meetingId).collection('chatMessages').orderBy('createdAt').limit(50).onSnapshot(
+      snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+      err => console.error('meeting chat listener', err)
+    );
+  }
+
+  /* ---- NotebookLM-style generation (slides / mindmap / illustration) ----
+     No generation pipeline exists yet. These write a job record with
+     status:'queued' so the UI has real, wireable behaviour (loading →
+     result) the moment a Cloud Function/worker starts consuming the
+     'generationJobs' subcollection. */
+  async function requestGeneration(meetingId, kind) {
+    const col = FC.userCol('meetings');
+    if (!col) throw new Error('Chưa đăng nhập.');
+    const ref = await col.doc(meetingId).collection('generationJobs').add({
+      kind, status: 'queued', createdAt: FC.serverTimestamp()
+    });
+    return ref.id;
+  }
+  function watchGenerationJobs(meetingId, cb) {
+    const col = FC.userCol('meetings');
+    if (!col) { cb([]); return () => {}; }
+    return col.doc(meetingId).collection('generationJobs').orderBy('createdAt', 'desc').onSnapshot(
+      snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
+      err => console.error('generation jobs listener', err)
+    );
+  }
+
+  global.AiService = {
+    watchChatHistory, sendChat, PLACEHOLDER,
+    sendMeetingChat, watchMeetingChat,
+    requestGeneration, watchGenerationJobs
+  };
+})(window);
+
+</script>
+<script>
+/* ============================================================
+   translationService.js
+   No machine-translation backend exists yet. translateText() is a
+   stable, wireable contract: it persists a cache entry per
+   (sourceHash, targetLang) under the user's data so a real MT API
+   (Google Translate / DeepL / an LLM call) can be dropped in later
+   without touching the UI. Until then it returns the original text
+   annotated so testers can tell it's a passthrough, not a real
+   translation.
+   Contract:
+     translateText(text, targetLang) -> Promise<string>
+   ============================================================ */
+(function (global) {
+  const FC = global.FirebaseClient;
+  const cache = {};
+
+  function hashKey(text, targetLang) {
+    let h = 0;
+    for (let i = 0; i < text.length; i++) { h = ((h << 5) - h + text.charCodeAt(i)) | 0; }
+    return targetLang + ':' + h;
+  }
+
+  async function translateText(text, targetLang) {
+    if (!text) return text;
+    if (targetLang === 'vi') return text; // source content is authored in VI by default
+    const key = hashKey(text, targetLang);
+    if (cache[key]) return cache[key];
+    // TODO(AI engineer): replace with a real translation call, e.g.
+    //   POST /translate { text, targetLang } -> { translated }
+    const result = '[EN] ' + text;
+    cache[key] = result;
+    const col = FC.userCol('translationCache');
+    if (col) col.add({ sourceText: text, targetLang, result, createdAt: FC.serverTimestamp() }).catch(() => {});
+    return result;
+  }
+
+  global.TranslationService = { translateText };
+})(window);
+
+</script>
+
+<script>
+/* ================= App state =================
+   Firebase init now lives in services/firebaseClient.js.
+   UI code below only talks to *Service objects (AuthService,
+   MeetingService, NoteService, TeamService, UploadService,
+   SettingsService, AiService) — never to firebase.* directly.
+*/
+let currentUser = null;
+let unsubscribers = []; // realtime listeners to clean up on logout
+function firebaseReadyCheck(){ return FirebaseClient.ready; }
+
+/* ---------------- i18n ---------------- */
+const I18N = {
+vi:{
+signinTitle:"Đăng nhập",signinSub:"Thống trị thế giới cùng Adolf KimKim",signinGoogle:"🪐Đăng nhập với Google",
+emailLbl:"Email",pwLbl:"Mật khẩu",signinBtn:"Đăng nhập",noAccount:"Chưa có tài khoản?",signupLink:"Đăng ký",forgotLink:"Quên mật khẩu?",
+signupTitle:"Tạo tài khoản",signupSub:"Trải nghiệm khả năng ghi cú đẳng cấp của Adolf KimKim",nameLbl:"Họ tên",signupBtn:"Tạo tài khoản",backSignin:"← Quay lại đăng nhập",
+forgotTitle:"Quên mật khẩu?",forgotSub:"Nhập email để nhận hướng dẫn đặt lại mật khẩu",forgotBtn:"Gửi hướng dẫn",
+addNew:"+ Thêm mới",navHome:"Trang chủ",navMeetings:"Cuộc họp",navNotes:"Ghi chú",navUploads:"Tải lên",navTeam:"Nhóm",navPlan:"Gói cước",navRules:"Quy định",navSettings:"Cài đặt",logoutLbl:"Đăng xuất",
+searchPh:"Tìm kiếm cuộc họp, ghi chú...",
+heroTitle:"Hi Sally, chào mừng đến với Adolf KimKim 💙",heroSub:"Hãy mời KimKim vào lịch của bạn hoặc chọn ghi âm để bắt đầu ghi lại cuộc họp.",
+recordLive:"🔴 Ghi cuộc họp trực tiếp",scheduleNew:"📆 Lên lịch cuộc họp mới",upcoming:"Cuộc họp sắp tới",recentNotes:"Ghi chú gần đây",
+meetingsSub:"Quản lý toàn bộ cuộc họp đã ghi và đang xử lý",fAll:"Tất cả",fProgress:"Đang diễn ra",fProcessing:"Đang xử lý",fDone:"Hoàn tất",
+colName:"Tên cuộc họp",colDate:"Ngày",colDur:"Thời lượng",colStatus:"Trạng thái",colMember:"Thành viên",colEmail:"Email",
+mdTitle:"Community UAT Meeting",mdSub:"Th 3, 09/09/2026 · 45 phút",keyPoints:"Điểm chính",tabTranscript:"Transcript",tabChat:"Adolf KimKim",speakTime:"Thời gian phát biểu",
+notesSub:"Toàn bộ ghi chú được tạo tự động và thủ công",ntitle:"Community UAT meeting",
+ncontent:"Sally đã đưa ra phản hồi sau giai đoạn UAT, đề cập đến các tính năng của Sprint 34 cũng như các vấn đề liên quan đến sự chậm trễ của dự án. Cô đã gay gắt chỉ trích Quản lý dự án (PM) Luis Bui vì sự thiếu quan tâm đến đội ngũ, đồng thời phê bình Lập trình viên Backend Son Nguyen vì thiếu sự chỉn chu, tận tâm trong công việc. .",
+uploadSub:"Tải file âm thanh, video, PDF hoặc Word để AI phân tích và tạo bản ghi tự động",dropText:"Kéo thả file MP3, WAV, MP4, PDF hoặc DOCX vào đây, hoặc chọn file để tải lên",selectFile:"Chọn file",
+teamSub:"Quản lý thành viên có quyền truy cập",inviteBtn:"+ Mời thành viên",
+sAccount:"Tài khoản",sMeeting:"Cuộc họp",sAI:"Tuỳ chỉnh AI",sPassword:"Mật khẩu",delAccount:"Xoá tài khoản",
+meetLang:"Ngôn ngữ ghi",autoJoin:"Tự động tham gia",autoRecord:"Tự động ghi âm",
+speechStyle:"Phong cách trả lời",styleFormal:"Trang trọng",styleCasual:"Thân mật",vocabDetect:"Nhận diện thuật ngữ chuyên ngành",
+curPw:"Mật khẩu hiện tại",newPw:"Mật khẩu mới",updatePw:"Cập nhật mật khẩu",
+planSub:"Bạn đang dùng gói <b>Free</b>",planFree:"Free",planPro:"Pro",planEnt:"Enterprise",perMonth:"/tháng",
+pf1:"3 giờ ghi âm/tháng",pf2:"2 người dùng",pf3:"Lưu trữ cơ bản",curPlanBtn:"Gói hiện tại",
+popular:"PHỔ BIẾN",pp1:"Ghi âm không giới hạn",pp2:"10 người dùng",pp3:"AI tóm tắt nâng cao",pp4:"Hỗ trợ ưu tiên",upgradeBtn:"Nâng cấp",
+pe1:"Tất cả tính năng Pro",pe2:"Người dùng không giới hạn",pe3:"SSO & bảo mật nâng cao",contactBtn:"Liên hệ",
+upgradeTitle:"Nâng cấp gói",cardNum:"Số thẻ",payBtn:"Thanh toán $49",summary:"Tóm tắt",total:"Tổng",
+paySuccess:"Thanh toán thành công!",paySuccessSub:"Bạn đã nâng cấp lên gói Pro",close:"Đóng",
+r1t:"1. Nội dung được phép",r1p:"Người dùng chỉ được ghi âm các cuộc họp mà tất cả người tham gia đã đồng ý.",
+r2t:"2. Quyền riêng tư & bảo mật",r2p:"Toàn bộ bản ghi và transcript được mã hoá và chỉ chia sẻ với thành viên được cấp quyền.",
+r3t:"3. Sở hữu trí tuệ",r3p:"Nội dung do người dùng tạo ra thuộc quyền sở hữu của người dùng đó.",
+agentSub:"Adolf Kim Kim giúp bạn thống trị thế giới",greeting:"Chào bạn 👋 Tôi là KimKim. Hỏi tôi những gì bạn muốn",
+chatPh:"Hỏi Adolf KimKim...",mockReply:"Đây là phản hồi mẫu — sẽ được nối với model thật ở backend.",
+statusInProgress:"Đang diễn ra",statusProcessing:"Đang xử lý",statusDone:"Hoàn tất",statusPending:"Đang chờ",statusActive:"Hoạt động",statusError:"Lỗi",
+newMeetingBtn:"+ Cuộc họp mới",createMeetingTitle:"Tạo cuộc họp mới",editMeetingTitle:"Sửa cuộc họp",editMeeting:"✏️ Sửa",deleteMeeting:"🗑️ Xoá",
+cmTitleLbl:"Tiêu đề",cmDateLbl:"Ngày",cmTimeLbl:"Giờ",cmParticipantsLbl:"Người tham gia (email, cách nhau bởi dấu phẩy)",cmDescLbl:"Mô tả",
+cancelBtn:"Huỷ",createBtn:"Tạo",saveBtn:"Lưu",participants:"Người tham gia",summaryLbl:"Tóm tắt",actionItemsLbl:"Việc cần làm",mdNotesLbl:"Ghi chú cuộc họp",
+noParticipants:"Chưa có người tham gia nào.",aiProcessing:"AI đang xử lý...",loadingMeetings:"Đang tải cuộc họp...",errorMeetings:"Không tải được danh sách. Vui lòng thử lại.",
+noMeetings:"Chưa có cuộc họp nào.",noNotes:"Chưa có ghi chú nào.",noTeam:"Chưa có thành viên nào.",noUploads:"Chưa có file nào được tải lên.",
+uploadFailed:"Thất bại",uploadDone:"Hoàn tất",deleteNoteBtn:"🗑️ Xoá ghi chú",colRole:"Vai trò",
+navProfile:"Hồ sơ",profileSub:"Ảnh đại diện và thông tin cá nhân của bạn",changeAvatar:"Đổi ảnh đại diện",
+stopRec:"⏹ Dừng",saveRecBtn:"💾 Lưu thành cuộc họp",recDefaultTitle:"Ghi âm trực tiếp",
+recRecording:"Đang ghi âm...",recStopped:"Đã dừng ghi âm.",recCanceled:"Đã huỷ ghi âm.",recUploading:"Đang tải lên...",
+recSaved:"Đã lưu cuộc họp.",recPermDenied:"Không có quyền truy cập microphone.",recNoMic:"Trình duyệt không hỗ trợ ghi âm.",
+translateBtn:"🌐 Dịch sang tiếng Anh",translateBtnBack:"🌐 Xem bản gốc",translating:"Đang dịch...",
+confirmDeleteMeeting:"Xoá cuộc họp này? Hành động không thể hoàn tác.",confirmDeleteNote:"Xoá ghi chú này?",
+confirmDeleteAccount:"Xoá tài khoản vĩnh viễn? Hành động này không thể hoàn tác.",confirmRemoveMember:"Xoá thành viên này khỏi nhóm?",
+savedMsg:"Đã lưu.",pleaseEnterTitle:"Vui lòng nhập tiêu đề.",pleaseSelectDate:"Vui lòng chọn ngày.",
+pleaseEnterName:"Vui lòng nhập họ tên.",inviteSentMsg:"Đã tạo lời mời (đang chờ). Việc gửi email mời thật cần dịch vụ email — chưa được triển khai.",
+promptInviteEmail:"Email thành viên muốn mời:",promptNewNoteTitle:"Tiêu đề ghi chú mới:",defaultNoteTitle:"Ghi chú mới",
+needFirebaseConfig:"Bạn chưa cấu hình Firebase. Hãy điền firebaseConfig trong services/firebaseClient.js trước.",
+pleaseEnterBothPw:"Vui lòng nhập đủ mật khẩu.",pwUpdatedMsg:"Đã cập nhật mật khẩu.",accountDeletedMsg:"Đã xoá tài khoản.",
+reauthRequiredMsg:"Cần đăng nhập lại gần đây để xoá tài khoản: ",
+tabHighlights:"Highlights",tabGenerate:"Tạo nội dung",genSlides:"📊 Tạo Slide",genMindmap:"🧠 Tạo Sơ đồ tư duy",genImage:"🖼️ Tạo hình minh hoạ",
+genQueued:"Đã gửi yêu cầu — đang chờ xử lý.",genComingSoon:"(chưa có pipeline AI — job này sẽ được xử lý khi backend AI sẵn sàng)",
+mdChatPh:"Hỏi về cuộc họp này...",avatarUploading:"Đang tải ảnh lên...",avatarUploaded:"Đã cập nhật ảnh đại diện.",
+scopedChatNote:"Chatbot chỉ trả lời trong phạm vi bản ghi và file đã tải lên của cuộc họp này.",
+navRecording:"Recording",recordingSub:"Ghi âm cuộc họp trực tiếp và tạo bản ghi tự động",recDesc:"Bắt đầu ghi âm cuộc họp trực tiếp và tạo bản ghi tự động",startRec:"🔴 Bắt đầu ghi âm",
+addNewMeetingOpt:"🔴 Ghi trực tiếp",addNewScheduleOpt:"📆 Lên lịch",addNewNoteOpt:"📝 Ghi chú mới",addNewUploadOpt:"📤 Upload",
+inviteKimkimLbl:"Mời Adolf KimKim vào lịch",inviteKimkimHint:"KimKim sẽ tự động tham gia và ghi âm cuộc họp này",
+teamInviteTitle:"Mời thành viên",teamInviteEmailLbl:"Email",teamInviteSendBtn:"Gửi lời mời",
+planLbl:"Gói",joinedLbl:"Ngày tham gia",
+errNoFile:"Không có file nào được chọn.",errInvalidImageType:"Chỉ hỗ trợ file ảnh (jpg, png, webp...).",errFileTooLarge:"Ảnh vượt quá dung lượng cho phép (5MB).",
+errImageProcessFailed:"Không xử lý được ảnh này.",errAvatarUploadFailed:"Tải ảnh đại diện thất bại",notLoggedIn:"Chưa đăng nhập.",
+errStorageCheckHint:"Kiểm tra: đã bật Cloud Storage cho project, đúng storageBucket trong cấu hình, và đã deploy storage.rules cho phép user ghi vào avatars/{uid}/."
+},
+en:{
+signinTitle:"Sign in",signinSub:"Unlock the power of intelligent transcripts",signinGoogle:"Sign in with Google",
+emailLbl:"Email",pwLbl:"Password",signinBtn:"Sign in",noAccount:"Don't have an account?",signupLink:"Sign up",forgotLink:"Forgot password?",
+signupTitle:"Create your account",signupSub:"Experience Adolf KimKim's top-tier note-taking capabilities.",nameLbl:"Full name",signupBtn:"Create account",backSignin:"← Back to sign in",
+forgotTitle:"Forgot your password?",forgotSub:"Enter your email to receive reset instructions",forgotBtn:"Send instructions",
+addNew:"+ Add New",navHome:"Home",navMeetings:"Meetings",navNotes:"Notes",navUploads:"Uploads",navTeam:"Team",navPlan:"Plan",navRules:"Rules",navSettings:"Settings",logoutLbl:"Log out",
+searchPh:"Search meetings, notes...",
+heroTitle:"Hi Sally, Welcome to Adolf KimKim 👋",heroSub: "Invite KimKim to your calendar or record live to start capturing your meeting.",
+recordLive:"🔴 Record live meeting",scheduleNew:"📆 Schedule new meeting",upcoming:"Upcoming Meetings",recentNotes:"Recent Notes",
+meetingsSub:"Manage every recorded and processing meeting",fAll:"All",fProgress:"In Progress",fProcessing:"Processing",fDone:"Completed",
+colName:"Meeting name",colDate:"Date",colDur:"Duration",colStatus:"Status",colMember:"Member",colEmail:"Email",
+mdTitle:"Product Design Meeting",mdSub:"Tue, Sep 9 2026 · 45 min",keyPoints:"Key Points",tabTranscript:"Transcript",tabChat:"Adolf KimKim",speakTime:"Speaking Time",
+notesSub:"All auto-generated and manual notes",ntitle:"Community UAT Meeting",
+ncontent:"Sally provided feedback following the UAT, addressing Sprint 34 features and issues regarding project delays. She sternly criticized PM Luis Bui for neglecting the team and Backend Developer Son Nguyen for his lack of diligence.",
+uploadSub:"Upload audio, video, PDF or Word files for AI analysis and transcription",dropText:"Drag & drop MP3, WAV, MP4, PDF or DOCX here, or select a file to upload",selectFile:"Select File",
+teamSub:"Manage members with access",inviteBtn:"+ Invite members",
+sAccount:"Account",sMeeting:"Meeting",sAI:"AI Customization",sPassword:"Password",delAccount:"Delete Account",
+meetLang:"Meeting language",autoJoin:"Auto-join meeting",autoRecord:"Auto record",
+speechStyle:"Speech style",styleFormal:"Formal",styleCasual:"Casual",vocabDetect:"Detect domain vocabulary",
+curPw:"Current password",newPw:"New password",updatePw:"Update password",
+planSub:"You are on the <b>Free</b> plan",planFree:"Free",planPro:"Pro",planEnt:"Enterprise",perMonth:"/month",
+pf1:"3 hrs of transcription/mo",pf2:"2 users",pf3:"Basic storage",curPlanBtn:"Current plan",
+popular:"POPULAR",pp1:"Unlimited transcription",pp2:"10 users",pp3:"Advanced AI summary",pp4:"Priority support",upgradeBtn:"Upgrade",
+pe1:"Everything in Pro",pe2:"Unlimited users",pe3:"SSO & advanced security",contactBtn:"Contact us",
+upgradeTitle:"Upgrade your plan",cardNum:"Card number",payBtn:"Pay $49",summary:"Summary",total:"Total",
+paySuccess:"Payment Successful!",paySuccessSub:"You've upgraded to the Pro plan",close:"Close",
+r1t:"1. Permitted content",r1p:"Users may only record meetings where every participant has consented.",
+r2t:"2. Privacy & security",r2p:"All recordings and transcripts are encrypted and shared only with authorized members.",
+r3t:"3. Intellectual property",r3p:"Content created by a user remains owned by that user.",
+agentSub:"KimKim - World Domination?",greeting:"Hi there 👋 I'm KimKim. Ask me anything~",
+chatPh:"Ask Adolf KimKim...",mockReply:"This is a sample reply — will be wired to the real model on the backend.",
+statusInProgress:"In Progress",statusProcessing:"Processing",statusDone:"Completed",statusPending:"Pending",statusActive:"Active",statusError:"Error",
+newMeetingBtn:"+ New meeting",createMeetingTitle:"Create new meeting",editMeetingTitle:"Edit meeting",editMeeting:"✏️ Edit",deleteMeeting:"🗑️ Delete",
+cmTitleLbl:"Title",cmDateLbl:"Date",cmTimeLbl:"Time",cmParticipantsLbl:"Participants (comma-separated emails)",cmDescLbl:"Description",
+cancelBtn:"Cancel",createBtn:"Create",saveBtn:"Save",participants:"Participants",summaryLbl:"Summary",actionItemsLbl:"Action Items",mdNotesLbl:"Meeting notes",
+noParticipants:"No participants yet.",aiProcessing:"AI processing...",loadingMeetings:"Loading meetings...",errorMeetings:"Couldn't load meetings. Please try again.",
+noMeetings:"No meetings yet.",noNotes:"No notes yet.",noTeam:"No team members yet.",noUploads:"No files uploaded yet.",
+uploadFailed:"Failed",uploadDone:"Done",deleteNoteBtn:"🗑️ Delete note",colRole:"Role",
+navProfile:"Profile",profileSub:"Your avatar and personal information",changeAvatar:"Change avatar",
+stopRec:"⏹ Stop",saveRecBtn:"💾 Save as meeting",recDefaultTitle:"Live recording",
+recRecording:"Recording...",recStopped:"Recording stopped.",recCanceled:"Recording canceled.",recUploading:"Uploading...",
+recSaved:"Meeting saved.",recPermDenied:"Microphone permission denied.",recNoMic:"Your browser doesn't support recording.",
+translateBtn:"🌐 Translate to English",translateBtnBack:"🌐 Show original",translating:"Translating...",
+confirmDeleteMeeting:"Delete this meeting? This action cannot be undone.",confirmDeleteNote:"Delete this note?",
+confirmDeleteAccount:"Permanently delete your account? This action cannot be undone.",confirmRemoveMember:"Remove this member from the team?",
+savedMsg:"Saved.",pleaseEnterTitle:"Please enter a title.",pleaseSelectDate:"Please select a date.",
+pleaseEnterName:"Please enter your name.",inviteSentMsg:"Invite created (pending). Sending a real email requires an email service — not implemented yet.",
+promptInviteEmail:"Email of the member to invite:",promptNewNoteTitle:"New note title:",defaultNoteTitle:"New note",
+needFirebaseConfig:"Firebase isn't configured yet. Please fill in firebaseConfig in services/firebaseClient.js first.",
+pleaseEnterBothPw:"Please fill in both passwords.",pwUpdatedMsg:"Password updated.",accountDeletedMsg:"Account deleted.",
+reauthRequiredMsg:"Recent re-authentication is required to delete your account: ",
+tabHighlights:"Highlights",tabGenerate:"Generate",genSlides:"📊 Generate Slides",genMindmap:"🧠 Generate Mindmap",genImage:"🖼️ Generate Illustration",
+genQueued:"Request submitted — queued for processing.",genComingSoon:"(no AI pipeline yet — this job will run once the AI backend is ready)",
+mdChatPh:"Ask about this meeting...",avatarUploading:"Uploading avatar...",avatarUploaded:"Avatar updated.",
+scopedChatNote:"This chatbot only answers using this meeting's recording and uploaded files.",
+navRecording:"Recording",recordingSub:"Record a live meeting and auto-generate a transcript",recDesc:"Start recording your live meeting and auto-generate a transcript",startRec:"🔴 Start recording",
+addNewMeetingOpt:"🔴 Record live",addNewScheduleOpt:"📆 Schedule",addNewNoteOpt:"📝 New note",addNewUploadOpt:"📤 Upload",
+inviteKimkimLbl:"Invite Adolf KimKim to this meeting",inviteKimkimHint:"KimKim will automatically join and record this meeting",
+teamInviteTitle:"Invite member",teamInviteEmailLbl:"Email",teamInviteSendBtn:"Send invite",
+planLbl:"Plan",joinedLbl:"Joined",
+errNoFile:"No file selected.",errInvalidImageType:"Only image files are supported (jpg, png, webp...).",errFileTooLarge:"Image exceeds the allowed size (5MB).",
+errImageProcessFailed:"Couldn't process this image.",errAvatarUploadFailed:"Avatar upload failed",notLoggedIn:"Not logged in.",
+errStorageCheckHint:"Check: Cloud Storage is enabled for the project, the storageBucket in config is correct, and storage.rules has been deployed to allow the user to write to avatars/{uid}/."
+}};
+let lang='vi';
+function t(key){ return (I18N[lang] && I18N[lang][key]) || key; }
+function setLang(l){
+  lang=l;
+  document.getElementById('btnVi').classList.toggle('active',l==='vi');
+  document.getElementById('btnEn').classList.toggle('active',l==='en');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n; if(I18N[l][k]) el.innerHTML=I18N[l][k];});
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{const k=el.dataset.i18nPh; if(I18N[l][k]) el.placeholder=I18N[l][k];});
+  renderAll();
+  if(currentUser) updateUserUI(currentUser);
+  if(typeof RecordingRefreshLang==='function') RecordingRefreshLang();
+}
+
+/* ---------------- Auth / Firebase ---------------- */
+function showAuth(which){
+  ['signin','signup','forgot'].forEach(k=>document.getElementById('auth'+k[0].toUpperCase()+k.slice(1)).classList.add('hidden'));
+  document.getElementById('auth'+which[0].toUpperCase()+which.slice(1)).classList.remove('hidden');
+  clearAuthErrors();
+}
+function clearAuthErrors(){
+  ['authError','signupError','resetError'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='';});
+}
+function requireFirebase(){
+  if(!firebaseReadyCheck()){
+    alert(t('needFirebaseConfig'));
+    return false;
+  }
+  return true;
+}
+async function signInWithEmail(){
+  if(!requireFirebase())return;
+  clearAuthErrors();
+  const email=document.getElementById('signinEmail').value.trim();
+  const password=document.getElementById('signinPassword').value;
+  try{ await AuthService.signInEmail(email,password); }
+  catch(err){ document.getElementById('authError').textContent=err.message; }
+}
+async function signUpWithEmail(){
+  if(!requireFirebase())return;
+  clearAuthErrors();
+  const name=document.getElementById('signupName').value.trim();
+  const email=document.getElementById('signupEmail').value.trim();
+  const password=document.getElementById('signupPassword').value;
+  if(!name){document.getElementById('signupError').textContent=t('pleaseEnterName');return;}
+  try{ await AuthService.signUpEmail(name,email,password); }
+  catch(err){ document.getElementById('signupError').textContent=err.message; }
+}
+async function signInWithGoogle(){
+  if(!requireFirebase())return;
+  clearAuthErrors();
+  try{ await AuthService.signInGoogle(); }
+  catch(err){ document.getElementById('authError').textContent=err.message; }
+}
+async function sendPasswordReset(){
+  if(!requireFirebase())return;
+  clearAuthErrors();
+  const email=document.getElementById('resetEmail').value.trim();
+  try{
+    await AuthService.sendPasswordReset(email);
+    document.getElementById('resetError').style.color='var(--green)';
+    document.getElementById('resetError').textContent='Đã gửi email đặt lại mật khẩu. Hãy kiểm tra hộp thư.';
+  }catch(err){
+    document.getElementById('resetError').style.color='#fca5a5';
+    document.getElementById('resetError').textContent=err.message;
+  }
+}
+
+function enterApp(user){
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('app').classList.add('active');
+  currentUser=user;
+  if(user){
+    updateUserUI(user);
+    AuthService.ensureUserDoc(user).then(()=>{
+      loadUserSettings();
+      loadPlan();
+    });
+    attachRealtimeListeners(user.uid);
+  }
+}
+function applyAvatar(el,user,initialsText){
+  if(!el)return;
+  if(user && user.photoURL){ el.style.backgroundImage=`url('${user.photoURL}')`; el.textContent=''; }
+  else { el.style.backgroundImage='none'; el.textContent=initialsText; }
+}
+function updateUserUI(user){
+  const name=user.displayName || (user.email ? user.email.split('@')[0] : 'User');
+  const initialsText=initials(name);
+  applyAvatar(document.getElementById('sideAvatar'),user,initialsText);
+  applyAvatar(document.getElementById('profileAvatar'),user,initialsText);
+  const sideName=document.getElementById('sideUserName');
+  const hero=document.querySelector('[data-i18n="heroTitle"]');
+  if(sideName)sideName.textContent=name;
+  if(hero){hero.textContent=lang==='vi'?`Hi ${name}, chào mừng đến với Adolf KimKim 💙`:`Hi ${name}, Welcome to Adolf KimKim 💙`;}
+  const nameInput=document.querySelector('#settingsAccount .field input');
+  const emailInput=document.querySelectorAll('#settingsAccount .field input')[1];
+  if(nameInput)nameInput.value=name;
+  if(emailInput)emailInput.value=user.email || '';
+  const pName=document.getElementById('profileNameInput');
+  const pEmail=document.getElementById('profileEmailInput');
+  if(pName)pName.value=name;
+  if(pEmail)pEmail.value=user.email || '';
+}
+async function saveProfileName(){
+  if(!currentUser) return;
+  const el=document.getElementById('profileNameInput');
+  const newName=el ? el.value.trim() : '';
+  if(!newName){ alert(t('pleaseEnterName')); return; }
+  try{ await AuthService.updateProfileName(newName); updateUserUI(firebase.auth().currentUser); alert(t('savedMsg')); }
+  catch(err){ alert(err.message); }
+}
+async function handleAvatarSelected(input){
+  const file=input.files[0];
+  if(!file) return;
+  const statusEl=document.getElementById('avatarUploadStatus');
+  if(statusEl) statusEl.textContent=t('avatarUploading');
+  try{
+    await AvatarService.uploadAvatar(file);
+    updateUserUI(firebase.auth().currentUser);
+    if(statusEl) statusEl.textContent=t('avatarUploaded');
+  }catch(err){
+    if(statusEl) statusEl.textContent=err.message;
+  }
+  input.value='';
+}
+function detachListeners(){
+  unsubscribers.forEach(u=>{try{u();}catch(e){}});
+  unsubscribers=[];
+}
+function logout(){
+  detachListeners();
+  currentUser=null;
+  if(firebaseReadyCheck()){AuthService.signOut();return;}
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('authScreen').style.display='flex';
+  showAuth('signin');
+}
+function initAuth(){
+  if(!firebaseReadyCheck())return;
+  AuthService.onAuthChange(user=>{
+    if(user){enterApp(user);}else{
+      detachListeners();
+      currentUser=null;
+      document.getElementById('app').classList.remove('active');
+      document.getElementById('authScreen').style.display='flex';
+      showAuth('signin');
+    }
+  });
+}
+
+function toggleMobileMenu(){
+  document.querySelector('.sidebar').classList.toggle('open');
+  document.getElementById('sidebarBackdrop').classList.toggle('open');
+}
+function closeMobileMenu(){
+  document.querySelector('.sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.remove('open');
+}
+
+/* ---------------- View switching ---------------- */
+function toggleAddNewMenu(e){
+  if(e) e.stopPropagation();
+  const m = document.getElementById('addNewMenu');
+  m.classList.toggle('hidden');
+  if(!m.classList.contains('hidden')){
+    document.addEventListener('click', closeAddNewMenu, {once:true});
+  }
+}
+function closeAddNewMenu(){
+  const m = document.getElementById('addNewMenu');
+  if(m) m.classList.add('hidden');
+}
+function showView(v,el){
+  closeMobileMenu();
+  document.querySelectorAll('.view').forEach(x=>x.classList.add('hidden'));
+  const target=document.getElementById('view-'+v);
+  if(target) target.classList.remove('hidden');
+  if(el){ document.querySelectorAll('.nav-item[data-view]').forEach(n=>n.classList.remove('active')); el.classList.add('active'); }
+}
+function showSettings(s,el){
+  ['account','meeting','ai','password'].forEach(k=>document.getElementById('settings'+k[0].toUpperCase()+k.slice(1)).classList.add('hidden'));
+  document.getElementById('settings'+s[0].toUpperCase()+s.slice(1)).classList.remove('hidden');
+  el.parentNode.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+}
+
+/* ---------------- Data & render — all reads/writes go through the *Service layer ---------------- */
+let meetings=[];
+let meetingsState='loading'; // 'loading' | 'ready' | 'error'
+let notesArr=[];
+let teamArr=[];
+let uploadsArr=[];
+let segments=[];
+let currentMeetingId=null;
+let currentMeetingObj=null;
+let currentNoteId=null;
+let activeMeetingFilter='all';
+let searchQuery='';
+let editingMeetingId=null; // null => create mode in the create/edit form
+
+function attachRealtimeListeners(u){
+  meetingsState='loading'; renderAll();
+  unsubscribers.push(MeetingService.watchMeetings(rows=>{
+    meetings=rows; meetingsState='ready';
+    if(currentMeetingId){ currentMeetingObj = meetings.find(m=>m.id===currentMeetingId) || currentMeetingObj; }
+    renderAll();
+  }, ()=>{ meetingsState='error'; renderAll(); }));
+  unsubscribers.push(NoteService.watchNotes(rows=>{
+    notesArr=rows;
+    if(!currentNoteId && notesArr[0]) currentNoteId=notesArr[0].id;
+    renderAll();
+  }));
+  unsubscribers.push(TeamService.watchMembers(rows=>{ teamArr=rows; renderAll(); }));
+  unsubscribers.push(UploadService.watchUploads(rows=>{ uploadsArr=rows; renderAll(); }));
+}
+
+function loadUserSettings(){
+  SettingsService.getSettings().then(s=>{
+    const langSel=document.querySelector('#settingsMeeting select');
+    if(langSel) langSel.value = s.meetingLang==='en' ? 'English' : 'Tiếng Việt';
+    const toggles=document.querySelectorAll('#settingsMeeting .switch');
+    if(toggles[0]) toggles[0].classList.toggle('on', !!s.autoJoin);
+    if(toggles[1]) toggles[1].classList.toggle('on', !!s.autoRecord);
+    const styleSel=document.querySelector('#settingsAI select');
+    if(styleSel) styleSel.value = s.speechStyle==='casual' ? I18N[lang].styleCasual : I18N[lang].styleFormal;
+    const aiToggle=document.querySelector('#settingsAI .switch');
+    if(aiToggle) aiToggle.classList.toggle('on', !!s.vocabDetect);
+  });
+}
+function saveMeetingSettings(){
+  const langSel=document.querySelector('#settingsMeeting select');
+  const toggles=document.querySelectorAll('#settingsMeeting .switch');
+  SettingsService.saveMeetingSettings({
+    meetingLang: langSel && langSel.value==='English' ? 'en' : 'vi',
+    autoJoin: toggles[0] ? toggles[0].classList.contains('on') : true,
+    autoRecord: toggles[1] ? toggles[1].classList.contains('on') : false
+  }).then(()=>alert(t('savedMsg')));
+}
+function saveAISettings(){
+  const styleSel=document.querySelector('#settingsAI select');
+  const aiToggle=document.querySelector('#settingsAI .switch');
+  SettingsService.saveAISettings({
+    speechStyle: styleSel && styleSel.value===I18N[lang].styleCasual ? 'casual' : 'formal',
+    vocabDetect: aiToggle ? aiToggle.classList.contains('on') : true
+  }).then(()=>alert(t('savedMsg')));
+}
+async function saveAccountSettings(){
+  if(!currentUser) return;
+  const nameInput=document.querySelector('#settingsAccount .field input');
+  const newName=nameInput ? nameInput.value.trim() : '';
+  if(!newName) return;
+  try{ await AuthService.updateProfileName(newName); updateUserUI(currentUser); alert(t('savedMsg')); }
+  catch(err){ alert(err.message); }
+}
+async function updatePasswordSettings(){
+  if(!currentUser) return;
+  const inputs=document.querySelectorAll('#settingsPassword input[type=password]');
+  const curPw=inputs[0] ? inputs[0].value : '';
+  const newPw=inputs[1] ? inputs[1].value : '';
+  if(!curPw || !newPw){alert(t('pleaseEnterBothPw'));return;}
+  try{ await AuthService.changePassword(curPw,newPw); alert(t('pwUpdatedMsg')); inputs.forEach(i=>i.value=''); }
+  catch(err){ alert(err.message); }
+}
+async function deleteAccount(){
+  if(!currentUser) return;
+  if(!confirm(t('confirmDeleteAccount'))) return;
+  try{ await AuthService.deleteAccount(); alert(t('accountDeletedMsg')); }
+  catch(err){ alert(t('reauthRequiredMsg')+err.message); }
+}
+
+function loadPlan(){
+  SettingsService.getPlan().then(plan=>{
+    const el=document.querySelector('[data-i18n="planSub"]');
+    if(el) el.innerHTML=(lang==='vi'?'Bạn đang dùng gói ':'You are on the plan ')+`<b>${plan}</b>`;
+  });
+}
+
+/* ---- Create / Edit / Delete Meeting ---- */
+function openCreateMeeting(status){
+  editingMeetingId=null;
+  document.getElementById('cmFormTitle').textContent = I18N[lang].createMeetingTitle;
+  document.getElementById('cmSubmitBtn').textContent = I18N[lang].createBtn;
+  document.getElementById('cmTitle').value='';
+  const now=new Date();
+  document.getElementById('cmDate').value=now.toISOString().slice(0,10);
+  document.getElementById('cmTime').value=now.toTimeString().slice(0,5);
+  document.getElementById('cmParticipants').value='';
+  document.getElementById('cmDescription').value='';
+  document.getElementById('cmError').textContent='';
+  document.getElementById('view-createMeeting').dataset.status=status||'processing';
+  showView('createMeeting');
+}
+function editMeeting(id){
+  const m=meetings.find(x=>x.id===id); if(!m) return;
+  editingMeetingId=id;
+  document.getElementById('cmFormTitle').textContent = I18N[lang].editMeetingTitle;
+  document.getElementById('cmSubmitBtn').textContent = I18N[lang].saveBtn;
+  document.getElementById('cmTitle').value=m.title||'';
+  document.getElementById('cmDate').value=m.date||'';
+  document.getElementById('cmTime').value=m.time||'';
+  document.getElementById('cmParticipants').value=(m.participants||[]).join(', ');
+  document.getElementById('cmDescription').value=m.description||'';
+  document.getElementById('cmError').textContent='';
+  showView('createMeeting');
+}
+function cancelCreateMeeting(){
+  showView(editingMeetingId ? 'meetingDetail' : 'meetings', document.querySelector('[data-view=meetings]'));
+}
+async function submitCreateMeeting(){
+  const title=document.getElementById('cmTitle').value.trim();
+  const date=document.getElementById('cmDate').value;
+  const time=document.getElementById('cmTime').value;
+  const participants=document.getElementById('cmParticipants').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const description=document.getElementById('cmDescription').value.trim();
+  const inviteKimkimEl=document.getElementById('cmInviteKimkim');
+  const inviteKimkim=inviteKimkimEl?inviteKimkimEl.classList.contains('on'):false;
+  if(!title){ document.getElementById('cmError').textContent=t('pleaseEnterTitle'); return; }
+  if(!date){ document.getElementById('cmError').textContent=t('pleaseSelectDate'); return; }
+  try{
+    if(editingMeetingId){
+      await MeetingService.updateMeeting(editingMeetingId, {title,date,time,participants,description,inviteKimkim});
+      currentMeetingId=editingMeetingId;
+      openMeeting(editingMeetingId);
+    } else {
+      const status=document.getElementById('view-createMeeting').dataset.status||'processing';
+      const id=await MeetingService.createMeeting({title,date,time,participants,description,status,inviteKimkim});
+      openMeeting(id);
+    }
+  }catch(err){ document.getElementById('cmError').textContent=err.message; }
+}
+async function deleteMeetingHandler(id){
+  if(!id) return;
+  if(!confirm(t('confirmDeleteMeeting'))) return;
+  try{ await MeetingService.deleteMeeting(id); showView('meetings',document.querySelector('[data-view=meetings]')); }
+  catch(err){ alert(err.message); }
+}
+let mdChatUnsub=null, mdJobsUnsub=null;
+function openMeeting(id){
+  currentMeetingId=id;
+  currentMeetingObj = meetings.find(x=>x.id===id) || null;
+  meetingSummaryTranslated=false;
+  showView('meetingDetail');
+  showMeetingTab('transcript');
+  if(!currentMeetingObj){
+    MeetingService.getMeeting(id).then(m=>{ currentMeetingObj=m; renderMeetingDetail(); });
+  }
+  renderMeetingDetail();
+  if(mdChatUnsub) mdChatUnsub();
+  if(mdJobsUnsub) mdJobsUnsub();
+  document.getElementById('mdChatBody').innerHTML='';
+  mdChatUnsub = AiService.watchMeetingChat(id, rows=>{ if(currentMeetingId!==id){return;}
+    const body=document.getElementById('mdChatBody');
+    if(!body) return;
+    body.innerHTML='';
+    rows.forEach(m=>{
+      const cls=m.role==='user'?'user':'agent';
+      body.insertAdjacentHTML('beforeend',`<div class="bubble ${cls}">${(m.text||'').replace(/</g,'&lt;')}</div>`);
+    });
+    body.scrollTop=body.scrollHeight;
+  });
+  mdJobsUnsub = AiService.watchGenerationJobs(id, rows=>{
+    const el=document.getElementById('mdGenerationJobs');
+    if(!el) return;
+    el.innerHTML = rows.length ? rows.map(j=>`<div>• ${j.kind} — ${j.status==='queued'?t('genQueued'):j.status} ${j.status==='queued'?`<span style="opacity:.7">${t('genComingSoon')}</span>`:''}</div>`).join('') : '';
+  });
+}
+function showMeetingTab(which){
+  document.getElementById('mdTabTranscriptBtn').classList.toggle('active', which==='transcript');
+  document.getElementById('mdTabChatBtn').classList.toggle('active', which==='chat');
+  document.getElementById('mdTranscriptPane').classList.toggle('hidden', which!=='transcript');
+  document.getElementById('mdChatPane').classList.toggle('hidden', which!=='chat');
+}
+async function sendMeetingChatMsg(){
+  const input=document.getElementById('mdChatInput');
+  const text=input.value.trim(); if(!text||!currentMeetingId) return;
+  input.value='';
+  try{ await AiService.sendMeetingChat(currentMeetingId, text); }
+  catch(err){ alert(err.message); }
+}
+async function requestGenerationHandler(kind){
+  if(!currentMeetingId) return;
+  try{ await AiService.requestGeneration(currentMeetingId, kind); }
+  catch(err){ alert(err.message); }
+}
+let meetingSummaryTranslated=false;
+async function toggleMeetingSummaryTranslation(){
+  const el=document.getElementById('mdSummary');
+  const btn=document.getElementById('mdTranslateBtn');
+  const m=currentMeetingObj;
+  if(!el||!m) return;
+  if(!meetingSummaryTranslated){
+    btn.textContent=t('translating');
+    el.textContent = await TranslationService.translateText(m.summary || I18N[lang].aiProcessing, 'en');
+    btn.textContent=t('translateBtnBack');
+    meetingSummaryTranslated=true;
+  } else {
+    el.textContent = m.summary ? m.summary : I18N[lang].aiProcessing;
+    btn.textContent=t('translateBtn');
+    meetingSummaryTranslated=false;
+  }
+}
+function renderMeetingDetail(){
+  const m=currentMeetingObj;
+  document.querySelector('#view-meetingDetail .view-title').textContent = m ? m.title : '';
+  document.querySelector('#view-meetingDetail .view-sub').textContent = m ? [m.date,m.time,m.dur].filter(Boolean).join(' · ') : '';
+  segments = (m && m.transcript && m.transcript.length) ? m.transcript : [];
+
+  const partEl=document.getElementById('mdParticipants');
+  if(partEl){
+    const list=(m && m.participants) || [];
+    partEl.innerHTML = list.length ? list.map(p=>`<span class="tag">${p}</span>`).join('') :
+      `<div style="color:var(--text-2);font-size:12px;">${I18N[lang].noParticipants}</div>`;
+  }
+  const kpEl=document.getElementById('mdKeyPoints');
+  if(kpEl){
+    const kp=(m && m.keyPoints) || [];
+    kpEl.innerHTML = kp.length ? kp.map(k=>`<span class="tag">${k}</span>`).join('') :
+      `<div style="color:var(--text-2);font-size:12px;">${I18N[lang].aiProcessing}</div>`;
+  }
+  const sumEl=document.getElementById('mdSummary');
+  if(sumEl) sumEl.textContent = (m && m.summary) ? m.summary : I18N[lang].aiProcessing;
+  const aiEl=document.getElementById('mdActionItems');
+  if(aiEl){
+    const items=(m && m.actionItems) || [];
+    aiEl.innerHTML = items.length ? '<ul style="margin:0;padding-left:18px;">'+items.map(i=>`<li style="font-size:13px;">${i}</li>`).join('')+'</ul>' :
+      `<div style="color:var(--text-2);font-size:12px;">${I18N[lang].aiProcessing}</div>`;
+  }
+  const notesInput=document.getElementById('mdNotesInput');
+  if(notesInput) notesInput.value = (m && m.notes) || '';
+  renderTranscriptAndStats();
+}
+function saveMeetingNotes(){
+  if(!currentMeetingId) return;
+  const val=document.getElementById('mdNotesInput').value;
+  MeetingService.updateMeeting(currentMeetingId, {notes:val}).catch(err=>alert(err.message));
+}
+function filterMeetings(status,btn){
+  activeMeetingFilter=status;
+  document.querySelectorAll('.filters button').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderMeetingsTable();
+}
+function onGlobalSearch(v){
+  searchQuery=(v||'').toLowerCase();
+  renderMeetingsTable();
+  renderAll();
+}
+function visibleMeetings(){
+  return meetings
+    .filter(m=>activeMeetingFilter==='all' || m.status===activeMeetingFilter)
+    .filter(m=>!searchQuery || (m.title||'').toLowerCase().includes(searchQuery));
+}
+
+/* ---- Notes ---- */
+async function createNote(){
+  const title=prompt(t('promptNewNoteTitle'),t('defaultNoteTitle'));
+  if(!title) return;
+  try{ currentNoteId = await NoteService.createNote(title); }
+  catch(err){ alert(err.message); }
+}
+function openNote(id){ currentNoteId=id; noteTranslated=false; renderAll(); }
+let noteTranslated=false;
+async function toggleNoteTranslation(){
+  const editor=document.querySelector('#view-notes .editor');
+  const p=editor && editor.querySelector('p');
+  const btn=document.getElementById('noteTranslateBtn');
+  if(!p) return;
+  const note=notesArr.find(n=>n.id===currentNoteId);
+  if(!note) return;
+  if(!noteTranslated){
+    btn.textContent=t('translating');
+    const translated=await TranslationService.translateText(note.content||'', 'en');
+    p.textContent=translated;
+    btn.textContent=t('translateBtnBack');
+    noteTranslated=true;
+  } else {
+    p.textContent=note.content||'';
+    btn.textContent=t('translateBtn');
+    noteTranslated=false;
+  }
+}
+function saveCurrentNote(){
+  if(!currentNoteId) return;
+  const editor=document.querySelector('#view-notes .editor');
+  const h1=editor.querySelector('h1'); const p=editor.querySelector('p');
+  NoteService.updateNote(currentNoteId, { title: h1 ? h1.textContent : '', content: p ? p.textContent : '' })
+    .catch(err=>alert(err.message));
+}
+async function deleteNoteHandler(){
+  if(!currentNoteId) return;
+  if(!confirm(t('confirmDeleteNote'))) return;
+  try{
+    await NoteService.deleteNote(currentNoteId);
+    currentNoteId = notesArr.find(n=>n.id!==currentNoteId) ? notesArr.find(n=>n.id!==currentNoteId).id : null;
+  }catch(err){ alert(err.message); }
+}
+
+/* ---- Team ---- */
+function openInviteMemberModal(){
+  document.getElementById('inviteMemberEmail').value='';
+  document.getElementById('inviteMemberError').textContent='';
+  document.getElementById('inviteMemberModal').classList.remove('hidden');
+}
+function closeInviteMemberModal(){
+  document.getElementById('inviteMemberModal').classList.add('hidden');
+}
+async function submitInviteMember(){
+  const email=document.getElementById('inviteMemberEmail').value.trim();
+  const errEl=document.getElementById('inviteMemberError');
+  if(!email){ errEl.textContent=t('promptInviteEmail'); return; }
+  try{
+    await TeamService.inviteMember(email);
+    closeInviteMemberModal();
+    alert(t('inviteSentMsg'));
+  }catch(err){ errEl.textContent=err.message; }
+}
+async function inviteMember(){ openInviteMemberModal(); }
+async function removeMemberHandler(id){
+  if(!confirm(t('confirmRemoveMember'))) return;
+  try{ await TeamService.removeMember(id); } catch(err){ alert(err.message); }
+}
+async function changeRoleHandler(id,role){
+  try{ await TeamService.changeRole(id,role); } catch(err){ alert(err.message); }
+}
+
+/* ---- Uploads (uploadApi abstraction — mock adapter today, real REST later) ---- */
+function selectUploadFile(){
+  document.getElementById('hiddenFileInput').click();
+}
+async function handleFileSelected(input){
+  const file=input.files[0];
+  if(!file) return;
+  try{ await UploadService.uploadFile(file); }
+  catch(err){ alert(err.message); }
+  input.value='';
+}
+
+function statusBadge(s){
+  const map={progress:['statusInProgress','blue'],processing:['statusProcessing','amber'],done:['statusDone','green'],pending:['statusPending','amber'],active:['statusActive','green'],error:['statusError','red']};
+  const entry = map[s] || map['processing'];
+  const [k,c]=entry;
+  return `<span class="badge ${c}">${I18N[lang][k]||s}</span>`;
+}
+function initials(n){return (n||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();}
+
+function renderMeetingsTable(){
+  const el=document.getElementById('meetingsTable');
+  if(!el) return;
+  if(meetingsState==='loading'){ el.innerHTML = `<tr><td colspan="5" style="color:var(--text-2)">${I18N[lang].loadingMeetings}</td></tr>`; return; }
+  if(meetingsState==='error'){ el.innerHTML = `<tr><td colspan="5" style="color:var(--red)">${I18N[lang].errorMeetings}</td></tr>`; return; }
+  const rows=visibleMeetings();
+  el.innerHTML = rows.map(m=>`
+    <tr style="cursor:pointer" onclick="openMeeting('${m.id}')">
+      <td>${m.title}</td><td>${m.date||''}</td><td>${m.dur||''}</td><td>${statusBadge(m.status)}</td>
+      <td style="text-align:right;color:var(--text-2)">→</td>
+    </tr>`).join('') || `<tr><td colspan="5" style="color:var(--text-2)">${I18N[lang].noMeetings}</td></tr>`;
+}
+
+function renderAll(){
+  // upcoming (home)
+  const upcomingEl=document.getElementById('upcomingList');
+  if(upcomingEl) upcomingEl.innerHTML = meetings.slice(0,3).map(m=>`
+    <div class="list-row" onclick="openMeeting('${m.id}')">
+      <div class="avatar" style="background:#3b82f6">${initials(m.title)}</div>
+      <div class="info"><div class="t">${m.title}</div><div class="d">${m.date||''} · ${m.dur||''}</div></div>
+      ${statusBadge(m.status)}
+    </div>`).join('') || `<div style="color:var(--text-2);font-size:13px;">${I18N[lang].noMeetings}</div>`;
+  // recent notes
+  const recentEl=document.getElementById('recentNotesList');
+  if(recentEl) recentEl.innerHTML = notesArr.slice(0,3).map(n=>`
+    <div class="list-row" onclick="showView('notes',document.querySelector('[data-view=notes]'));openNote('${n.id}')">
+      <div class="avatar" style="background:#22c55e">📝</div>
+      <div class="info"><div class="t">${n.title}</div></div>
+    </div>`).join('') || `<div style="color:var(--text-2);font-size:13px;">${I18N[lang].noNotes}</div>`;
+  // meetings table
+  renderMeetingsTable();
+  // notes sidebar + editor
+  const sideEl=document.getElementById('notesSidebarList');
+  if(sideEl) sideEl.innerHTML = notesArr.map(n=>`
+    <div class="list-row" style="cursor:pointer;${n.id===currentNoteId?'background:var(--accent-soft)':''}" onclick="openNote('${n.id}')">
+      <div class="info"><div class="t" style="font-size:12px">${n.title}</div></div>
+    </div>`).join('') || `<div style="color:var(--text-2);font-size:13px;padding:8px;">${I18N[lang].noNotes}</div>`;
+  const curNote=notesArr.find(n=>n.id===currentNoteId);
+  const editor=document.querySelector('#view-notes .editor');
+  if(editor){
+    const h1=editor.querySelector('h1'); const p=editor.querySelector('p');
+    if(curNote){ if(h1)h1.textContent=curNote.title||''; if(p)p.textContent=curNote.content||''; }
+    else { if(h1)h1.textContent=''; if(p)p.textContent=''; }
+  }
+  // team table
+  const teamEl=document.getElementById('teamTable');
+  if(teamEl) teamEl.innerHTML = teamArr.map(t=>`
+    <tr><td style="display:flex;align-items:center;gap:9px;"><div class="avatar" style="background:${t.color||'#3b82f6'}">${initials(t.name)}</div>${t.name}</td>
+    <td>${t.email}</td><td>${statusBadge(t.status)}</td>
+    <td><select onchange="changeRoleHandler('${t.id}',this.value)"><option value="member" ${t.role==='member'?'selected':''}>Member</option><option value="admin" ${t.role==='admin'?'selected':''}>Admin</option></select></td>
+    <td><button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);padding:4px 10px;" onclick="removeMemberHandler('${t.id}')">✕</button></td></tr>`).join('') || `<tr><td colspan="5" style="color:var(--text-2)">${I18N[lang].noTeam}</td></tr>`;
+  // uploads
+  const upEl=document.getElementById('uploadList');
+  if(upEl) upEl.innerHTML = uploadsArr.map(u=>`
+    <div class="upload-row"><div style="font-size:18px;">${u.status==='error'?'⚠️':'🎬'}</div>
+      <div style="flex:1;"><div style="font-size:13px;">${u.name}</div>
+        <div class="prog"><i style="width:${u.progressPct||0}%;${u.status==='error'?'background:var(--red)':''}"></i></div>
+        ${u.status==='error' ? `<div style="font-size:11px;color:var(--red);">${u.errorMessage||I18N[lang].uploadFailed}</div>` : ''}</div>
+      <div style="font-size:12px;color:var(--text-2)">${u.status==='done'?I18N[lang].uploadDone:(u.status==='error'?I18N[lang].uploadFailed:(u.progressPct||0)+'%')}</div></div>`).join('')
+    || `<div style="color:var(--text-2);font-size:13px;padding:8px;">${I18N[lang].noUploads}</div>`;
+  renderTranscriptAndStats();
+}
+function renderTranscriptAndStats(){
+  const segEl=document.getElementById('segList');
+  if(segEl) segEl.innerHTML = segments.map(s=>`
+    <div class="seg" onclick="highlightSeg(this)">
+      <div class="meta"><span class="dot" style="background:${s.color}"></span><b>${s.speaker}</b>
+      <span class="time">${fmt(s.t)}</span></div><p>${s.text}</p></div>`).join('') || `<div style="color:var(--text-2);font-size:13px;">${I18N[lang].aiProcessing}</div>`;
+  const totals={}; segments.forEach(s=>totals[s.speaker]=(totals[s.speaker]||0)+1);
+  const max=Math.max(1,...Object.values(totals));
+  const statEl=document.getElementById('speakerStats');
+  if(statEl) statEl.innerHTML = Object.entries(totals).map(([name,c])=>{
+    const sp = segments.find(s=>s.speaker===name);
+    return `<div class="sp-row"><span style="width:50px">${name}</span><div class="sp-bar"><i style="width:${(c/max)*100}%;background:${sp.color}"></i></div></div>`;
+  }).join('') || (statEl ? `<div style="color:var(--text-2);font-size:12px;">${I18N[lang].aiProcessing}</div>` : '');
+}
+function fmt(s){const m=Math.floor(s/60),sec=s%60;return `${m}:${sec.toString().padStart(2,'0')}`;}
+function highlightSeg(el){document.querySelectorAll('.seg').forEach(s=>s.style.background='');el.style.background='var(--accent-soft)';}
+
+/* ---------------- AI Chat ----------------
+   No real AI backend. AiService.sendChat() persists the exchange and
+   returns a fixed placeholder — see services/aiService.js. */
+function toggleChat(){
+  document.getElementById('chatPanel').classList.toggle('open');
+}
+let chatUnsub=null;
+function loadChatHistory(){
+  if(chatUnsub) chatUnsub();
+  chatUnsub = AiService.watchChatHistory(rows=>{
+    const body=document.getElementById('chatBody');
+    if(!rows.length) return;
+    body.innerHTML='';
+    rows.forEach(m=>{
+      const cls = m.role==='user' ? 'user' : 'agent';
+      body.insertAdjacentHTML('beforeend', `<div class="bubble ${cls}">${(m.text||'').replace(/</g,'&lt;')}</div>`);
+    });
+    body.scrollTop=body.scrollHeight;
+  });
+}
+async function sendChat(){
+  const input=document.getElementById('chatInput'); const text=input.value.trim(); if(!text)return;
+  const body=document.getElementById('chatBody');
+  body.insertAdjacentHTML('beforeend',`<div class="bubble user">${text.replace(/</g,'&lt;')}</div>`);
+  input.value=''; body.scrollTop=body.scrollHeight;
+  try{
+    const reply = await AiService.sendChat(text);
+    body.insertAdjacentHTML('beforeend',`<div class="bubble agent">${reply.text}</div>`);
+    body.scrollTop=body.scrollHeight;
+  }catch(err){ /* not signed in yet — ignore silently in chat widget */ }
+}
+document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
+['signinEmail','signinPassword'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('keydown',e=>{if(e.key==='Enter')signInWithEmail();});});
+['signupName','signupEmail','signupPassword'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('keydown',e=>{if(e.key==='Enter')signUpWithEmail();});});
+
+/* ---------------- Plan / Payment ----------------
+   No real payment gateway available: the "Pay" button in the Upgrade
+   screen is disabled and marked "Coming soon" in the HTML. This app
+   never sets plan='pro' from the client. */
+
+renderAll();
+loadChatHistory();
+initAuth();
+</script>
+</body>
+</html>

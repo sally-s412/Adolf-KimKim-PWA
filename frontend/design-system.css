@@ -1,5 +1,5 @@
 /* Shared, restrained glass surfaces and one typography scale. */
-:root{color-scheme:dark;--accent:#527ff0;--accent-soft:rgba(117,157,247,.13);--border:rgba(184,205,240,.17);--text-0:#edf2fc;--text-1:#becbdd;--text-2:#99abc4;--surface:rgba(39,57,86,.66);--chrome:rgba(18,29,47,.92);--card:var(--surface);--field:rgba(180,204,242,.07);--brand:#a5b7d1;--canvas:radial-gradient(ellipse at 64% 22%,#294b78 0%,transparent 58%),linear-gradient(145deg,#14243b,#1b304d 60%,#192940);--control-radius:10px;--card-radius:16px;}
+:root{color-scheme:dark;--accent:#3b82f6;--accent-soft:rgba(117,157,247,.13);--border:rgba(110,160,245,.22);--text-0:#edf2fc;--text-1:#becbdd;--text-2:#99abc4;--surface:rgba(12,25,58,.48);--chrome:rgba(5,12,29,.94);--card:var(--surface);--field:rgba(51,100,190,.08);--brand:#a5b7d1;--canvas:radial-gradient(ellipse 90% 60% at 65% 38%,rgba(37,82,203,.48),transparent 72%),linear-gradient(160deg,#071125,#0b1c43 55%,#070e21);--control-radius:10px;--card-radius:16px;}
 :root[data-theme=light]{color-scheme:light;--accent:#3569db;--accent-soft:rgba(53,105,219,.1);--border:rgba(67,93,132,.17);--text-0:#20344f;--text-1:#526781;--text-2:#647996;--surface:rgba(255,255,255,.82);--chrome:rgba(247,250,255,.94);--field:rgba(70,100,150,.045);--brand:#607797;--canvas:radial-gradient(ellipse at 70% 10%,#dce9fb,transparent 60%),linear-gradient(145deg,#f3f7fd,#eaf1fa);}
 body{background:var(--canvas);font-family:var(--font);font-size:14px;line-height:1.5;}
 #app.active{display:grid;grid-template-columns:224px minmax(0,1fr);grid-template-rows:68px minmax(0,1fr);height:100dvh;}
@@ -35,3 +35,29 @@ body:has(#authScreen:not([style*="display: none"])){background:radial-gradient(e
 @media(max-width:760px){#app.active{grid-template-columns:minmax(0,1fr);grid-template-rows:62px minmax(0,1fr);}.app-header{grid-column:1;gap:8px;padding:10px 12px;}.app-brand{width:auto;flex:1;font-size:14px;overflow:hidden;text-overflow:ellipsis;}.app-header #globalSearch{display:none;}.app-header .mobile-menu-btn{display:flex;width:36px;height:36px;}.app-header .lang-switch button{font-size:11px!important;padding:5px 7px;min-height:36px;}.theme-toggle{width:36px;height:36px;}.main{grid-column:1;grid-row:2;}.view{padding:20px 16px 110px;}.view-title{font-size:23px;line-height:30px;}.hero-card{padding:20px;}.hero-card h2{font-size:19px;line-height:27px;}.hero-actions{flex-direction:column;}.btn{min-height:44px;}.grid-2{grid-template-columns:1fr;}.grid-2>.card{padding:20px!important;min-height:0;}.sidebar{grid-row:auto;padding:20px 14px;background:var(--chrome);gap:5px;}.sidebar>.nav-item{font-size:14px;}.settings-wrap{grid-template-columns:1fr;gap:16px;}.settings-tabs{flex-direction:row;overflow-x:auto;gap:4px;}.settings-tabs .nav-item{white-space:nowrap;flex-shrink:0;}.settings-pane{padding:20px;}.notes-workspace{grid-template-columns:1fr;}.notes-workspace>#notesSidebarList{display:flex;overflow-x:auto;gap:8px;}.notes-workspace>#notesSidebarList .list-row{flex-shrink:0;}.note-composer{padding:20px;}.note-composer input,.note-composer textarea,.settings-pane input,.settings-pane select{font-size:16px!important;}#chatToggle{width:56px;height:72px;right:14px;bottom:max(14px,env(safe-area-inset-bottom));}#chatPanel{left:auto;right:12px;bottom:100px;width:min(340px,calc(100vw - 24px));height:min(470px,calc(100dvh - 125px));border-radius:16px;}.chat-input-row input{font-size:16px!important;}.table-wrap{margin:0;}.table-wrap table{min-width:560px;}.toast-region{bottom:max(16px,env(safe-area-inset-bottom));}}
 .note-empty{padding:48px 16px;text-align:center;color:var(--text-2);}.note-empty h3{font-size:18px;font-weight:600;color:var(--text-1);margin:0 0 8px;}.note-empty p{font-size:14px;line-height:22px;max-width:320px;margin:0 auto;}.save-status{display:block;min-height:20px;margin-top:12px;font-size:12px;color:var(--text-2);}
 @media(max-width:760px){.app-header .header-space{display:none;}}
+
+/* Keep the complete application below iOS status chrome in installed mode. */
+:root{--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);}
+html{background:#050c1d;}html[data-theme=light]{background:#f3f7fd;}
+body{height:100dvh;padding-top:var(--safe-top);padding-bottom:var(--safe-bottom);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);}
+#app.active{height:calc(100dvh - var(--safe-top) - var(--safe-bottom));}
+#authScreen{height:100%;}
+.app-header{position:relative;z-index:10;}
+.list-row .t{overflow-wrap:anywhere;}
+@media(max-width:760px){
+  .app-header{gap:6px;padding:8px 12px;}
+  .app-brand{min-width:0;font-size:clamp(11px,3.35vw,15px);line-height:22px;}
+  .app-header .mobile-menu-btn{width:34px;height:36px;}
+  .app-header .lang-switch button{padding:5px 6px;font-size:10px!important;}
+  .app-header>.theme-toggle{width:32px;height:36px;}
+  .sidebar{top:var(--safe-top);bottom:var(--safe-bottom);width:min(82vw,300px);}
+  .view{padding:18px 16px 100px;}
+  .hero-card{padding:20px;}
+  .hero-card h2{font-size:19px;line-height:27px;}
+  .hero-card p{color:var(--text-1);}
+  .list-row{flex-wrap:wrap;column-gap:10px;row-gap:8px;}
+  .list-row .info{flex:1 1 100%;}
+  .list-row .badge{margin-left:0;}
+  #chatPanel{bottom:calc(96px + var(--safe-bottom));height:min(470px,calc(100dvh - var(--safe-top) - var(--safe-bottom) - 174px));}
+  #chatToggle{bottom:calc(14px + var(--safe-bottom));}
+}

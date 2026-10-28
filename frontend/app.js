@@ -11,9 +11,17 @@ function firebaseReadyCheck(){ return FirebaseClient.ready; }
 /* ---------------- i18n ---------------- */
 const I18N = window.I18N || { vi: {}, en: {} };
 let lang='vi';
+try { lang=localStorage.getItem('akk_lang')==='en'?'en':'vi'; } catch {}
 function t(key){ return (I18N[lang] && I18N[lang][key]) || key; }
 function setLang(l){
+  if (!['vi','en'].includes(l)) return;
   lang=l;
+  document.documentElement.lang=l;
+  try { localStorage.setItem('akk_lang',l); } catch {}
+  document.querySelectorAll('[data-auth-lang]').forEach(el=>{
+    el.classList.toggle('active',el.dataset.authLang===l);
+    el.setAttribute('aria-pressed',String(el.dataset.authLang===l));
+  });
   document.getElementById('btnVi').classList.toggle('active',l==='vi');
   document.getElementById('btnEn').classList.toggle('active',l==='en');
   document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n; if(I18N[l][k]) el.innerHTML=I18N[l][k];});
@@ -21,6 +29,7 @@ function setLang(l){
   renderAll();
   if(currentUser) updateUserUI(currentUser);
   if(typeof RecordingRefreshLang==='function') RecordingRefreshLang();
+  document.dispatchEvent(new Event('akk:languagechange'));
 }
 
 /* ---------------- Auth / Firebase ---------------- */
@@ -495,7 +504,7 @@ async function sendMeetingChatMsg(){
   }
 
   try {
-    const res = await fetch(`${getApiUrl()}/api/chat`, {
+    const res = await apiFetch(`${getApiUrl()}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: text, transcript: segments })
@@ -543,7 +552,7 @@ async function requestGenerationHandler(kind){
   if(kind==='mindmap'){
     if(jobsEl) jobsEl.textContent='⏳ Đang tạo sơ đồ tư duy...';
     try{
-      const res=await fetch(`${getApiUrl()}/api/mindmap/preview`,{method:'POST',headers:{'Content-Type':'application/json'},
+      const res=await apiFetch(`${getApiUrl()}/api/mindmap/preview`,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({transcript:(segments.length?segments:(m&&m.transcript)||[])})});
       const html=await res.text();
       const win=window.open('','_blank'); win.document.write(html); win.document.close();
@@ -554,7 +563,7 @@ async function requestGenerationHandler(kind){
     if(!summary){ alert('Vui lòng tóm tắt cuộc họp trước.'); return; }
     if(jobsEl) jobsEl.textContent='⏳ Đang tạo PowerPoint...';
     try{
-      const res=await fetch(`${getApiUrl()}/api/powerpoint`,{method:'POST',headers:{'Content-Type':'application/json'},
+      const res=await apiFetch(`${getApiUrl()}/api/powerpoint`,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({title,key_points:keyPoints,summary})});
       const blob=await res.blob();
       const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:title.slice(0,40)+'.pptx'});
@@ -566,7 +575,7 @@ async function requestGenerationHandler(kind){
     if(!summary){ alert('Vui lòng tóm tắt cuộc họp trước.'); return; }
     if(jobsEl) jobsEl.textContent='⏳ Đang tạo hình ảnh...';
     try{
-      const res=await fetch(`${getApiUrl()}/api/visualization`,{method:'POST',headers:{'Content-Type':'application/json'},
+      const res=await apiFetch(`${getApiUrl()}/api/visualization`,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({title,key_points:keyPoints,summary})});
       const blob=await res.blob();
       const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:title.slice(0,40)+'.png'});
@@ -839,7 +848,7 @@ async function transcribeAudioBlob(blob, onProgress) {
   formData.append("file", blob, blob.name || "recording.wav");
 
   const apiUrl = getApiUrl();
-  const resp = await fetch(apiUrl + "/api/transcribe", {
+  const resp = await apiFetch(apiUrl + "/api/transcribe", {
     method: "POST",
     body: formData,
   });
@@ -1073,7 +1082,7 @@ async function sendChat(){
 
   // 5. Call backend global-chat endpoint with historyPayload
   try {
-    const res = await fetch(`${getApiUrl()}/api/global-chat`, {
+    const res = await apiFetch(`${getApiUrl()}/api/global-chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: text, history: historyPayload })
@@ -1153,59 +1162,39 @@ function getSpeakerColor(name) {
   return palette[Math.abs(hash) % palette.length];
 }
 
-// Hardcoded Cloudflare Tunnels (from tests/tunnels.txt)
-const HARDCODED_STT_URL = 'wss://commitments-valentine-sean-possession.trycloudflare.com/v1/ws/realtime-speech';
-const HARDCODED_API_URL = 'https://epinions-bond-playing-hrs.trycloudflare.com';
-
-// Auto-sync when hardcoded tunnel URLs change so stale localStorage doesn't persist
-try {
-  if (localStorage.getItem("hardcoded_stt_sync") !== HARDCODED_STT_URL) {
-    localStorage.removeItem("stt_url");
-    localStorage.setItem("hardcoded_stt_sync", HARDCODED_STT_URL);
-  }
-  if (localStorage.getItem("hardcoded_api_sync") !== HARDCODED_API_URL) {
-    localStorage.removeItem("api_url");
-    localStorage.setItem("hardcoded_api_sync", HARDCODED_API_URL);
-  }
-} catch (e) {}
-
-function getDefaultSttUrl() {
-  return HARDCODED_STT_URL;
+// Stable deployment endpoints. Runtime configuration never contains API secrets.
+function storedEndpoint(key) {
+  try { return localStorage.getItem(key) || ''; } catch { return ''; }
 }
-
 function getDefaultApiUrl() {
-  if (
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1' ||
-    window.location.port === '8899'
-  ) {
-    return window.location.origin;
-  }
-  return HARDCODED_API_URL;
+  return (window.AKK_CONFIG?.apiBaseUrl || window.location.origin).replace(/\/$/, '');
 }
-
+function getDefaultSttUrl() {
+  return window.AKK_CONFIG?.sttUrl ||
+    window.location.origin.replace(/^http/, 'ws') + '/v1/ws/realtime-speech';
+}
 function getSttUrl() {
-  const stored = localStorage.getItem("stt_url");
-  if (stored) return stored;
-  const inputVal = document.getElementById('settingSttUrl')?.value.trim();
-  if (inputVal) return inputVal;
-  return getDefaultSttUrl();
+  return storedEndpoint('stt_url') || getDefaultSttUrl();
+}
+function getApiUrl() {
+  return (storedEndpoint('api_url') || getDefaultApiUrl()).replace(/\/$/, '');
+}
+// Firebase credentials are sent only to the configured backend, never persisted.
+async function apiFetch(url, options = {}) {
+  const user = firebase.auth().currentUser;
+  if (!user) throw new Error(lang === 'vi' ? 'Vui lòng đăng nhập.' : 'Please sign in.');
+  const target = new URL(url, window.location.href);
+  if (target.origin !== new URL(getApiUrl()).origin) throw new Error('Unexpected API origin');
+  const headers = new Headers(options.headers || {});
+  headers.set('Authorization', `Bearer ${await user.getIdToken()}`);
+  const response = await fetch(target.href, {...options, headers});
+  if (!response.ok) {
+    const data = await response.clone().json().catch(() => ({}));
+    throw new Error(data.detail || `API error (${response.status})`);
+  }
+  return response;
 }
 
-function getApiUrl() {
-  if (
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1' ||
-    window.location.port === '8899'
-  ) {
-    return window.location.origin;
-  }
-  const stored = localStorage.getItem("api_url");
-  if (stored) return stored;
-  const inputVal = document.getElementById('settingApiUrl')?.value.trim();
-  if (inputVal) return inputVal;
-  return getDefaultApiUrl();
-}
 function getMeetingLang() {
   return document.getElementById('settingMeetLang')?.value || "vi";
 }
@@ -1418,7 +1407,7 @@ async function startMeetBotJob(meetUrl, title, existingMeetingId) {
   updateMeetBotUI({ active: true, status: 'joining', message: '🚀 Đang khởi động Bot vào Google Meet...', elapsed_sec: 0, participants: [] });
 
   try {
-    const res = await fetch(`${getApiUrl()}/api/meet-bot/join`, {
+    const res = await apiFetch(`${getApiUrl()}/api/meet-bot/join`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ meet_url: meetUrl, title: title || '' })
@@ -1441,7 +1430,7 @@ async function startMeetBotJob(meetUrl, title, existingMeetingId) {
   } catch (err) {
     console.error('Failed to start Meet Bot:', err);
     updateMeetBotUI({ active: false, status: 'error', message: '❌ Không thể khởi động Bot: ' + err.message });
-    alert('Không thể khởi động Google Meet Bot: ' + err.message);
+    alert('Không thể khởi động KimKim Meeting: ' + err.message);
   }
 }
 
@@ -1453,7 +1442,7 @@ async function stopActiveMeetBot() {
   if (stopBtn2) { stopBtn2.disabled = true; stopBtn2.textContent = '⏳ Đang dừng & xử lý...'; }
 
   try {
-    await fetch(`${getApiUrl()}/api/meet-bot/stop/${activeMeetBot.jobId}`, { method: 'POST' });
+    await apiFetch(`${getApiUrl()}/api/meet-bot/stop/${activeMeetBot.jobId}`, { method: 'POST' });
   } catch (err) {
     console.warn('Stop Meet Bot warning:', err);
   }
@@ -1462,7 +1451,7 @@ async function stopActiveMeetBot() {
 async function pollMeetBotStatus(jobId) {
   if (!activeMeetBot || activeMeetBot.jobId !== jobId) return;
   try {
-    const res = await fetch(`${getApiUrl()}/api/meet-bot/status/${jobId}`);
+    const res = await apiFetch(`${getApiUrl()}/api/meet-bot/status/${jobId}`);
     if (!res.ok) return;
     const data = await res.json();
 
@@ -1538,7 +1527,7 @@ function updateMeetBotUI({ active, status, message, elapsed_sec = 0, participant
     barEl.classList.toggle('hidden', !showOnDetail);
     if (barTextEl) {
       const timeStr = elapsed_sec > 0 ? ` (${fmt(elapsed_sec)})` : '';
-      barTextEl.textContent = `🤖 ${message || 'Đang chạy Bot...'}${timeStr}`;
+      barTextEl.textContent = `${message || (lang==='en'?'KimKim is joining the meeting…':'KimKim đang tham gia cuộc họp…')}${timeStr}`;
     }
     if (barStopBtn) {
       barStopBtn.disabled = !canStop;
@@ -1637,7 +1626,7 @@ async function generateSummaryFromCurrentTranscript() {
 
   try {
     const apiUrl = getApiUrl();
-    const res = await fetch(`${apiUrl}/api/summarize`, {
+    const res = await apiFetch(`${apiUrl}/api/summarize`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ transcript: segments })
@@ -1744,8 +1733,10 @@ document.getElementById('settingApiUrl')?.addEventListener('change', e => {
 
 /* ---------------- App Initialization ---------------- */
 function startApp() {
+  document.getElementById('settingApiUrl').value = getApiUrl();
+  document.getElementById('settingSttUrl').value = getSttUrl();
   try {
-    renderAll();
+    setLang(lang);
   } catch (err) {
     console.error("renderAll init error:", err);
   }
@@ -1765,4 +1756,11 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', startApp);
 } else {
   startApp();
+}
+
+// Keep native form keyboard behavior without changing Firebase auth flows.
+for (const [id, action] of [['signinPassword',signInWithEmail],['signupPassword',signUpWithEmail],['resetEmail',sendPasswordReset]]) {
+  document.getElementById(id)?.addEventListener('keydown',event=>{
+    if(event.key==='Enter'&&!event.isComposing){event.preventDefault();action();}
+  });
 }

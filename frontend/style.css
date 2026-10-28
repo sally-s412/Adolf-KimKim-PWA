@@ -280,3 +280,39 @@ body{height:100dvh;overflow:hidden;}
   .video-grid{grid-template-columns:1fr;}
   .video-tile{min-height:120px;}
 }
+
+/* Source-faithful auth layout + installable viewport. */
+[hidden]{display:none!important;}
+#authScreen{padding:24px 16px;overflow-y:auto;overscroll-behavior:contain;}
+.auth-card{width:400px;max-width:100%;flex-shrink:0;padding:34px 30px;margin:auto;background:rgba(10,18,40,.55);border:1px solid rgba(59,130,246,.22);border-radius:16px;}
+.auth-logo{justify-content:center;gap:8px;margin-bottom:22px;white-space:nowrap;}
+.auth-logo img{width:48px;height:48px;object-fit:cover;flex-shrink:0;background:#0b1e43;box-shadow:0 0 20px rgba(59,130,246,.45);}
+.auth-logo span{font-size:20px;font-weight:700;color:#93a4c3;}
+.auth-card h1{font-size:20px;color:#e8edf7;}
+.auth-card p.sub{color:#5b6a8c;}
+.auth-card label{color:#93a4c3;}
+.auth-card input{min-height:36px;border-radius:9px;color:#e8edf7;}
+.auth-card input::placeholder{color:#788397;opacity:1;}
+.auth-google{font-family:inherit;min-height:36px;background:rgba(255,255,255,.06);border-radius:9px;}
+.auth-tabs{flex-wrap:wrap;line-height:1.6;}
+.auth-tabs a{color:#3b82f6;}
+.auth-language{position:fixed;right:max(16px,env(safe-area-inset-right));top:max(16px,env(safe-area-inset-top));background:rgba(5,11,31,.8);border-radius:10px;}
+.auth-language button{min-height:32px;}
+button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid #93c5fd;outline-offset:3px;}
+#chatToggle{border:0;background:none;padding:0;z-index:70;bottom:max(20px,env(safe-area-inset-bottom));right:max(20px,env(safe-area-inset-right));}
+#chatPanel{z-index:71;}
+.connection-status{position:fixed;left:0;right:0;top:0;z-index:100;padding:10px 16px;text-align:center;font-size:13px;background:#243b69;color:#fff;}
+.pwa-actions{position:fixed;left:max(16px,env(safe-area-inset-left));bottom:max(16px,env(safe-area-inset-bottom));z-index:72;display:flex;gap:8px;}
+.pwa-actions button{background:#0b1734;}
+@media(max-width:480px){
+  #authScreen{padding:64px 16px 100px;}
+  .auth-card{padding:28px 22px;}
+  .auth-logo{gap:6px;}
+  .auth-logo img{width:40px;height:40px;}
+  .auth-logo span{font-size:18px;}
+  .auth-card input{font-size:16px;min-height:44px;}
+  .auth-card .btn,.auth-google{min-height:44px;}
+  #chatToggle{width:62px;height:76px;bottom:max(12px,env(safe-area-inset-bottom));right:12px;}
+  #chatPanel{height:min(68dvh,500px);bottom:max(96px,calc(env(safe-area-inset-bottom) + 84px));}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}

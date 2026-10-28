@@ -1,0 +1,19 @@
+# Python & Environment
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables & secrets
+.env
+
+# Reference / temporary files
+AI-Speech-Base/
+random.txt
+tmp/
+models/
+dist/
+.openai/*.tar.gz
+google_meet_record/meet_bot_profile*/
+*.wav

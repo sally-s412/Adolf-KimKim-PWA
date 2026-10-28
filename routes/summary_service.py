@@ -12,7 +12,7 @@ logger = logging.getLogger("summary")
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL = "qwen/qwen3.8-27b"
+MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 
 MEETING_SUMMARY_PROMPT = """\
 You are a professional meeting analyst. Analyze the following meeting transcript and produce a structured summary.

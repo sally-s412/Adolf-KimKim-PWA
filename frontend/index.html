@@ -2,25 +2,36 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Adolf Kim Kim</title>
 <link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
 <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=2">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="design-system.css">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#050b1f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KimKim">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
+<script src="config.js"></script>
 </head>
 <body>
 
-<div id="authScreen"><div class="card auth-card" id="authSignin">
-  <div class="auth-logo" style="display: flex; justify-content: center;">
-     <img src="assets/kimkim4.png" alt="Adolf KimKim Logo" style="width:48px; height:48px; border-radius:50%; object-fit:cover; box-shadow:0 0 20px rgba(59,130,246,.6); -webkit-animation:breathe 3s ease-in-out infinite; animation:breathe 3s ease-in-out infinite;">
-      <span style="font-size: 20px; color: #93a4c3;">ADOLF KIMKIM</span>
-      <img src="assets/kimkim4.png" alt="Adolf KimKim Logo" style="width:48px; height:48px; border-radius:50%; object-fit:cover; box-shadow:0 0 20px rgba(59,130,246,.6); -webkit-animation:breathe 3s ease-in-out infinite; animation:breathe 3s ease-in-out infinite;">
-     </div>
+<div id="connectionStatus" class="connection-status" role="status" hidden></div>
+<div class="pwa-actions"><button id="installApp" class="btn btn-ghost" data-i18n="installApp" hidden>Cài ứng dụng</button><button id="updateApp" class="btn btn-ghost" data-i18n="updateApp" hidden>Cập nhật</button></div>
+<div id="authScreen"><nav class="auth-language lang-switch" aria-label="Language"><button data-auth-lang="vi" onclick="setLang('vi')">VIE</button><button data-auth-lang="en" onclick="setLang('en')">ENG</button></nav><div class="card auth-card" id="authSignin">
+  <div class="auth-logo" aria-label="Adolf KimKim">
+    <img src="assets/kimkim4.png" alt="" width="48" height="48">
+    <span>ADOLF KIMKIM</span>
+    <img src="assets/kimkim4.png" alt="" width="48" height="48">
+  </div>
     <h1 data-i18n="signinTitle">Đăng nhập</h1>
     <p class="sub" data-i18n="signinSub">Thống trị thế giới cùng Adolf Kim Kim</p>
-    <div class="auth-google" onclick="signInWithGoogle()"> <span data-i18n="signinGoogle">🪐Đăng nhập với Google</span></div>
-    <label data-i18n="emailLbl">Email</label><input id="signinEmail" type="email" autocomplete="email" placeholder="you@company.com">
-    <label data-i18n="pwLbl">Mật khẩu</label><input id="signinPassword" type="password" autocomplete="current-password" placeholder="••••••••">
+    <button type="button" class="auth-google" onclick="signInWithGoogle()"> <span data-i18n="signinGoogle">Đăng nhập với Google</span></button>
+    <label for="signinEmail" data-i18n="emailLbl">Email</label><input id="signinEmail" type="email" autocomplete="email" placeholder="you@company.com">
+    <label for="signinPassword" data-i18n="pwLbl">Mật khẩu</label><input id="signinPassword" type="password" autocomplete="current-password" placeholder="••••••••">
     <div id="authError" class="auth-error" role="alert"></div>
     <button class="btn btn-primary" onclick="signInWithEmail()" data-i18n="signinBtn">Đăng nhập</button>
     <div class="auth-tabs">
@@ -33,10 +44,10 @@
      <img src="assets/kimkimBranding.png" alt="Adolf KimKim Logo" style="width:28px; height:28px; border-radius:50%; object-fit:cover; box-shadow:0 0 10px rgba(59,130,246,.6); -webkit-animation:breathe 3s ease-in-out infinite; animation:breathe 3s ease-in-out infinite;">
     <h1 data-i18n="signupTitle">Tạo tài khoản</h1>
     <p class="sub" data-i18n="signupSub">Trải nghiệm khả năng ghi chú đẳng cấp của Adolf KimKim</p>
-    <div class="auth-google" onclick="signInWithGoogle()"><span data-i18n="signinGoogle">🪐Đăng nhập với Google</span></div>
-    <label data-i18n="nameLbl">Họ tên</label><input id="signupName" autocomplete="name" placeholder="Sally San San">
-    <label data-i18n="emailLbl">Email</label><input id="signupEmail" type="email" autocomplete="email" placeholder="you@company.com">
-    <label data-i18n="pwLbl">Mật khẩu</label><input id="signupPassword" type="password" autocomplete="new-password" placeholder="••••••••">
+    <button type="button" class="auth-google" onclick="signInWithGoogle()"><span data-i18n="signinGoogle">Đăng nhập với Google</span></button>
+    <label for="signupName" data-i18n="nameLbl">Họ tên</label><input id="signupName" autocomplete="name" placeholder="Sally San San">
+    <label for="signupEmail" data-i18n="emailLbl">Email</label><input id="signupEmail" type="email" autocomplete="email" placeholder="you@company.com">
+    <label for="signupPassword" data-i18n="pwLbl">Mật khẩu</label><input id="signupPassword" type="password" autocomplete="new-password" placeholder="••••••••">
     <div id="signupError" class="auth-error" role="alert"></div>
     <button class="btn btn-primary" onclick="signUpWithEmail()" data-i18n="signupBtn">Tạo tài khoản</button>
     <div class="auth-tabs"><a onclick="showAuth('signin')" data-i18n="backSignin">← Quay lại đăng nhập</a></div>
@@ -47,7 +58,7 @@
 
     <h1 data-i18n="forgotTitle">Quên mật khẩu?</h1>
     <p class="sub" data-i18n="forgotSub">Nhập email để nhận hướng dẫn đặt lại mật khẩu</p>
-    <label data-i18n="emailLbl">Email</label><input id="resetEmail" type="email" autocomplete="email" placeholder="you@company.com">
+    <label for="resetEmail" data-i18n="emailLbl">Email</label><input id="resetEmail" type="email" autocomplete="email" placeholder="you@company.com">
     <div id="resetError" class="auth-error" role="alert"></div>
     <button class="btn btn-primary" onclick="sendPasswordReset()" data-i18n="forgotBtn">Gửi hướng dẫn</button>
     <div class="auth-tabs"><a onclick="showAuth('signin')" data-i18n="backSignin">← Quay lại đăng nhập</a></div>
@@ -161,7 +172,7 @@
           <span id="summaryStatusBadge" class="badge amber hidden">⏳ Đang tóm tắt AI...</span>
           <div id="mdMeetBotBar" class="hidden" style="display:flex;align-items:center;gap:10px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.4);padding:6px 12px;border-radius:8px;font-size:12px;">
             <span class="live-dot"></span>
-            <span id="mdMeetBotStatusText">🤖 Bot đang kết nối vào Google Meet...</span>
+            <span id="mdMeetBotStatusText">KimKim đang kết nối vào Google Meet...</span>
             <button class="btn btn-ghost" id="mdMeetBotStopBtn" style="padding:3px 10px;font-size:11px;border-color:var(--red);color:var(--red);" onclick="stopActiveMeetBot()">⏹ Kết thúc &amp; Tóm tắt</button>
           </div>
         </div>
@@ -303,16 +314,16 @@
         </div>
 
         <div class="card" style="padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
-          <div class="ic" style="font-size:40px;" id="recMeetIcon">🤖</div>
-          <div style="font-weight:600;font-size:15px;">Google Meet Bot (Adolf KimKim)</div>
-          <p style="margin:0;font-size:12px;color:var(--text-2);text-align:center;">Dán link Google Meet để Bot tự động vào phòng, ghi âm, nhận diện người nói và tóm tắt với AI</p>
-          <input id="recMeetTitle" style="width:100%;max-width:380px;" placeholder="Tiêu đề cuộc họp (tuỳ chọn)">
-          <input id="recMeetUrl" style="width:100%;max-width:380px;" placeholder="https://meet.google.com/xxx-xxxx-xxx">
+          
+          <h2 class="kimkim-meeting-title" data-i18n="kimkimMeetingTitle">KimKim Meeting</h2>
+          <p data-i18n="kimkimMeetingDescription" style="margin:0;font-size:12px;color:var(--text-2);text-align:center;">Dán link Google Meet để mời KimKim vào họp</p>
+          <input data-i18n-ph="kimkimMeetingTitlePh" aria-label="Meeting title" id="recMeetTitle" style="width:100%;max-width:380px;" placeholder="Tiêu đề cuộc họp (tuỳ chọn)">
+          <input aria-label="Google Meet URL" id="recMeetUrl" style="width:100%;max-width:380px;" placeholder="https://meet.google.com/xxx-xxxx-xxx">
           <div id="recMeetTimer" style="font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;display:none;">00:00</div>
           <div id="recMeetStatus" style="font-size:12px;color:var(--text-1);text-align:center;"></div>
           <div id="recMeetParticipants" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;"></div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px;">
-            <button class="btn btn-primary" id="recMeetStartBtn" onclick="startMeetBotFromRecording()">🤖 Mời Bot vào Google Meet</button>
+            <button class="btn btn-primary" id="recMeetStartBtn" onclick="startMeetBotFromRecording()" data-i18n="inviteKimkimMeet">Mời KimKim vào Google Meet</button>
             <button class="btn btn-ghost" id="recMeetStopBtn" style="display:none;border-color:var(--red);color:var(--red);" onclick="stopActiveMeetBot()">⏹ Kết thúc &amp; Tóm tắt AI</button>
           </div>
         </div>
@@ -378,8 +389,8 @@
         </div>
         <div class="card settings-pane hidden" id="settingsMeeting">
           <h3 data-i18n="sMeeting">Cuộc họp</h3>
-          <div class="field"><label>STT WebSocket URL</label><input id="settingSttUrl" value="wss://webmaster-spoke-possibilities-inns.trycloudflare.com/v1/ws/realtime-speech"></div>
-          <div class="field"><label>Backend API URL</label><input id="settingApiUrl" value="https://suit-nationally-principles-legends.trycloudflare.com"></div>
+          <div class="field"><label>STT WebSocket URL</label><input id="settingSttUrl" value="" placeholder="wss://speech.your-domain.com/v1/ws/realtime-speech"></div>
+          <div class="field"><label>Backend API URL</label><input id="settingApiUrl" value="" placeholder="https://api.your-domain.com"></div>
 
           <div class="field"><label data-i18n="meetLang">Ngôn ngữ ghi</label><select><option>Tiếng Việt</option><option>English</option></select></div>
           <div class="toggle-row"><span data-i18n="autoJoin">Tự động tham gia</span><div class="switch on" onclick="this.classList.toggle('on')"><i></i></div></div>
@@ -490,10 +501,10 @@
 </div>
 
 <!-- ===== FLOATING CHAT ===== -->
-<div id="chatToggle" onclick="toggleChat()"><img src="assets/kimkimAI.png"></div>
+<button type="button" id="chatToggle" aria-label="Open KimKim assistant" aria-controls="chatPanel" onclick="toggleChat()"><img src="assets/kimkimAI.png" alt="KimKim"></button>
 <div id="chatPanel" class="card">
   <div class="chat-header2">
-    <img src="assets/kimkimAI.png">
+    <img src="assets/kimkimAI.png" alt="KimKim">
     <div style="flex:1;"><div class="n">Adolf KimKim</div><div class="s" data-i18n="agentSub">Thống trị thế giới cùng bạn</div></div>
     <button class="chat-clear-btn" onclick="clearGlobalChatHistory()" title="Xoá lịch sử chat" style="background:transparent;border:none;color:var(--text-2);cursor:pointer;font-size:14px;padding:4px 6px;border-radius:6px;transition:background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'">🗑️</button>
   </div>
@@ -502,7 +513,7 @@
   </div>
   <div class="chat-input-row">
     <input id="chatInput" data-i18n-ph="chatPh" placeholder="Hỏi Adolf KimKim...">
-    <button onclick="sendChat()">➤</button>
+    <button aria-label="Send message" onclick="sendChat()">➤</button>
   </div>
 </div>
 
@@ -523,6 +534,8 @@
 <script src="services/settingsService.js?v=3"></script>
 <script src="services/aiService.js?v=6"></script>
 <script src="services/translationService.js?v=3"></script>
+<script src="layout.js"></script>
 <script src="app.js?v=10"></script>
+<script src="pwa.js"></script>
 </body>
 </html>

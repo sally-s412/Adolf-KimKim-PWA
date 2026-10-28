@@ -15,7 +15,7 @@ router = APIRouter(tags=["chatbot"])
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL = "qwen/qwen3.8-27b"
+MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
 
 SYSTEM_PROMPT = """You are Adolf KimKim, an intelligent, charismatic, and highly capable AI assistant ("Thống trị thế giới cùng bạn").
 You help users with productivity, meeting notes, brainstorming, answering questions, writing, and daily tasks.
@@ -48,7 +48,7 @@ async def global_chat_endpoint(req: GlobalChatRequest):
 
     # Include recent conversation turns for context memory (up to last 25 messages)
     recent_history = req.history[-25:] if req.history else []
-    logger.info(f"GlobalChat incoming: msg={req.message!r}, history_turns={len(recent_history)}")
+    logger.info("GlobalChat request: history_turns=%s", len(recent_history))
     for h in recent_history:
         role = "assistant" if h.role in ("agent", "assistant", "system") else "user"
         content = (h.content or "").strip()

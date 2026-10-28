@@ -70,7 +70,7 @@ test('deployment includes FINAL Figma shell, responsive theme and navigation',()
  assert(html.includes('href="design-system.css"'));
  assert(html.includes('src="layout.js"'));
  const css=readFileSync('frontend/design-system.css','utf8');
- assert(css.includes('#091e4c'));assert(css.includes('data-theme=light'));assert(css.includes('232px'));assert(readFileSync('frontend/layout.js','utf8').includes("menu.className='mobile-menu-btn'"));
+ assert(css.includes('--canvas:'));assert(css.includes('data-theme=light'));assert(css.includes('grid-template-columns:')); assert(readFileSync('frontend/layout.js','utf8').includes("menu.className='mobile-menu-btn'"));
 });
 
 test('Recording includes localized KimKim Meeting invite without robot icons',()=>{

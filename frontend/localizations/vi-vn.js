@@ -221,3 +221,7 @@ window.I18N.vi = {
   notLoggedIn: "Chưa đăng nhập.",
   errStorageCheckHint: "Kiểm tra: đã bật Cloud Storage cho project, đúng storageBucket trong cấu hình, và đã deploy storage.rules cho phép user ghi vào avatars/{uid}/.",
 };
+
+Object.assign(window.I18N.vi,{"uiAddNote": "+ Thêm ghi chú", "uiNewNote": "Ghi chú mới", "uiNoteTitle": "Tiêu đề", "uiNoteContent": "Nội dung", "uiNoteTitlePh": "Đặt tên cho ghi chú", "uiNoteContentPh": "Viết nội dung ghi chú...", "uiNoteTitleRequired": "Vui lòng nhập tiêu đề ghi chú.", "uiNoteSaveFailed": "Chưa lưu được ghi chú. Vui lòng thử lại.", "uiNoteSaved": "Đã lưu ghi chú.", "uiAccountHelp": "Cập nhật thông tin hiển thị của bạn. Email được quản lý bởi tài khoản đăng nhập.", "uiMeetingHelp": "Quản lý ngôn ngữ và các tuỳ chọn cuộc họp của bạn.", "uiAIHelp": "Xem và lưu các tuỳ chọn AI cho không gian làm việc của bạn.", "uiPasswordHelp": "Nhập mật khẩu hiện tại và mật khẩu mới để cập nhật tài khoản.", "uiAdvancedConnection": "Kết nối nâng cao", "uiConfirmTitle": "Xác nhận thao tác", "uiConfirmAction": "Xác nhận", "uiCloseMessage": "Đóng thông báo"});
+
+Object.assign(window.I18N.vi,{"uiEmptyNoteTitle": "Sẵn sàng ghi lại ý tưởng?", "uiEmptyNoteHelp": "Tạo ghi chú mới hoặc chọn một ghi chú ở bên trái.", "uiSaving": "Đang lưu..."});

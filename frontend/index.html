@@ -70,16 +70,7 @@
   <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="closeMobileMenu()"></div>
   <aside class="sidebar">
      <div style="font-size:20px; color:#93a4c3; font-weight:700; margin-bottom:10px;">  🐶 ADOLF KIMKIM 🐶 </div>
-    <div style="position:relative;">
-      <button class="btn btn-primary side-add" data-i18n="addNew" onclick="toggleAddNewMenu(event)">+ Thêm mới</button>
-      <div id="addNewMenu" class="hidden" style="position:absolute; top:100%; left:0; right:0; z-index:40; background:var(--card,#141a2b); border:1px solid var(--border,#26304a); border-radius:10px; margin-top:4px; overflow:hidden;">
-        <div class="list-row" style="cursor:pointer;padding:8px 8px;" onclick="closeAddNewMenu(); startLiveRecording();"><span data-i18n="addNewMeetingOpt">🔴 Ghi trực tiếp</span></div>
-        <div class="list-row" style="cursor:pointer;padding:8px 8px;" onclick="closeAddNewMenu(); scheduleNewMeeting();"><span data-i18n="addNewScheduleOpt">📆 Lên lịch</span></div>
-        <div class="list-row" style="cursor:pointer;padding:8px 8px;" onclick="closeAddNewMenu(); createNote();"><span data-i18n="addNewNoteOpt">📝 Ghi chú mới</span></div>
-        <div class="list-row" style="cursor:pointer;padding:8px 8px;" onclick="closeAddNewMenu(); showView('uploads',document.querySelector('[data-view=uploads]'));"><span data-i18n="addNewUploadOpt">📤 Upload</span></div>
-      </div>
-    </div>
-    <div class="nav-item active" data-view="home" onclick="showView('home',this)"><span class="ic">🏠</span><span data-i18n="navHome">Trang chủ</span></div>
+        <div class="nav-item active" data-view="home" onclick="showView('home',this)"><span class="ic">🏠</span><span data-i18n="navHome">Trang chủ</span></div>
     <div class="nav-item" data-view="meetings" onclick="showView('meetings',this)"><span class="ic">📅</span><span data-i18n="navMeetings">Cuộc họp</span></div>
     <div class="nav-item" data-view="notes" onclick="showView('notes',this)"><span class="ic">📝</span><span data-i18n="navNotes">Ghi chú</span></div>
     <div class="nav-item" data-view="recording" onclick="showView('recording',this)"><span class="ic">🎙️</span><span data-i18n="navRecording">Recording</span></div>
@@ -276,19 +267,28 @@
       <div class="view-title" data-i18n="navNotes">Ghi chú</div>
       <div class="view-sub" data-i18n="notesSub">Toàn bộ ghi chú được tạo tự động và thủ công</div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
-        <button class="btn btn-primary" onclick="createNote()">+ Thêm ghi chú</button>
+        <button class="btn btn-primary" onclick="createNote()" data-i18n="uiAddNote">+ Thêm ghi chú</button>
       </div>
-      <div style="display:flex;gap:16px;">
+      <form id="noteComposer" class="card note-composer hidden" onsubmit="submitNewNote(event)" aria-labelledby="noteComposerHeading">
+        <h2 id="noteComposerHeading" data-i18n="uiNewNote">Ghi chú mới</h2>
+        <div class="field"><label for="newNoteTitle" data-i18n="uiNoteTitle">Tiêu đề</label><input id="newNoteTitle" maxlength="160" required data-i18n-ph="uiNoteTitlePh" placeholder="Đặt tên cho ghi chú"></div>
+        <div class="field"><label for="newNoteContent" data-i18n="uiNoteContent">Nội dung</label><textarea id="newNoteContent" rows="5" data-i18n-ph="uiNoteContentPh" placeholder="Viết nội dung ghi chú..."></textarea></div>
+        <p id="newNoteError" class="field-error" role="alert"></p>
+        <div class="form-actions"><button type="button" class="btn btn-ghost" onclick="cancelNewNote()" data-i18n="cancelBtn">Huỷ</button><button id="newNoteSubmit" type="submit" class="btn btn-primary" data-i18n="saveBtn">Lưu</button></div>
+      </form>
+      <div class="notes-workspace">
         <div class="card" style="width:260px;flex-shrink:0;padding:10px;" id="notesSidebarList"></div>
         <div class="card" style="flex:1;padding:20px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
             <button class="btn btn-ghost" id="noteTranslateBtn" onclick="toggleNoteTranslation()" data-i18n="translateBtn">🌐 Dịch sang tiếng Anh</button>
             <button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);" onclick="deleteNoteHandler()" data-i18n="deleteNoteBtn">🗑️ Xoá ghi chú</button>
           </div>
+          <div id="noteEmptyState" class="note-empty"><h3 data-i18n="uiEmptyNoteTitle">Sẵn sàng ghi lại ý tưởng?</h3><p data-i18n="uiEmptyNoteHelp">Tạo ghi chú mới hoặc chọn một ghi chú ở bên trái.</p></div>
           <div class="editor" contenteditable="true" style="font-size:14px;line-height:1.8;" onblur="saveCurrentNote()">
             <h1 style="margin:0 0 10px;font-size:19px;"></h1>
             <p style="color:var(--text-1);"></p>
           </div>
+          <span id="noteSaveStatus" class="save-status" role="status"></span>
         </div>
       </div>
     </div>
@@ -374,39 +374,46 @@
     <div class="view hidden" id="view-settings">
       <div class="view-title" data-i18n="navSettings">Cài đặt</div>
       <div class="settings-wrap">
-        <div class="settings-tabs">
-          <div class="nav-item active" data-s="account" onclick="showSettings('account',this)"><span data-i18n="sAccount">Tài khoản</span></div>
-          <div class="nav-item" data-s="meeting" onclick="showSettings('meeting',this)"><span data-i18n="sMeeting">Cuộc họp</span></div>
-          <div class="nav-item" data-s="ai" onclick="showSettings('ai',this)"><span data-i18n="sAI">Tuỳ chỉnh AI</span></div>
-          <div class="nav-item" data-s="password" onclick="showSettings('password',this)"><span data-i18n="sPassword">Mật khẩu</span></div>
+        <div class="settings-tabs" role="tablist" aria-label="Settings">
+          <button type="button" role="tab" aria-selected="true" aria-controls="settingsAccount" class="nav-item active" data-s="account" onclick="showSettings('account',this)"><span data-i18n="sAccount">Tài khoản</span></button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="settingsMeeting" class="nav-item" data-s="meeting" onclick="showSettings('meeting',this)"><span data-i18n="sMeeting">Cuộc họp</span></button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="settingsAI" class="nav-item" data-s="ai" onclick="showSettings('ai',this)"><span data-i18n="sAI">Tuỳ chỉnh AI</span></button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="settingsPassword" class="nav-item" data-s="password" onclick="showSettings('password',this)"><span data-i18n="sPassword">Mật khẩu</span></button>
         </div>
-        <div class="card settings-pane" id="settingsAccount">
+        <div class="card settings-pane" id="settingsAccount" role="tabpanel">
           <h3 data-i18n="sAccount">Tài khoản</h3>
-          <div class="field"><label data-i18n="nameLbl">Họ tên</label><input value=""></div>
-          <div class="field"><label data-i18n="emailLbl">Email</label><input value="" disabled></div>
-          <button class="btn btn-primary" onclick="saveAccountSettings()">Lưu</button>
+          <p class="settings-description" data-i18n="uiAccountHelp"></p>
+          <div class="field"><label for="accountField1" data-i18n="nameLbl">Họ tên</label><input id="accountField1" value=""></div>
+          <div class="field"><label for="accountField2" data-i18n="emailLbl">Email</label><input id="accountField2" value="" disabled></div>
+          <button class="btn btn-primary" onclick="saveAccountSettings()" data-i18n="saveBtn">Lưu</button>
           <button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);" onclick="deleteAccount()" data-i18n="delAccount">Xoá tài khoản</button>
         </div>
-        <div class="card settings-pane hidden" id="settingsMeeting">
+        <div class="card settings-pane hidden" id="settingsMeeting" role="tabpanel">
           <h3 data-i18n="sMeeting">Cuộc họp</h3>
-          <div class="field"><label>STT WebSocket URL</label><input id="settingSttUrl" value="" placeholder="wss://speech.your-domain.com/v1/ws/realtime-speech"></div>
-          <div class="field"><label>Backend API URL</label><input id="settingApiUrl" value="" placeholder="https://api.your-domain.com"></div>
+          <p class="settings-description" data-i18n="uiMeetingHelp"></p>
 
-          <div class="field"><label data-i18n="meetLang">Ngôn ngữ ghi</label><select><option>Tiếng Việt</option><option>English</option></select></div>
-          <div class="toggle-row"><span data-i18n="autoJoin">Tự động tham gia</span><div class="switch on" onclick="this.classList.toggle('on')"><i></i></div></div>
-          <div class="toggle-row"><span data-i18n="autoRecord">Tự động ghi âm</span><div class="switch" onclick="this.classList.toggle('on')"><i></i></div></div>
-          <button class="btn btn-primary" onclick="saveMeetingSettings()">Lưu</button>
+
+          <div class="field"><label for="settingsMeetingSelect1" data-i18n="meetLang">Ngôn ngữ ghi</label><select id="settingsMeetingSelect1"><option>Tiếng Việt</option><option>English</option></select></div>
+          <div class="toggle-row"><span data-i18n="autoJoin">Tự động tham gia</span><button type="button" role="switch" aria-checked="true" class="switch on" onclick="toggleSettingSwitch(this)"><i></i></button></div>
+          <div class="toggle-row"><span data-i18n="autoRecord">Tự động ghi âm</span><button type="button" role="switch" aria-checked="false" class="switch" onclick="toggleSettingSwitch(this)"><i></i></button></div>
+          <details class="settings-advanced"><summary data-i18n="uiAdvancedConnection">Kết nối nâng cao</summary>
+          <div class="field"><label for="settingSttUrl">STT WebSocket URL</label><input id="settingSttUrl" value="" placeholder="wss://speech.your-domain.com/v1/ws/realtime-speech"></div>
+          <div class="field"><label for="settingApiUrl">Backend API URL</label><input id="settingApiUrl" value="" placeholder="https://api.your-domain.com"></div>
+          </details>
+          <button class="btn btn-primary" onclick="saveMeetingSettings()" data-i18n="saveBtn">Lưu</button>
         </div>
-        <div class="card settings-pane hidden" id="settingsAI">
+        <div class="card settings-pane hidden" id="settingsAI" role="tabpanel">
           <h3 data-i18n="sAI">Tuỳ chỉnh AI</h3>
-          <div class="field"><label data-i18n="speechStyle">Phong cách trả lời</label><select><option data-i18n="styleFormal">Trang trọng</option><option data-i18n="styleCasual">Thân mật</option></select></div>
-          <div class="toggle-row"><span data-i18n="vocabDetect">Nhận diện thuật ngữ chuyên ngành</span><div class="switch on" onclick="this.classList.toggle('on')"><i></i></div></div>
-          <button class="btn btn-primary" onclick="saveAISettings()">Lưu</button>
+          <p class="settings-description" data-i18n="uiAIHelp"></p>
+          <div class="field"><label for="settingsAISelect1" data-i18n="speechStyle">Phong cách trả lời</label><select id="settingsAISelect1"><option data-i18n="styleFormal">Trang trọng</option><option data-i18n="styleCasual">Thân mật</option></select></div>
+          <div class="toggle-row"><span data-i18n="vocabDetect">Nhận diện thuật ngữ chuyên ngành</span><button type="button" role="switch" aria-checked="true" class="switch on" onclick="toggleSettingSwitch(this)"><i></i></button></div>
+          <button class="btn btn-primary" onclick="saveAISettings()" data-i18n="saveBtn">Lưu</button>
         </div>
-        <div class="card settings-pane hidden" id="settingsPassword">
+        <div class="card settings-pane hidden" id="settingsPassword" role="tabpanel">
           <h3 data-i18n="sPassword">Mật khẩu</h3>
-          <div class="field"><label data-i18n="curPw">Mật khẩu hiện tại</label><input type="password"></div>
-          <div class="field"><label data-i18n="newPw">Mật khẩu mới</label><input type="password"></div>
+          <p class="settings-description" data-i18n="uiPasswordHelp"></p>
+          <div class="field"><label for="passwordField1" data-i18n="curPw">Mật khẩu hiện tại</label><input id="passwordField1" type="password"></div>
+          <div class="field"><label for="passwordField2" data-i18n="newPw">Mật khẩu mới</label><input id="passwordField2" type="password"></div>
           <button class="btn btn-primary" onclick="updatePasswordSettings()" data-i18n="updatePw">Cập nhật mật khẩu</button>
         </div>
       </div>
@@ -535,7 +542,12 @@
 <script src="services/aiService.js?v=6"></script>
 <script src="services/translationService.js?v=3"></script>
 <script src="layout.js"></script>
+<script src="ui-feedback.js"></script>
 <script src="app.js?v=10"></script>
 <script src="pwa.js"></script>
+<div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="false"></div>
+<dialog id="confirmDialog" class="confirm-dialog" aria-labelledby="confirmHeading" aria-describedby="confirmMessage">
+  <form method="dialog"><h2 id="confirmHeading"></h2><p id="confirmMessage"></p><div class="form-actions"><button class="btn btn-ghost" value="cancel" id="confirmCancel"></button><button class="btn btn-danger" value="confirm" id="confirmAccept"></button></div></form>
+</dialog>
 </body>
 </html>

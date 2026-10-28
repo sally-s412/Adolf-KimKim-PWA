@@ -43,7 +43,7 @@ function clearAuthErrors(){
 }
 function requireFirebase(){
   if(!firebaseReadyCheck()){
-    alert(t('needFirebaseConfig'));
+    notify(t('needFirebaseConfig'));
     return false;
   }
   return true;
@@ -131,9 +131,9 @@ async function saveProfileName(){
   if(!currentUser) return;
   const el=document.getElementById('profileNameInput');
   const newName=el ? el.value.trim() : '';
-  if(!newName){ alert(t('pleaseEnterName')); return; }
-  try{ await AuthService.updateProfileName(newName); updateUserUI(firebase.auth().currentUser); alert(t('savedMsg')); }
-  catch(err){ alert(err.message); }
+  if(!newName){ notify(t('pleaseEnterName')); return; }
+  try{ await AuthService.updateProfileName(newName); updateUserUI(firebase.auth().currentUser); notify(t('savedMsg')); }
+  catch(err){ notify(err.message); }
 }
 async function handleAvatarSelected(input){
   const file=input.files[0];
@@ -196,6 +196,7 @@ function closeMobileMenu(){
 function toggleAddNewMenu(e){
   if(e) e.stopPropagation();
   const m = document.getElementById('addNewMenu');
+  if(!m) return;
   m.classList.toggle('hidden');
   if(!m.classList.contains('hidden')){
     document.addEventListener('click', closeAddNewMenu, {once:true});
@@ -226,11 +227,17 @@ function showView(v,el){
   if(target) target.classList.remove('hidden');
   if(el){ document.querySelectorAll('.nav-item[data-view]').forEach(n=>n.classList.remove('active')); el.classList.add('active'); }
 }
-function showSettings(s,el){
-  ['account','meeting','ai','password'].forEach(k=>document.getElementById('settings'+k[0].toUpperCase()+k.slice(1)).classList.add('hidden'));
-  document.getElementById('settings'+s[0].toUpperCase()+s.slice(1)).classList.remove('hidden');
-  el.parentNode.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  el.classList.add('active');
+function showSettings(section, element){
+  const ids={account:'settingsAccount',meeting:'settingsMeeting',ai:'settingsAI',password:'settingsPassword'};
+  if(!ids[section]) return;
+  for(const [key,id] of Object.entries(ids)) document.getElementById(id)?.classList.toggle('hidden',key!==section);
+  for(const tab of document.querySelectorAll('.settings-tabs [data-s]')){
+    const selected=tab.dataset.s===section;
+    tab.classList.toggle('active',selected);tab.setAttribute('aria-selected',String(selected));
+  }
+}
+function toggleSettingSwitch(button){
+  button.classList.toggle('on');button.setAttribute('aria-checked',String(button.classList.contains('on')));
 }
 
 /* ---------------- Data & render — all reads/writes go through the *Service layer ---------------- */
@@ -287,7 +294,8 @@ function loadUserSettings(){
     if(styleSel) styleSel.value = s.speechStyle==='casual' ? I18N[lang].styleCasual : I18N[lang].styleFormal;
     const aiToggle=document.querySelector('#settingsAI .switch');
     if(aiToggle) aiToggle.classList.toggle('on', !!s.vocabDetect);
-  });
+    document.querySelectorAll('.settings-pane .switch').forEach(button=>button.setAttribute('aria-checked',String(button.classList.contains('on'))));
+  }).catch(err=>notify(err.message));
 }
 function saveMeetingSettings(){
   const langSel=document.querySelector('#settingsMeeting select');
@@ -296,7 +304,7 @@ function saveMeetingSettings(){
     meetingLang: langSel && langSel.value==='English' ? 'en' : 'vi',
     autoJoin: toggles[0] ? toggles[0].classList.contains('on') : true,
     autoRecord: toggles[1] ? toggles[1].classList.contains('on') : false
-  }).then(()=>alert(t('savedMsg')));
+  }).then(()=>notify(t('savedMsg'))).catch(err=>notify(err.message));
 }
 function saveAISettings(){
   const styleSel=document.querySelector('#settingsAI select');
@@ -304,30 +312,30 @@ function saveAISettings(){
   SettingsService.saveAISettings({
     speechStyle: styleSel && styleSel.value===I18N[lang].styleCasual ? 'casual' : 'formal',
     vocabDetect: aiToggle ? aiToggle.classList.contains('on') : true
-  }).then(()=>alert(t('savedMsg')));
+  }).then(()=>notify(t('savedMsg'))).catch(err=>notify(err.message));
 }
 async function saveAccountSettings(){
   if(!currentUser) return;
   const nameInput=document.querySelector('#settingsAccount .field input');
   const newName=nameInput ? nameInput.value.trim() : '';
-  if(!newName) return;
-  try{ await AuthService.updateProfileName(newName); updateUserUI(currentUser); alert(t('savedMsg')); }
-  catch(err){ alert(err.message); }
+  if(!newName){notify(t('pleaseEnterName'));return;}
+  try{ await AuthService.updateProfileName(newName); updateUserUI(currentUser); notify(t('savedMsg')); }
+  catch(err){ notify(err.message); }
 }
 async function updatePasswordSettings(){
   if(!currentUser) return;
   const inputs=document.querySelectorAll('#settingsPassword input[type=password]');
   const curPw=inputs[0] ? inputs[0].value : '';
   const newPw=inputs[1] ? inputs[1].value : '';
-  if(!curPw || !newPw){alert(t('pleaseEnterBothPw'));return;}
-  try{ await AuthService.changePassword(curPw,newPw); alert(t('pwUpdatedMsg')); inputs.forEach(i=>i.value=''); }
-  catch(err){ alert(err.message); }
+  if(!curPw || !newPw){notify(t('pleaseEnterBothPw'));return;}
+  try{ await AuthService.changePassword(curPw,newPw); notify(t('pwUpdatedMsg')); inputs.forEach(i=>i.value=''); }
+  catch(err){ notify(err.message); }
 }
 async function deleteAccount(){
   if(!currentUser) return;
-  if(!confirm(t('confirmDeleteAccount'))) return;
-  try{ await AuthService.deleteAccount(); alert(t('accountDeletedMsg')); }
-  catch(err){ alert(t('reauthRequiredMsg')+err.message); }
+  if(!await confirmAction(t('confirmDeleteAccount'))) return;
+  try{ await AuthService.deleteAccount(); notify(t('accountDeletedMsg')); }
+  catch(err){ notify(t('reauthRequiredMsg')+err.message); }
 }
 
 function loadPlan(){
@@ -403,9 +411,9 @@ async function submitCreateMeeting(){
 }
 async function deleteMeetingHandler(id){
   if(!id) return;
-  if(!confirm(t('confirmDeleteMeeting'))) return;
+  if(!await confirmAction(t('confirmDeleteMeeting'))) return;
   try{ await MeetingService.deleteMeeting(id); showView('meetings',document.querySelector('[data-view=meetings]')); }
-  catch(err){ alert(err.message); }
+  catch(err){ notify(err.message); }
 }
 let mdChatUnsub=null, mdJobsUnsub=null;
 function openMeeting(id){
@@ -560,7 +568,7 @@ async function requestGenerationHandler(kind){
     }catch(err){ if(jobsEl) jobsEl.textContent='❌ Lỗi: '+err.message; }
 
   }else if(kind==='slides'){
-    if(!summary){ alert('Vui lòng tóm tắt cuộc họp trước.'); return; }
+    if(!summary){ notify('Vui lòng tóm tắt cuộc họp trước.'); return; }
     if(jobsEl) jobsEl.textContent='⏳ Đang tạo PowerPoint...';
     try{
       const res=await apiFetch(`${getApiUrl()}/api/powerpoint`,{method:'POST',headers:{'Content-Type':'application/json'},
@@ -572,7 +580,7 @@ async function requestGenerationHandler(kind){
     }catch(err){ if(jobsEl) jobsEl.textContent='❌ Lỗi: '+err.message; }
 
   }else if(kind==='image'){
-    if(!summary){ alert('Vui lòng tóm tắt cuộc họp trước.'); return; }
+    if(!summary){ notify('Vui lòng tóm tắt cuộc họp trước.'); return; }
     if(jobsEl) jobsEl.textContent='⏳ Đang tạo hình ảnh...';
     try{
       const res=await apiFetch(`${getApiUrl()}/api/visualization`,{method:'POST',headers:{'Content-Type':'application/json'},
@@ -654,7 +662,7 @@ function renderMeetingDetail(){
 function saveMeetingNotes(){
   if(!currentMeetingId) return;
   const val=document.getElementById('mdNotesInput').value;
-  MeetingService.updateMeeting(currentMeetingId, {notes:val}).catch(err=>alert(err.message));
+  MeetingService.updateMeeting(currentMeetingId, {notes:val}).catch(err=>notify(err.message));
 }
 function filterMeetings(status,btn){
   activeMeetingFilter=status;
@@ -674,12 +682,40 @@ function visibleMeetings(){
 }
 
 /* ---- Notes ---- */
-async function createNote(){
-  const title=prompt(t('promptNewNoteTitle'),t('defaultNoteTitle'));
-  if(!title) return;
-  try{ currentNoteId = await NoteService.createNote(title); }
-  catch(err){ alert(err.message); }
+function createNote(){
+  showView('notes',document.querySelector('[data-view=notes]'));
+  document.getElementById('noteComposer').classList.remove('hidden');
+  document.getElementById('newNoteTitle').focus();
 }
+function cancelNewNote(){
+  const form=document.getElementById('noteComposer');form.reset();delete form.dataset.pendingId;form.classList.add('hidden');
+  document.getElementById('newNoteError').textContent='';
+  document.querySelector('#view-notes [onclick="createNote()"]')?.focus();
+}
+async function submitNewNote(event){
+  event.preventDefault();
+  const title=document.getElementById('newNoteTitle').value.trim();
+  const content=document.getElementById('newNoteContent').value;
+  const error=document.getElementById('newNoteError'),button=document.getElementById('newNoteSubmit');
+  if(!title){error.textContent=t('uiNoteTitleRequired');document.getElementById('newNoteTitle').focus();return;}
+  error.textContent='';button.disabled=true;
+  document.querySelector('#noteComposer [type=button]').disabled=true;
+  try{
+    // Keep an already-created id for retry if saving the body fails.
+    const form=document.getElementById('noteComposer');
+    const id=form.dataset.pendingId || await NoteService.createNote(title);
+    if(!id) throw new Error(t('uiNoteSaveFailed'));
+    form.dataset.pendingId=id;
+    await NoteService.updateNote(id,{title,content});
+    currentNoteId=id;
+    const index=notesArr.findIndex(n=>n.id===id);
+    if(index<0) notesArr.unshift({id,title,content});else Object.assign(notesArr[index],{title,content});
+    delete form.dataset.pendingId;
+    cancelNewNote();openNote(id);notify(t('uiNoteSaved'));
+  }catch(err){error.textContent=err.message;}
+  finally{button.disabled=false;document.querySelector('#noteComposer [type=button]').disabled=false;}
+}
+
 function openNote(id){ currentNoteId=id; noteTranslated=false; renderAll(); }
 let noteTranslated=false;
 async function toggleNoteTranslation(){
@@ -705,16 +741,19 @@ function saveCurrentNote(){
   if(!currentNoteId) return;
   const editor=document.querySelector('#view-notes .editor');
   const h1=editor.querySelector('h1'); const p=editor.querySelector('p');
+  const status=document.getElementById('noteSaveStatus');
+  if(status) status.textContent=t('uiSaving');
   NoteService.updateNote(currentNoteId, { title: h1 ? h1.textContent : '', content: p ? p.textContent : '' })
-    .catch(err=>alert(err.message));
+    .then(()=>{if(status) status.textContent=t('savedMsg');})
+    .catch(err=>{if(status) status.textContent=err.message;});
 }
 async function deleteNoteHandler(){
   if(!currentNoteId) return;
-  if(!confirm(t('confirmDeleteNote'))) return;
+  if(!await confirmAction(t('confirmDeleteNote'))) return;
   try{
     await NoteService.deleteNote(currentNoteId);
     currentNoteId = notesArr.find(n=>n.id!==currentNoteId) ? notesArr.find(n=>n.id!==currentNoteId).id : null;
-  }catch(err){ alert(err.message); }
+  }catch(err){ notify(err.message); }
 }
 
 /* ---- Team ---- */
@@ -733,16 +772,16 @@ async function submitInviteMember(){
   try{
     await TeamService.inviteMember(email);
     closeInviteMemberModal();
-    alert(t('inviteSentMsg'));
+    notify(t('inviteSentMsg'));
   }catch(err){ errEl.textContent=err.message; }
 }
 async function inviteMember(){ openInviteMemberModal(); }
 async function removeMemberHandler(id){
-  if(!confirm(t('confirmRemoveMember'))) return;
-  try{ await TeamService.removeMember(id); } catch(err){ alert(err.message); }
+  if(!await confirmAction(t('confirmRemoveMember'))) return;
+  try{ await TeamService.removeMember(id); } catch(err){ notify(err.message); }
 }
 async function changeRoleHandler(id,role){
-  try{ await TeamService.changeRole(id,role); } catch(err){ alert(err.message); }
+  try{ await TeamService.changeRole(id,role); } catch(err){ notify(err.message); }
 }
 
 /* ---- Uploads (uploadApi abstraction — mock adapter today, real REST later) ---- */
@@ -792,7 +831,7 @@ async function handleFileSelected(fileOrInput){
   const isAudioVideo = (file.type && (file.type.startsWith('audio/') || file.type.startsWith('video/'))) ||
                        /\.(mp3|wav|ogg|m4a|aac|flac|webm|mp4|mov|mkv)$/i.test(file.name);
   if(!isAudioVideo){
-    alert('Chỉ hỗ trợ file âm thanh hoặc video (mp3, wav, mp4, webm, ogg, m4a...).');
+    notify('Chỉ hỗ trợ file âm thanh hoặc video (mp3, wav, mp4, webm, ogg, m4a...).');
     return;
   }
 
@@ -897,7 +936,7 @@ window.saveRecording = async function() {
     RecordingService.cancelRecording();
   } catch (err) {
     console.error("Recording transcription error:", err);
-    alert('Lỗi phiên âm: ' + err.message);
+    notify('Lỗi phiên âm: ' + err.message);
   } finally {
     if (saveBtn) {
       saveBtn.disabled = false;
@@ -953,7 +992,10 @@ function renderAll(){
     </div>`).join('') || `<div style="color:var(--text-2);font-size:13px;padding:8px;">${I18N[lang].noNotes}</div>`;
   const curNote=notesArr.find(n=>n.id===currentNoteId);
   const editor=document.querySelector('#view-notes .editor');
-  if(editor){
+  document.getElementById('noteEmptyState')?.classList.toggle('hidden',!!curNote);
+  if(editor) editor.classList.toggle('hidden',!curNote);
+  document.querySelectorAll('#view-notes .notes-workspace .btn').forEach(button=>button.disabled=!curNote);
+  if(editor && !editor.contains(document.activeElement)){
     const h1=editor.querySelector('h1'); const p=editor.querySelector('p');
     if(curNote){ if(h1)h1.textContent=curNote.title||''; if(p)p.textContent=curNote.content||''; }
     else { if(h1)h1.textContent=''; if(p)p.textContent=''; }
@@ -1115,13 +1157,13 @@ async function sendChat(){
 
 async function clearGlobalChatHistory(){
   const msg = lang === 'vi' ? 'Bạn có chắc muốn xoá toàn bộ lịch sử trò chuyện?' : 'Are you sure you want to clear chat history?';
-  if (!confirm(msg)) return;
+  if (!await confirmAction(msg)) return;
   try {
     await AiService.clearChatHistory();
     globalChatHistoryCache = [];
     renderGlobalChat();
   } catch (err) {
-    alert("Lỗi khi xoá lịch sử: " + err.message);
+    notify("Lỗi khi xoá lịch sử: " + err.message);
   }
 }
 document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
@@ -1279,7 +1321,7 @@ async function startMeetingRecording() {
 
   } catch (e) {
     console.error("Microphone access error:", e);
-    alert("Không thể truy cập microphone: " + e.message);
+    notify("Không thể truy cập microphone: " + e.message);
     stopMeetingRecording();
   }
 }
@@ -1392,7 +1434,7 @@ async function startMeetBotFromRecording() {
   const title = (titleInput?.value || '').trim();
 
   if (!meetUrl || !meetUrl.includes('meet.google.com/')) {
-    alert('Vui lòng nhập link Google Meet hợp lệ (ví dụ: https://meet.google.com/xxx-xxxx-xxx).');
+    notify('Vui lòng nhập link Google Meet hợp lệ (ví dụ: https://meet.google.com/xxx-xxxx-xxx).');
     return;
   }
   await startMeetBotJob(meetUrl, title, null);
@@ -1400,7 +1442,7 @@ async function startMeetBotFromRecording() {
 
 async function startMeetBotJob(meetUrl, title, existingMeetingId) {
   if (activeMeetBot && activeMeetBot.pollTimer) {
-    alert('Hiện đang có một Bot đang chạy. Vui lòng dừng phiên hiện tại trước.');
+    notify('Hiện đang có một Bot đang chạy. Vui lòng dừng phiên hiện tại trước.');
     return;
   }
 
@@ -1430,7 +1472,7 @@ async function startMeetBotJob(meetUrl, title, existingMeetingId) {
   } catch (err) {
     console.error('Failed to start Meet Bot:', err);
     updateMeetBotUI({ active: false, status: 'error', message: '❌ Không thể khởi động Bot: ' + err.message });
-    alert('Không thể khởi động KimKim Meeting: ' + err.message);
+    notify('Không thể khởi động KimKim Meeting: ' + err.message);
   }
 }
 
@@ -1479,7 +1521,7 @@ async function pollMeetBotStatus(jobId) {
       clearInterval(activeMeetBot.pollTimer);
       const errMsg = data.message || 'Bot đã dừng.';
       activeMeetBot = null;
-      alert(errMsg);
+      notify(errMsg);
       return;
     }
 
@@ -1615,7 +1657,7 @@ async function endMeetingAndSummarize() {
 
 async function generateSummaryFromCurrentTranscript() {
   if (!segments || segments.length === 0) {
-    alert("Chưa có nội dung cuộc họp nào để tóm tắt.");
+    notify("Chưa có nội dung cuộc họp nào để tóm tắt.");
     return;
   }
 
@@ -1698,13 +1740,13 @@ async function generateSummaryFromCurrentTranscript() {
       renderMeetingDetail();
       renderAll();
 
-      alert(`Tóm tắt thành công: "${finalTitle}"!\nKết quả đã được cập nhật vào cuộc họp và mục Ghi chú.`);
+      notify(`Tóm tắt thành công: "${finalTitle}"!\nKết quả đã được cập nhật vào cuộc họp và mục Ghi chú.`);
     } else {
-      alert("Lỗi khi tóm tắt: " + (data.message || "Unknown error"));
+      notify("Lỗi khi tóm tắt: " + (data.message || "Unknown error"));
     }
   } catch (err) {
     console.error("Summarization error:", err);
-    alert("Không thể kết nối đến AI backend (" + getApiUrl() + "). Vui lòng đảm bảo server đang chạy.");
+    notify("Không thể kết nối đến AI backend (" + getApiUrl() + "). Vui lòng đảm bảo server đang chạy.");
   } finally {
     if (badge) badge.classList.add('hidden');
     if (btn) { btn.disabled = false; btn.textContent = '⚡ Tóm tắt cuộc họp với AI'; }

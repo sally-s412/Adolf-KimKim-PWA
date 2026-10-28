@@ -221,3 +221,7 @@ window.I18N.en = {
   notLoggedIn: "Not logged in.",
   errStorageCheckHint: "Check: Cloud Storage is enabled for the project, the storageBucket in config is correct, and storage.rules has been deployed to allow the user to write to avatars/{uid}/.",
 };
+
+Object.assign(window.I18N.en,{"uiAddNote": "+ Add note", "uiNewNote": "New note", "uiNoteTitle": "Title", "uiNoteContent": "Content", "uiNoteTitlePh": "Give your note a title", "uiNoteContentPh": "Write your note here...", "uiNoteTitleRequired": "Enter a title for your note.", "uiNoteSaveFailed": "Your note could not be saved. Please try again.", "uiNoteSaved": "Note saved.", "uiAccountHelp": "Update your display information. Your sign-in account manages your email.", "uiMeetingHelp": "Manage your meeting language and existing preferences.", "uiAIHelp": "View and save AI preferences for your workspace.", "uiPasswordHelp": "Enter your current and new passwords to update your account.", "uiAdvancedConnection": "Advanced connection", "uiConfirmTitle": "Confirm action", "uiConfirmAction": "Confirm", "uiCloseMessage": "Dismiss message"});
+
+Object.assign(window.I18N.en,{"uiEmptyNoteTitle": "A space for your ideas", "uiEmptyNoteHelp": "Create a note or choose one from the list.", "uiSaving": "Saving..."});

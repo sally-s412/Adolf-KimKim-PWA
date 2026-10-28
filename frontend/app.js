@@ -244,7 +244,7 @@ let isMeetingRecording = false;
 let sttWs = null, audioCtx = null, processor = null, micStream = null;
 let recordingTimer = null, recordingSeconds = 0;
 let livePartialText = "";
-let livePartialSpeaker = "Sally";
+let livePartialSpeaker = "Unknown";
 let lastFinalText = "";
 
 function escapeHtml(text) {
@@ -531,6 +531,14 @@ async function sendMeetingChatMsg(){
     body.scrollTop = body.scrollHeight;
   }
 }
+async function readGeneratedFile(response) {
+  const isJson = (response.headers.get('content-type') || '').toLowerCase().includes('application/json');
+  if (!response.ok || isJson) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.message || error.detail || `Export failed (${response.status})`);
+  }
+  return response.blob();
+}
 async function requestGenerationHandler(kind){
   if(!currentMeetingId) return;
   const m=currentMeetingObj;
@@ -556,7 +564,7 @@ async function requestGenerationHandler(kind){
     try{
       const res=await fetch(`${getApiUrl()}/api/powerpoint`,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({title,key_points:keyPoints,summary})});
-      const blob=await res.blob();
+      const blob=await readGeneratedFile(res);
       const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:title.slice(0,40)+'.pptx'});
       a.click(); URL.revokeObjectURL(a.href);
       if(jobsEl) jobsEl.textContent='✅ PowerPoint đã tải xuống.';
@@ -568,7 +576,7 @@ async function requestGenerationHandler(kind){
     try{
       const res=await fetch(`${getApiUrl()}/api/visualization`,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({title,key_points:keyPoints,summary})});
-      const blob=await res.blob();
+      const blob=await readGeneratedFile(res);
       const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:title.slice(0,40)+'.png'});
       a.click(); URL.revokeObjectURL(a.href);
       if(jobsEl) jobsEl.textContent='✅ Hình ảnh đã tải xuống.';
@@ -856,7 +864,7 @@ async function transcribeAudioBlob(blob, onProgress) {
 
   const rawSegments = result.segments || [];
   const collectedSegments = rawSegments.map(s => {
-    const spk = mapSpeakerName(s.speaker || "Sally");
+    const spk = mapSpeakerName(s.speaker || "Unknown");
     return {
       t: Math.floor(s.start || 0),
       speaker: spk,
@@ -977,7 +985,7 @@ function renderTranscriptAndStats(){
     if (livePartialText) {
       html += `
         <div class="seg partial">
-          <div class="meta"><span class="live-dot"></span><b>${escapeHtml(livePartialSpeaker || "Sally")} (đang nói...)</b></div>
+          <div class="meta"><span class="live-dot"></span><b>${escapeHtml(livePartialSpeaker || "Unknown")} (đang nói...)</b></div>
           <p style="color:var(--text-0);font-style:italic;">${escapeHtml(livePartialText)}</p>
         </div>`;
     }
@@ -1130,23 +1138,11 @@ document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='
    (Preserved & Modularized Backend AI Integration)
    ============================================================ */
 
-const SPEAKER_NAMES = ["Sally", "Miles", "Curtis", "Sean"];
-const SPEAKER_COLORS = {
-  "Sally": "#3b82f6",
-  "Miles": "#f59e0b",
-  "Curtis": "#22c55e",
-  "Sean": "#ef4444"
-};
-
+// Preserve the engine's speaker labels and any real names from Meet.
 function mapSpeakerName(spk) {
-  if (!spk) return "Sally";
-  if (SPEAKER_COLORS[spk]) return spk;
-  const num = parseInt(spk.replace(/\D/g, ''), 10);
-  if (!isNaN(num) && num < SPEAKER_NAMES.length) return SPEAKER_NAMES[num];
-  return spk;
+  return spk == null || spk === '' ? 'Unknown' : String(spk);
 }
 function getSpeakerColor(name) {
-  if (SPEAKER_COLORS[name]) return SPEAKER_COLORS[name];
   const palette = ["#3b82f6", "#f59e0b", "#22c55e", "#ef4444", "#a855f7", "#06b6d4", "#ec4899"];
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = (hash << 5) - hash + name.charCodeAt(i);
@@ -1342,7 +1338,7 @@ function handleSTTMessage(data) {
     const text = (data.text || '').trim();
     if (!text || text === lastFinalText) return;
     lastFinalText = text;
-    const spk = mapSpeakerName(data.speaker || data.speaker_id || "Sally");
+    const spk = mapSpeakerName(data.speaker || data.speaker_id || "Unknown");
     segments.push({
       t: recordingSeconds,
       speaker: spk,
@@ -1363,7 +1359,7 @@ function handleSTTMessage(data) {
       const finalText = data.tokens.filter(t => t.text !== '<end>').map(t => t.text).join('').trim();
       if (finalText && finalText !== lastFinalText) {
         lastFinalText = finalText;
-        const rawSpk = data.tokens.find(t => t.speaker)?.speaker || data.speaker || "Sally";
+        const rawSpk = data.tokens.find(t => t.speaker)?.speaker || data.speaker || "Unknown";
         const spk = mapSpeakerName(rawSpk);
         segments.push({
           t: recordingSeconds,
@@ -1382,7 +1378,7 @@ function handleSTTMessage(data) {
     const currentText = textTokens.map(t => t.text).join('').trim();
     if (currentText) {
       livePartialText = currentText;
-      const rawSpk = textTokens.find(t => t.speaker)?.speaker || data.speaker || "Sally";
+      const rawSpk = textTokens.find(t => t.speaker)?.speaker || data.speaker || "Unknown";
       livePartialSpeaker = mapSpeakerName(rawSpk);
       renderTranscriptAndStats();
     }
@@ -1550,7 +1546,7 @@ function updateMeetBotUI({ active, status, message, elapsed_sec = 0, participant
 async function finalizeMeetBotResult(botInfo, result) {
   const rawTranscript = result.transcript || [];
   const mappedSegments = rawTranscript.map(s => {
-    const spk = mapSpeakerName(s.speaker || 'Speaker');
+    const spk = mapSpeakerName(s.speaker || 'Unknown');
     return {
       t: Math.floor(s.t ?? s.start ?? 0),
       speaker: spk,

@@ -3,10 +3,11 @@
 import json
 import logging
 import os
+from urllib.parse import quote
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -122,19 +123,28 @@ class PowerPointRequest(BaseModel):
     summary: str
 
 
+def download_disposition(title: str, extension: str) -> str:
+    """Keep Unicode filenames in RFC 5987 form, with an ASCII fallback."""
+    stem = "".join(
+        char for char in title[:40].replace(" ", "_")
+        if ord(char) >= 32 and ord(char) != 127 and char not in "/\\"
+    ).strip(" .") or "meeting-summary"
+    encoded = quote(stem + extension, safe="")
+    return f"attachment; filename=\"meeting-summary{extension}\"; filename*=UTF-8''{encoded}"
+
+
 @app.post("/api/powerpoint")
 async def powerpoint_endpoint(req: PowerPointRequest):
     try:
         pptx_bytes = generate_pptx(req.title, req.key_points, req.summary)
-        filename = req.title[:40].replace(" ", "_") + ".pptx"
         return Response(
             content=pptx_bytes,
             media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+            headers={"Content-Disposition": download_disposition(req.title, ".pptx")},
         )
     except Exception as e:
         logger.error(f"PowerPoint failed: {e}")
-        return {"status": "error", "message": str(e)}
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
 
 
 # ── Visualization ─────────────────────────────────────────────────────────────
@@ -149,15 +159,14 @@ class VisualizationRequest(BaseModel):
 async def visualization_endpoint(req: VisualizationRequest):
     try:
         png_bytes = generate_image(req.title, req.key_points, req.summary)
-        filename = req.title[:40].replace(" ", "_") + ".png"
         return Response(
             content=png_bytes,
             media_type="image/png",
-            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+            headers={"Content-Disposition": download_disposition(req.title, ".png")},
         )
     except Exception as e:
         logger.error(f"Visualization failed: {e}")
-        return {"status": "error", "message": str(e)}
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
 
 
 app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")

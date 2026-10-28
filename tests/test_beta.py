@@ -4,7 +4,6 @@ import time
 import unittest
 from unittest.mock import patch
 
-os.environ.setdefault('STT_PROVIDER', 'groq')
 from fastapi.testclient import TestClient
 from google.auth import crypt, jwt
 from cryptography import x509
@@ -32,10 +31,19 @@ class BetaTests(unittest.TestCase):
         with patch('beta.verify_token', side_effect=ValueError('invalid')):
             self.assertEqual(self.client.post('/api/chat', headers={'Authorization': 'Bearer invalid'}).status_code, 401)
 
-    def test_missing_provider_key_and_unavailable_meet_are_explicit(self):
-        with patch('beta.verify_token', return_value={'sub': 'tester'}), patch.dict(os.environ, {'GROQ_API_KEY': ''}):
-            for path in ('/api/chat', '/api/meet-bot/join'):
-                self.assertEqual(self.client.post(path, json={}, headers={'Authorization': 'Bearer token'}).status_code, 503)
+    def test_auth_wrapper_preserves_ai_payload_and_response(self):
+        from unittest.mock import AsyncMock
+        payload = {'transcript': [{'speaker': 'Sally', 'text': 'Keep output intact', 'start': 0}]}
+        engine_output = {'title': 'Engineer title', 'key_points': ['Exact'], 'summary': 'Original output'}
+        engine = AsyncMock(return_value=engine_output)
+        with patch('beta.verify_token', return_value={'sub': 'tester'}), patch('app.summarize_meeting', engine):
+            response = self.client.post('/api/summarize', json=payload, headers={'Authorization': 'Bearer token'})
+        self.assertEqual(response.json(), {'status': 'ok', **engine_output})
+        engine.assert_awaited_once_with(payload['transcript'])
+
+    def test_unavailable_meeting_worker_is_explicit(self):
+        with patch('beta.verify_token', return_value={'sub': 'tester'}):
+            self.assertEqual(self.client.post('/api/meet-bot/join', json={}, headers={'Authorization': 'Bearer token'}).status_code, 503)
 
     def test_authenticated_pptx_export_and_burst_limit(self):
         with patch('beta.verify_token', return_value={'sub': 'tester'}):

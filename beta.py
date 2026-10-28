@@ -73,16 +73,4 @@ async def beta_auth(request: Request, call_next):
         return JSONResponse({"detail": "KimKim Meeting needs a separate meeting worker; it is not deployed on this free beta server."}, status_code=503)
     if request.method != "GET" and not consume_quota(claims["sub"]):
         return JSONResponse({"detail": "Beta request limit reached. Please try again in one minute."}, status_code=429, headers={"Retry-After": "60"})
-    # Bound JSON payloads as well as multipart audio, including chunked requests.
-    max_bytes = 21 * 1024 * 1024 if path in ("/api/transcribe", "/transcribe") else 2 * 1024 * 1024
-    size = 0
-    body = bytearray()
-    async for chunk in request.stream():
-        size += len(chunk)
-        if size > max_bytes:
-            return JSONResponse({"detail": "Request is too large for the beta."}, status_code=413)
-        body.extend(chunk)
-    request._body = bytes(body)
-    if path not in ("/api/powerpoint", "/api/visualization") and not os.getenv("GROQ_API_KEY"):
-        return JSONResponse({"detail": "AI is not enabled yet. Configure GROQ_API_KEY in the server environment."}, status_code=503)
     return await call_next(request)

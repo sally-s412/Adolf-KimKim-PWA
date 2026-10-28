@@ -1,13 +1,5 @@
 window.I18N = window.I18N || {};
 window.I18N.vi = {
-  installApp: 'Cài ứng dụng',
-  updateApp: 'Cập nhật',
-  navRecording: 'Ghi âm',
-  navMore: 'Thêm',
-  kimkimMeetingTitle: 'KimKim Meeting',
-  kimkimMeetingDescription: 'Dán link Google Meet để mời KimKim vào họp',
-  inviteKimkimMeet: 'Mời KimKim vào Google Meet',
-  kimkimMeetingTitlePh: 'Tiêu đề cuộc họp (tuỳ chọn)',
   signinTitle: "Đăng nhập",
   signinSub: "Thống trị thế giới cùng Adolf KimKim",
   signinGoogle: "🪐Đăng nhập với Google",

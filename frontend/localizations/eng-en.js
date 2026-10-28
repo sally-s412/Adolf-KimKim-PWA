@@ -1,13 +1,5 @@
 window.I18N = window.I18N || {};
 window.I18N.en = {
-  installApp: 'Install app',
-  updateApp: 'Update',
-  navRecording: 'Recording',
-  navMore: 'More',
-  kimkimMeetingTitle: 'KimKim Meeting',
-  kimkimMeetingDescription: 'Paste a Google Meet link to invite KimKim to the meeting',
-  inviteKimkimMeet: 'Invite KimKim to Google Meet',
-  kimkimMeetingTitlePh: 'Meeting title (optional)',
   signinTitle: "Sign in",
   signinSub: "Unlock the power of intelligent transcripts",
   signinGoogle: "Sign in with Google",

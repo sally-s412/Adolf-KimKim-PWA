@@ -1,9 +1,0 @@
-{
-  "name": "adolf-kimkim-pwa",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "build": "node scripts/build.mjs",
-    "test": "node --test tests/pwa.test.mjs"
-  }
-}

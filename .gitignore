@@ -13,7 +13,4 @@ AI-Speech-Base/
 random.txt
 tmp/
 models/
-dist/
-.openai/*.tar.gz
-google_meet_record/meet_bot_profile*/
-*.wav
+tests/

@@ -7,7 +7,7 @@ const apiBaseUrl = 'https://adolf-kimkim-beta.onrender.com';
 try {
   writeFileSync('frontend/config.js', 'window.AKK_CONFIG = Object.freeze(' + JSON.stringify({
     apiBaseUrl,
-    sttUrl: apiBaseUrl.replace(/^http/, 'ws') + '/v1/ws/realtime-speech'
+    sttUrl: 'wss://imperial-pushing-advantage-trackback.trycloudflare.com/v1/ws/realtime-speech'
   }) + ');\n');
   const result = spawnSync(process.execPath, ['scripts/build.mjs'], {stdio: 'inherit'});
   if (result.status !== 0) throw new Error('Static PWA build failed');

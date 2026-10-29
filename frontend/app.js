@@ -474,13 +474,12 @@ function openMeeting(id){
     } else if (currentMeetingObj && currentMeetingObj.chatHistory && currentMeetingObj.chatHistory.length) {
       renderChatRows(currentMeetingObj.chatHistory);
     }
+  }, () => {
+    notify(lang === 'vi' ? 'Không thể đọc lịch sử chat của cuộc họp. Vui lòng kiểm tra quyền Firebase.' : 'Meeting chat history could not be loaded. Please check Firebase permissions.');
   });
-
-  mdJobsUnsub = AiService.watchGenerationJobs(id, rows=>{
-    const el=document.getElementById('mdGenerationJobs');
-    if(!el) return;
-    el.innerHTML = rows.length ? rows.map(j=>`<div>• ${j.kind} — ${j.status==='queued'?t('genQueued'):j.status} ${j.status==='queued'?`<span style="opacity:.7">${t('genComingSoon')}</span>`:''}</div>`).join('') : '';
-  });
+  // Generation buttons call the API directly and render their own status.
+  // The unused prototype generationJobs collection is not part of that flow.
+  mdJobsUnsub = null;
 }
 function showMeetingTab(which){
   document.getElementById('mdTabTranscriptBtn').classList.toggle('active', which==='transcript');
@@ -1229,6 +1228,24 @@ function getApiUrl() {
   return (storedEndpoint('api_url') || getDefaultApiUrl()).replace(/\/$/, '');
 }
 // Firebase credentials are sent only to the configured backend, never persisted.
+function apiErrorMessage(status, detail, path) {
+  if (['/api/transcribe', '/transcribe'].includes(path.replace(/\/$/, ''))) {
+    if ([502, 503].includes(status)) {
+      return lang === 'vi'
+        ? 'Chưa kết nối được dịch vụ chuyển giọng nói thành văn bản. Vui lòng thử lại khi server AI hoạt động trở lại.'
+        : 'The speech-to-text service is unavailable. Please try again when the AI service is back online.';
+    }
+    if (status === 504) {
+      return lang === 'vi'
+        ? 'Xử lý âm thanh quá thời gian chờ. Vui lòng thử lại sau.'
+        : 'Audio processing timed out. Please try again later.';
+    }
+  }
+  if (typeof detail === 'string' && detail) return detail;
+  if (detail && typeof detail.message === 'string') return detail.message;
+  return lang === 'vi' ? `Yêu cầu không thành công (mã ${status}).` : `Request failed (${status}).`;
+}
+
 async function apiFetch(url, options = {}) {
   const user = firebase.auth().currentUser;
   if (!user) throw new Error(lang === 'vi' ? 'Vui lòng đăng nhập.' : 'Please sign in.');
@@ -1239,7 +1256,7 @@ async function apiFetch(url, options = {}) {
   const response = await fetch(target.href, {...options, headers});
   if (!response.ok) {
     const data = await response.clone().json().catch(() => ({}));
-    throw new Error(data.detail || `API error (${response.status})`);
+    throw new Error(apiErrorMessage(response.status, data.detail, target.pathname));
   }
   return response;
 }

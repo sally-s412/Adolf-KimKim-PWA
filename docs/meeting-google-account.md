@@ -16,7 +16,7 @@ Giữ CDN frontend và API AI hiện tại. Có thể chạy riêng capture work
 Linux đang có sẵn, với đủ RAM cho Chromium và thư mục dữ liệu bền vững.
 Không thay model, prompt, key hoặc pipeline phiên âm/tóm tắt.
 
-1. Tạo một tài khoản Google dành cho KimKim, đặt tên hiển thị KimKim Meeting.
+1. Tạo một tài khoản Google dành cho KimKim, đặt tên hiển thị Adolf KimKim .
 2. Trên chính máy Linux sẽ chạy worker, đăng nhập thủ công tài khoản đó bằng
    trình duyệt Patchright với một thư mục hồ sơ riêng. Người vận hành tự nhập
    thông tin và hoàn thành xác thực của Google. Ví dụ trong phiên desktop:

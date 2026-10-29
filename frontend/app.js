@@ -114,6 +114,7 @@ function updateUserUI(user){
   const initialsText=initials(name);
   applyAvatar(document.getElementById('sideAvatar'),user,initialsText);
   applyAvatar(document.getElementById('profileAvatar'),user,initialsText);
+  if(typeof renderHome==='function') renderHome();
   const sideName=document.getElementById('sideUserName');
   const hero=document.querySelector('[data-i18n="heroTitle"]');
   if(sideName)sideName.textContent=name;
@@ -1016,21 +1017,7 @@ function renderMeetingsTable(){
 }
 
 function renderAll(){
-  // upcoming (home)
-  const upcomingEl=document.getElementById('upcomingList');
-  if(upcomingEl) upcomingEl.innerHTML = meetings.slice(0,3).map(m=>`
-    <div class="list-row" onclick="openMeeting('${m.id}')">
-      <div class="avatar" style="background:#3b82f6">${initials(m.title)}</div>
-      <div class="info"><div class="t">${m.title}</div><div class="d">${m.date||''} · ${m.dur||''}</div></div>
-      ${statusBadge(m.status)}
-    </div>`).join('') || `<div style="color:var(--text-2);font-size:13px;">${I18N[lang].noMeetings}</div>`;
-  // recent notes
-  const recentEl=document.getElementById('recentNotesList');
-  if(recentEl) recentEl.innerHTML = notesArr.slice(0,3).map(n=>`
-    <div class="list-row" onclick="showView('notes',document.querySelector('[data-view=notes]'));openNote('${n.id}')">
-      <div class="avatar" style="background:#22c55e">📝</div>
-      <div class="info"><div class="t">${n.title}</div></div>
-    </div>`).join('') || `<div style="color:var(--text-2);font-size:13px;">${I18N[lang].noNotes}</div>`;
+  if(typeof renderHome==='function') renderHome();
   // meetings table
   renderMeetingsTable();
   // notes sidebar + editor

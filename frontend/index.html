@@ -543,8 +543,25 @@
 <script src="services/translationService.js?v=3"></script>
 <script src="layout.js"></script>
 <script src="ui-feedback.js"></script>
-<script src="app.js?v=10"></script>
+<script src="app.js?v=11"></script>
 <script src="pwa.js"></script>
+<script>
+// Recover only a failed app boot; a working app keeps the normal update prompt.
+if(typeof signInWithEmail !== 'function' && 'serviceWorker' in navigator){
+  const error=document.getElementById('authError');
+  error.textContent='Đang tải lại bản cập nhật đăng nhập… / Updating sign-in…';
+  navigator.serviceWorker.getRegistration().then(reg=>{
+    if(!reg){error.textContent='Không tải được ứng dụng. Vui lòng tải lại trang. / Please reload the page.';return;}
+    navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload(),{once:true});
+    const activate=()=>{if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});};
+    activate();reg.addEventListener('updatefound',()=>{
+      const worker=reg.installing;
+      worker?.addEventListener('statechange',()=>{if(worker.state==='installed')activate();});
+    });
+    reg.update().catch(()=>{error.textContent='Không tải được bản cập nhật. Vui lòng thử lại khi có mạng. / Please retry when online.';});
+  }).catch(()=>{error.textContent='Vui lòng đóng và mở lại ứng dụng. / Please reopen the app.';});
+}
+</script>
 <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="false"></div>
 <dialog id="confirmDialog" class="confirm-dialog" aria-labelledby="confirmHeading" aria-describedby="confirmMessage">
   <form method="dialog"><h2 id="confirmHeading"></h2><p id="confirmMessage"></p><div class="form-actions"><button class="btn btn-ghost" value="cancel" id="confirmCancel"></button><button class="btn btn-danger" value="confirm" id="confirmAccept"></button></div></form>

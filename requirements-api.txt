@@ -10,3 +10,6 @@ google-auth>=2.38,<3
 requests>=2.32,<3
 cachecontrol>=0.14,<1
 cryptography>=44
+
+pypdf>=5,<7
+python-docx>=1.1,<2

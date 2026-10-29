@@ -337,12 +337,12 @@
     <!-- ===== UPLOADS ===== -->
     <div class="view hidden" id="view-uploads">
       <div class="view-title" data-i18n="navUploads">Tải lên</div>
-      <div class="view-sub" data-i18n="uploadSub">Tải file âm thanh hoặc video để tạo bản ghi tự động</div>
+      <div class="view-sub" data-i18n="uploadSub">Tải âm thanh, video, PDF hoặc DOCX để đọc nội dung và phân tích với AI</div>
       <div class="card dropzone" ondragover="event.preventDefault()" ondrop="event.preventDefault(); if(event.dataTransfer && event.dataTransfer.files[0]){ handleFileSelected(event.dataTransfer.files[0]); }">
         <div class="ic">🎧</div>
         <p data-i18n="dropText">Kéo thả file MP3, WAV hoặc MP4 vào đây, hoặc chọn file để tải lên</p>
         <button class="btn btn-primary" onclick="selectUploadFile()" data-i18n="selectFile">Chọn file</button>
-        <input type="file" id="hiddenFileInput" accept="audio/*,video/*,.mp3,.wav,.mp4,.m4a,.webm,.ogg,.flac" style="display:none" onchange="if(this.files[0]) handleFileSelected(this.files[0]); this.value='';">
+        <input type="file" id="hiddenFileInput" accept="audio/*,video/*,.mp3,.wav,.mp4,.m4a,.webm,.ogg,.flac,.pdf,.docx,.doc" style="display:none" onchange="if(this.files[0]) handleFileSelected(this.files[0]); this.value='';">
       </div>
       <div class="card" id="uploadList"></div>
     </div>
@@ -535,7 +535,7 @@
 <script src="services/firebaseClient.js?v=3"></script>
 <script src="services/avatarService.js?v=3"></script>
 <script src="services/authService.js?v=4"></script>
-<script src="services/meetingService.js?v=3"></script>
+<script src="services/meetingService.js?v=4"></script>
 <script src="services/noteService.js?v=3"></script>
 <script src="services/recordingService.js?v=3"></script>
 <script src="services/teamService.js?v=3"></script>
@@ -545,7 +545,7 @@
 <script src="services/translationService.js?v=3"></script>
 <script src="layout.js"></script>
 <script src="ui-feedback.js"></script>
-<script src="app.js?v=13"></script>
+<script src="app.js?v=14"></script>
 <script src="pwa.js"></script>
 <script>
 // Recover only a failed app boot; a working app keeps the normal update prompt.

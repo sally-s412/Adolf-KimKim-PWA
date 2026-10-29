@@ -626,6 +626,15 @@ function extractActionItems(summary) {
 
 function renderMeetingDetail(){
   const m=currentMeetingObj;
+  const isDocument = !!m?.document;
+  document.querySelector('#view-meetingDetail .video-controls')?.classList.toggle('hidden', isDocument);
+  document.getElementById('mdParticipants')?.closest('.card')?.classList.toggle('hidden', isDocument);
+  const contentTab = document.getElementById('mdTabTranscriptBtn');
+  if (contentTab) contentTab.textContent = isDocument ? (lang === 'vi' ? 'Nội dung tài liệu' : 'Document content') : 'Transcript';
+  const summaryButton = document.getElementById('btnQuickSummarize');
+  if (summaryButton) summaryButton.textContent = isDocument
+    ? (lang === 'vi' ? 'Tóm tắt tài liệu với AI' : 'Summarize document with AI')
+    : (lang === 'vi' ? '⚡ Tóm tắt cuộc họp với AI' : '⚡ Summarize meeting with AI');
   const titleEl = document.querySelector('#view-meetingDetail .view-title');
   if (titleEl) titleEl.textContent = m ? m.title : '';
   const subEl = document.querySelector('#view-meetingDetail .view-sub');
@@ -794,9 +803,9 @@ async function changeRoleHandler(id,role){
 function selectUploadFile(){
   document.getElementById('hiddenFileInput').click();
 }
-async function addProcessedMeeting(title, transcript, durSeconds) {
+async function addProcessedMeeting(title, transcript, durSeconds, documentInfo = null) {
   const now = new Date();
-  const durFormatted = durSeconds ? fmt(durSeconds) : '00:30';
+  const durFormatted = documentInfo ? '—' : (durSeconds ? fmt(durSeconds) : '00:30');
   const meetingData = {
     title: title || 'Cuộc họp ' + now.toLocaleString('vi-VN'),
     date: now.toISOString().slice(0, 10),
@@ -808,7 +817,8 @@ async function addProcessedMeeting(title, transcript, durSeconds) {
     keyPoints: [],
     actionItems: [],
     notes: '',
-    participants: []
+    participants: [],
+    ...(documentInfo ? {document: documentInfo} : {})
   };
 
   let meetingId = 'm_' + Date.now();
@@ -834,10 +844,17 @@ async function handleFileSelected(fileOrInput){
   const file = (fileOrInput instanceof File) ? fileOrInput : (fileOrInput && fileOrInput.files ? fileOrInput.files[0] : fileOrInput);
   if(!file) return;
 
+  const isDocument = /\.(pdf|docx)$/i.test(file.name);
   const isAudioVideo = (file.type && (file.type.startsWith('audio/') || file.type.startsWith('video/'))) ||
                        /\.(mp3|wav|ogg|m4a|aac|flac|webm|mp4|mov|mkv)$/i.test(file.name);
-  if(!isAudioVideo){
-    notify('Chỉ hỗ trợ file âm thanh hoặc video (mp3, wav, mp4, webm, ogg, m4a...).');
+  if (!isDocument && !isAudioVideo) {
+    notify(lang === 'vi'
+      ? 'Hỗ trợ âm thanh, video, PDF và Word DOCX. File DOC cần lưu lại thành DOCX.'
+      : 'Supported: audio, video, PDF and Word DOCX. Save DOC files as DOCX first.');
+    return;
+  }
+  if (isDocument && file.size > 10 * 1024 * 1024) {
+    notify(lang === 'vi' ? 'Tài liệu tối đa 10 MB.' : 'Documents must be 10 MB or smaller.');
     return;
   }
 
@@ -848,6 +865,10 @@ async function handleFileSelected(fileOrInput){
   if(upEl) upEl.prepend(row);
 
   try{
+    if (isDocument) {
+      await importDocumentFile(file, row);
+      return;
+    }
     const transcript = await transcribeAudioBlob(file, msg => {
       row.textContent = msg + ' — ' + file.name;
     });
@@ -859,6 +880,28 @@ async function handleFileSelected(fileOrInput){
     console.error("Upload error:", err);
     row.textContent = '❌ ' + file.name + ': ' + err.message;
   }
+}
+
+async function importDocumentFile(file, row) {
+  row.textContent = (lang === 'vi' ? 'Đang đọc tài liệu: ' : 'Reading document: ') + file.name;
+  const body = new FormData();
+  body.append('file', file, file.name);
+  const response = await apiFetch(getApiUrl() + '/api/documents/extract', {
+    method: 'POST', headers: {'Accept-Language': lang}, body
+  });
+  const result = await response.json();
+  const transcript = result.sections.map(section => ({
+    t: 0, speaker: 'DOCUMENT', color: getSpeakerColor('DOCUMENT'),
+    text: section.text, page: section.page
+  }));
+  const documentInfo = {
+    name: file.name, kind: result.kind,
+    pageCount: result.page_count, characterCount: result.character_count
+  };
+  await addProcessedMeeting(file.name.replace(/\.[^.]+$/, ''), transcript, 0, documentInfo);
+  row.textContent = '✓ ' + file.name + (lang === 'vi'
+    ? ' — Đã đọc và lưu nội dung. Bạn có thể tóm tắt hoặc hỏi KimKim về tài liệu.'
+    : ' — Content imported. You can summarize it or ask KimKim about the document.');
 }
 
 async function audioBufferTo16kPcm(audioBuffer) {
@@ -1026,6 +1069,14 @@ function renderAll(){
 }
 function renderTranscriptAndStats(){
   const segEl=document.getElementById('segList');
+  if (currentMeetingObj?.document) {
+    if (segEl) segEl.innerHTML = segments.map(section => '<div class="seg">' +
+      (section.page ? '<div class="meta">' + (lang === 'vi' ? 'Trang' : 'Page') + ' ' + section.page + '</div>' : '') +
+      '<p style="white-space:pre-wrap">' + escapeHtml(section.text) + '</p></div>').join('');
+    const stats = document.getElementById('speakerStats');
+    if (stats) stats.innerHTML = '';
+    return;
+  }
   if(segEl) {
     let html = segments.map(s=>`
       <div class="seg" onclick="highlightSeg(this)">

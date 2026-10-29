@@ -17,6 +17,7 @@ from routes.mindmap import generate_mindmap, render_preview_html
 from routes.powerpoint import generate_pptx
 from routes.visualization import generate_image
 from routes.transcription import router as transcription_router
+from routes.documents import router as documents_router
 from routes.chatbot import router as chatbot_router
 from routes.meet_bot import router as meet_bot_router
 
@@ -49,6 +50,7 @@ app.add_middleware(
 
 # Mount routes
 app.include_router(transcription_router)
+app.include_router(documents_router)
 app.include_router(chatbot_router)
 app.include_router(meet_bot_router)
 

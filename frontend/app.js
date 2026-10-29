@@ -234,6 +234,7 @@ function showView(v,el){
   const target=document.getElementById('view-'+v);
   if(target) target.classList.remove('hidden');
   if(el){ document.querySelectorAll('.nav-item[data-view]').forEach(n=>n.classList.remove('active')); el.classList.add('active'); }
+  document.dispatchEvent(new CustomEvent('akk:viewchange',{detail:{view:v}}));
 }
 function showSettings(section, element){
   const ids={account:'settingsAccount',meeting:'settingsMeeting',ai:'settingsAI',password:'settingsPassword'};

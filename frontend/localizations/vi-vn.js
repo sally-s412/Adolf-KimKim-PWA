@@ -10,7 +10,7 @@ window.I18N.vi = {
   kimkimMeetingTitlePh: 'Tiêu đề cuộc họp (tuỳ chọn)',
   signinTitle: "Đăng nhập",
   signinSub: "Thống trị thế giới cùng Adolf KimKim",
-  signinGoogle: "🪐Đăng nhập với Google",
+  signinGoogle: "Đăng nhập với Google",
   emailLbl: "Email",
   pwLbl: "Mật khẩu",
   signinBtn: "Đăng nhập",

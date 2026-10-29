@@ -32,7 +32,16 @@ def main(meet_url, job_dir):
     original = install_screenshot_policy(
         Page, enabled=os.getenv("MEET_DEBUG_SCREENSHOTS") == "1"
     )
+    original_profile = getattr(meet_bot_worker, "PROFILE_DIR", None)
     try:
+        profile_path = os.getenv("MEET_GOOGLE_PROFILE_DIR", "").strip()
+        if profile_path:
+            profile = Path(profile_path).expanduser().resolve()
+            if not profile.is_dir():
+                raise RuntimeError("MEET_GOOGLE_PROFILE_DIR must be an existing private browser profile directory")
+            # Use the operator's separately provisioned profile on this host.
+            # This does not log in, copy cookies, or change meeting admission rules.
+            meet_bot_worker.PROFILE_DIR = profile
         meet_bot_worker.run_bot(meet_url, job_dir)
     except Exception:
         # Startup can fail before the original worker enters its own try block.
@@ -45,6 +54,8 @@ def main(meet_url, job_dir):
         raise
     finally:
         Page.screenshot = original
+        if original_profile is not None:
+            meet_bot_worker.PROFILE_DIR = original_profile
 
 
 if __name__ == "__main__":

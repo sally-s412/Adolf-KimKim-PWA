@@ -51,6 +51,26 @@ def own_job(job_id, uid):
         raise HTTPException(404, "Meeting session not found.")
 
 
+def public_meta(meta):
+    """Keep browser diagnostics in the job file, never in the UI response."""
+    result = dict(meta)
+    result.pop("error", None)
+    if result.get("status") != "error":
+        return result
+    raw = str(meta.get("error") or meta.get("message") or "").lower()
+    if any(marker in raw for marker in ("browser has been closed", "target closed", "page crashed", "target page, context or browser")):
+        code = "browser_closed"
+        message = "Trình duyệt chạy KimKim đã dừng. Vui lòng thử lại; nếu lỗi lặp lại, cần kiểm tra tài nguyên máy chạy bot."
+    elif "không được duyệt" in raw or "5 phút" in raw:
+        code = "admission_timeout"
+        message = "KimKim chưa được chủ phòng cho phép vào họp. Vui lòng kiểm tra yêu cầu tham gia trong Google Meet."
+    else:
+        code = "meeting_worker_error"
+        message = "KimKim chưa thể tham gia cuộc họp. Vui lòng thử lại hoặc nhờ người quản trị kiểm tra worker."
+    result.update(message=message, error_code=code)
+    return result
+
+
 @app.post("/api/meet-bot/join")
 async def join(req: meet_bot.JoinMeetRequest, uid=Depends(identity)):
     if prerequisites():
@@ -82,7 +102,7 @@ async def stop(job_id: str, uid=Depends(identity)):
 async def status(job_id: str, uid=Depends(identity)):
     own_job(job_id, uid)
     job = meet_bot.JOBS[job_id]
-    meta = meet_bot._read_worker_meta(job["job_dir"])
+    meta = public_meta(meet_bot._read_worker_meta(job["job_dir"]))
     if job["proc"].poll() is None:
         return {"status": meta.get("status", "joining"),
                 "message": meta.get("message", job["message"]),

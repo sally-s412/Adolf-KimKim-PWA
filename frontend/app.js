@@ -117,7 +117,14 @@ function updateUserUI(user){
   const sideName=document.getElementById('sideUserName');
   const hero=document.querySelector('[data-i18n="heroTitle"]');
   if(sideName)sideName.textContent=name;
-  if(hero){hero.textContent=lang==='vi'?`Hi ${name}, chào mừng đến với Adolf KimKim 💙`:`Hi ${name}, Welcome to Adolf KimKim 💙`;}
+  if(hero){
+    const greeting=document.createElement('span');greeting.className='hero-greeting';greeting.textContent=`Hi ${name},`;
+    const welcome=document.createElement('span');welcome.className='hero-welcome';
+    const prefix=document.createElement('span');prefix.className='welcome-phrase';prefix.textContent=lang==='vi'?'chào mừng đến với':'Welcome to';
+    welcome.append(prefix,document.createTextNode(' '));
+    const brand=document.createElement('span');brand.className='brand-phrase';brand.textContent='Adolf KimKim 💙';welcome.append(brand);
+    hero.replaceChildren(greeting,document.createTextNode(' '),welcome);
+  }
   const nameInput=document.querySelector('#settingsAccount .field input');
   const emailInput=document.querySelectorAll('#settingsAccount .field input')[1];
   if(nameInput)nameInput.value=name;
@@ -1545,141 +1552,7 @@ function updateMeetBotUI({ active, status, message, elapsed_sec = 0, participant
   const partEl = document.getElementById('recMeetParticipants');
 
   const canStop = active && (status === 'joining' || status === 'waiting_admission' || status === 'recording');
-  if (startBtn) startBtn.style.display = active ? 'none' : 'inline-flex';
-  if (stopBtn) {
-    stopBtn.style.display = active ? 'inline-flex' : 'none';
-    stopBtn.disabled = !canStop;
-    stopBtn.textContent = canStop ? '⏹ Kết thúc & Tóm tắt AI' : '⏳ Đang phiên âm & tóm tắt...';
-  }
-  if (timerEl) {
-    timerEl.style.display = (active && (status === 'recording' || elapsed_sec > 0)) ? 'block' : 'none';
-    timerEl.textContent = fmt(elapsed_sec || 0);
-  }
-  if (statusEl) statusEl.textContent = message || '';
-  if (partEl) {
-    partEl.innerHTML = (participants || []).map(p => `<span class="tag">${escapeHtml(p)}</span>`).join('');
-  }
-
-  // 2. Meeting Detail banner
-  const barEl = document.getElementById('mdMeetBotBar');
-  const barTextEl = document.getElementById('mdMeetBotStatusText');
-  const barStopBtn = document.getElementById('mdMeetBotStopBtn');
-  if (barEl) {
-    const showOnDetail = active && (!activeMeetBot?.meetingId || activeMeetBot.meetingId === currentMeetingId);
-    barEl.classList.toggle('hidden', !showOnDetail);
-    if (barTextEl) {
-      const timeStr = elapsed_sec > 0 ? ` (${fmt(elapsed_sec)})` : '';
-      barTextEl.textContent = `${message || (lang==='en'?'KimKim is joining the meeting…':'KimKim đang tham gia cuộc họp…')}${timeStr}`;
-    }
-    if (barStopBtn) {
-      barStopBtn.disabled = !canStop;
-      barStopBtn.textContent = canStop ? '⏹ Kết thúc & Tóm tắt' : '⏳ Đang xử lý AI...';
-    }
-  }
-}
-
-async function finalizeMeetBotResult(botInfo, result) {
-  const rawTranscript = result.transcript || [];
-  const mappedSegments = rawTranscript.map(s => {
-    const spk = mapSpeakerName(s.speaker || 'Speaker');
-    return {
-      t: Math.floor(s.t ?? s.start ?? 0),
-      speaker: spk,
-      color: getSpeakerColor(spk),
-      text: (s.text || '').trim()
-    };
-  });
-
-  const now = new Date();
-  const finalTitle = botInfo.title || result.title || ('Google Meet ' + now.toLocaleString('vi-VN'));
-  const durFormatted = fmt(result.duration_sec || 30);
-  const summary = result.summary || '';
-  const keyPoints = result.key_points || [];
-  const actionItems = extractActionItems(summary);
-
-  let meetingId = botInfo.meetingId;
-  const existingMeeting = meetingId ? meetings.find(m => m.id === meetingId) : null;
-  const mergedParticipants = Array.from(new Set([
-    ...((existingMeeting && existingMeeting.participants) || []),
-    ...(result.participants || [])
-  ]));
-
-  const meetingPayload = {
-    title: finalTitle,
-    date: (existingMeeting && existingMeeting.date) || now.toISOString().slice(0, 10),
-    time: (existingMeeting && existingMeeting.time) || now.toTimeString().slice(0, 5),
-    dur: durFormatted,
-    status: 'done',
-    participants: mergedParticipants,
-    transcript: mappedSegments,
-    summary,
-    keyPoints,
-    actionItems
-  };
-
-  try {
-    if (meetingId) {
-      await MeetingService.updateMeeting(meetingId, meetingPayload);
-    } else {
-      meetingId = await MeetingService.createMeeting(meetingPayload);
-    }
-  } catch (err) {
-    console.warn('Firestore save warning for Meet Bot:', err);
-    if (!meetingId) meetingId = 'm_' + Date.now();
-  }
-
-  meetingPayload.id = meetingId;
-  const idx = meetings.findIndex(m => m.id === meetingId);
-  if (idx >= 0) meetings[idx] = { ...meetings[idx], ...meetingPayload };
-  else meetings.unshift(meetingPayload);
-
-  // Also save summary to Notes if non-empty
-  if (summary) {
-    try {
-      const noteId = await NoteService.createNote(finalTitle);
-      if (noteId) await NoteService.updateNote(noteId, { title: finalTitle, content: summary });
-    } catch (e) {
-      console.warn('Could not create note from Meet Bot summary:', e);
-    }
-  }
-
-  updateMeetBotUI({ active: false, status: 'done', message: '✅ Đã lưu biên bản cuộc họp Google Meet!' });
-  renderAll();
-  showView('meetings', document.querySelector('[data-view=meetings]'));
-  openMeeting(meetingId);
-}
-
-/* ---------------- Summarization ---------------- */
-async function endMeetingAndSummarize() {
-  if (isMeetingRecording) stopMeetingRecording();
-  await generateSummaryFromCurrentTranscript();
-}
-
-async function generateSummaryFromCurrentTranscript() {
-  if (!segments || segments.length === 0) {
-    notify("Chưa có nội dung cuộc họp nào để tóm tắt.");
-    return;
-  }
-
-  const badge = document.getElementById('summaryStatusBadge');
-  const btn = document.getElementById('btnQuickSummarize');
-  if (badge) badge.classList.remove('hidden');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang tóm tắt cuộc họp...'; }
-
-  try {
-    const apiUrl = getApiUrl();
-    const res = await apiFetch(`${apiUrl}/api/summarize`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ transcript: segments })
-    });
-    const data = await res.json();
-
-    if (data.status === 'ok') {
-      currentSummaryData = data;
-      const finalTitle = data.title || currentMeetingObj?.title || 'Cuộc họp mới';
-      const finalDur = recordingSeconds ? fmt(recordingSeconds) : (currentMeetingObj?.dur && currentMeetingObj.dur !== '00:00' ? currentMeetingObj.dur : '00:30');
-      const actionItems = extractActionItems(data.summary);
+  if (startBtn) startBtn.style.display = active ? 'none' : 'in…1359 tokens truncated…const actionItems = extractActionItems(data.summary);
 
       const meetingUpdates = {
         title: finalTitle,

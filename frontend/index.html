@@ -123,7 +123,7 @@
 
     <!-- ===== MEETINGS ===== -->
     <div class="view hidden" id="view-meetings">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div class="page-heading">
         <div>
           <div class="view-title" data-i18n="navMeetings">Cuộc họp</div>
           <div class="view-sub" data-i18n="meetingsSub">Quản lý toàn bộ cuộc họp đã ghi và đang xử lý</div>
@@ -149,7 +149,7 @@
 
     <!-- ===== MEETING DETAIL ===== -->
     <div class="view hidden" id="view-meetingDetail">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div class="page-heading">
         <button class="btn btn-ghost" onclick="showView('meetings',document.querySelector('[data-view=meetings]'))">← Quay lại</button>
         <div style="display:flex;gap:8px;">
           <button class="btn btn-ghost" onclick="editMeeting(currentMeetingId)" data-i18n="editMeeting">✏️ Sửa</button>
@@ -238,7 +238,7 @@
       <div class="view-title" id="cmFormTitle" data-i18n="createMeetingTitle">Tạo cuộc họp mới</div>
       <div class="card" style="max-width:520px;padding:20px;">
         <div class="field"><label data-i18n="cmTitleLbl">Tiêu đề</label><input id="cmTitle" style="width:100%"></div>
-        <div style="display:flex;gap:10px;">
+        <div class="field-pair">
           <div class="field" style="flex:1"><label data-i18n="cmDateLbl">Ngày</label><input id="cmDate" type="date" style="width:100%"></div>
           <div class="field" style="flex:1"><label data-i18n="cmTimeLbl">Giờ</label><input id="cmTime" type="time" style="width:100%"></div>
         </div>
@@ -279,7 +279,7 @@
       <div class="notes-workspace">
         <div class="card" style="width:260px;flex-shrink:0;padding:10px;" id="notesSidebarList"></div>
         <div class="card" style="flex:1;padding:20px;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+          <div class="editor-toolbar">
             <button class="btn btn-ghost" id="noteTranslateBtn" onclick="toggleNoteTranslation()" data-i18n="translateBtn">🌐 Dịch sang tiếng Anh</button>
             <button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);" onclick="deleteNoteHandler()" data-i18n="deleteNoteBtn">🗑️ Xoá ghi chú</button>
           </div>
@@ -466,10 +466,10 @@
     <!-- ===== UPGRADE ===== -->
     <div class="view hidden" id="view-upgrade">
       <div class="view-title" data-i18n="upgradeTitle">Nâng cấp gói</div>
-      <div style="display:flex;gap:20px;max-width:700px;">
+      <div class="upgrade-layout">
         <div class="card" style="flex:1;padding:18px;">
           <div class="field"><label data-i18n="cardNum">Số thẻ</label><input placeholder="4242 4242 4242 4242"></div>
-          <div style="display:flex;gap:10px;">
+          <div class="field-pair">
             <div class="field" style="flex:1"><label>Expiry</label><input placeholder="MM/YY"></div>
             <div class="field" style="flex:1"><label>CVC</label><input placeholder="123"></div>
           </div>

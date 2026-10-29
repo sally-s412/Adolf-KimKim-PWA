@@ -4,6 +4,7 @@ import os
 import re
 import time
 from urllib.parse import urlsplit
+from pathlib import Path
 
 from fastapi import FastAPI, Header, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +12,9 @@ from fastapi.responses import FileResponse
 from starlette.concurrency import run_in_threadpool
 from beta import verify_token
 from routes import meet_bot
+
+# Runtime-only adapter; keep the supplied worker and AI pipeline unchanged.
+meet_bot.WORKER_SCRIPT = Path(__file__).with_name("meeting_capture_worker.py")
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"],

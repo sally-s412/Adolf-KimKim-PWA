@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg pulseaud
 COPY requirements-api.txt ./
 RUN pip install --no-cache-dir -r requirements-api.txt 'patchright>=1.52.0' \
     && python -m patchright install --with-deps chromium
-COPY app.py beta.py meeting_server.py ./
+COPY app.py beta.py meeting_server.py meeting_capture_worker.py ./
 COPY routes ./routes
 COPY frontend ./frontend
 COPY scripts/start-meeting.sh ./scripts/start-meeting.sh

@@ -69,6 +69,9 @@ async def beta_auth(request: Request, call_next):
     except Exception:
         return JSONResponse({"detail": "Sign-in verification is temporarily unavailable."}, status_code=503)
     request.state.uid = claims["sub"]
+    if path.startswith("/api/meet-bot/") and os.getenv("MEET_WORKER_URL"):
+        from routes.meet_dispatch import dispatch
+        return await dispatch(request)
     if path.startswith("/api/meet-bot/"):
         return JSONResponse({"detail": "KimKim Meeting needs a separate meeting worker; it is not deployed on this free beta server."}, status_code=503)
     if request.method != "GET" and not consume_quota(claims["sub"]):

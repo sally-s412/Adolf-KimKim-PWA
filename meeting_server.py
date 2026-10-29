@@ -7,6 +7,7 @@ from urllib.parse import urlsplit
 
 from fastapi import FastAPI, Header, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from starlette.concurrency import run_in_threadpool
 from beta import verify_token
 from routes import meet_bot
@@ -32,7 +33,7 @@ async def identity(authorization: str = Header(default="")):
 
 
 def prerequisites():
-    return [key for key in ("SPEECH_SERVICE_URL", "GROQ_API_KEY") if not os.getenv(key)]
+    return []  # This service captures audio; original AI runs on the existing API.
 
 
 @app.get("/health")
@@ -76,4 +77,28 @@ async def stop(job_id: str, uid=Depends(identity)):
 @app.get("/api/meet-bot/status/{job_id}")
 async def status(job_id: str, uid=Depends(identity)):
     own_job(job_id, uid)
-    return await meet_bot.status_meet_endpoint(job_id)
+    job = meet_bot.JOBS[job_id]
+    meta = meet_bot._read_worker_meta(job["job_dir"])
+    if job["proc"].poll() is None:
+        return {"status": meta.get("status", "joining"),
+                "message": meta.get("message", job["message"]),
+                "elapsed_sec": meta.get("elapsed_sec", 0),
+                "participants": meta.get("participants", [])}
+    audio = job["job_dir"] / "audio.wav"
+    if not audio.exists() or audio.stat().st_size <= 44:
+        job["status"] = "error"
+        return {"status": "error", "message": meta.get("message") or "No audio recorded."}
+    job["status"] = "done"
+    return {"status": "recorded", "title": job["title"], "meta": meta}
+
+
+@app.get("/api/meet-bot/audio/{job_id}")
+async def audio(job_id: str, uid=Depends(identity)):
+    own_job(job_id, uid)
+    job = meet_bot.JOBS[job_id]
+    if job["proc"].poll() is None:
+        raise HTTPException(409, "Recording is still active.")
+    path = job["job_dir"] / "audio.wav"
+    if not path.exists():
+        raise HTTPException(404, "Audio not available.")
+    return FileResponse(path, media_type="audio/wav")

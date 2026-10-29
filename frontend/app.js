@@ -267,7 +267,7 @@ let isMeetingRecording = false;
 let sttWs = null, audioCtx = null, processor = null, micStream = null;
 let recordingTimer = null, recordingSeconds = 0;
 let livePartialText = "";
-let livePartialSpeaker = "Sally";
+let livePartialSpeaker = "UNKNOWN";
 let lastFinalText = "";
 
 function escapeHtml(text) {
@@ -910,7 +910,7 @@ async function transcribeAudioBlob(blob, onProgress) {
 
   const rawSegments = result.segments || [];
   const collectedSegments = rawSegments.map(s => {
-    const spk = mapSpeakerName(s.speaker || "Sally");
+    const spk = mapSpeakerName(s.speaker ?? s.speaker_id);
     return {
       t: Math.floor(s.start || 0),
       speaker: spk,
@@ -1034,7 +1034,7 @@ function renderTranscriptAndStats(){
     if (livePartialText) {
       html += `
         <div class="seg partial">
-          <div class="meta"><span class="live-dot"></span><b>${escapeHtml(livePartialSpeaker || "Sally")} (đang nói...)</b></div>
+          <div class="meta"><span class="live-dot"></span><b>${escapeHtml(mapSpeakerName(livePartialSpeaker))} (đang nói...)</b></div>
           <p style="color:var(--text-0);font-style:italic;">${escapeHtml(livePartialText)}</p>
         </div>`;
     }
@@ -1046,7 +1046,7 @@ function renderTranscriptAndStats(){
   const statEl=document.getElementById('speakerStats');
   if(statEl) statEl.innerHTML = Object.entries(totals).map(([name,c])=>{
     const sp = segments.find(s=>s.speaker===name);
-    return `<div class="sp-row"><span style="width:50px">${name}</span><div class="sp-bar"><i style="width:${(c/max)*100}%;background:${sp ? sp.color : '#00d4ff'}"></i></div></div>`;
+    return `<div class="sp-row"><span style="width:110px;max-width:40%;flex-shrink:0;overflow-wrap:anywhere">${escapeHtml(name)}</span><div class="sp-bar"><i style="width:${(c/max)*100}%;background:${sp ? sp.color : '#00d4ff'}"></i></div></div>`;
   }).join('') || (statEl ? `<div style="color:var(--text-2);font-size:12px;">${I18N[lang].aiProcessing}</div>` : '');
 }
 function fmt(s){const m=Math.floor(s/60),sec=s%60;return `${m}:${sec.toString().padStart(2,'0')}`;}
@@ -1187,26 +1187,18 @@ document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='
    (Preserved & Modularized Backend AI Integration)
    ============================================================ */
 
-const SPEAKER_NAMES = ["Sally", "Miles", "Curtis", "Sean"];
-const SPEAKER_COLORS = {
-  "Sally": "#3b82f6",
-  "Miles": "#f59e0b",
-  "Curtis": "#22c55e",
-  "Sean": "#ef4444"
-};
-
+// Speaker identity comes from STT/Meet; colors are presentation only.
 function mapSpeakerName(spk) {
-  if (!spk) return "Sally";
-  if (SPEAKER_COLORS[spk]) return spk;
-  const num = parseInt(spk.replace(/\D/g, ''), 10);
-  if (!isNaN(num) && num < SPEAKER_NAMES.length) return SPEAKER_NAMES[num];
-  return spk;
+  if (spk === null || spk === undefined || String(spk).trim() === '') return 'UNKNOWN';
+  return String(spk).trim();
 }
 function getSpeakerColor(name) {
-  if (SPEAKER_COLORS[name]) return SPEAKER_COLORS[name];
   const palette = ["#3b82f6", "#f59e0b", "#22c55e", "#ef4444", "#a855f7", "#06b6d4", "#ec4899"];
+  const label = mapSpeakerName(name);
+  const speakerId = /^SPEAKER_(\d+)$/i.exec(label);
+  if (speakerId) return palette[Number(speakerId[1]) % palette.length];
   let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = (hash << 5) - hash + name.charCodeAt(i);
+  for (let i = 0; i < label.length; i++) hash = ((hash << 5) - hash + label.charCodeAt(i)) | 0;
   return palette[Math.abs(hash) % palette.length];
 }
 
@@ -1397,7 +1389,7 @@ function handleSTTMessage(data) {
     const text = (data.text || '').trim();
     if (!text || text === lastFinalText) return;
     lastFinalText = text;
-    const spk = mapSpeakerName(data.speaker || data.speaker_id || "Sally");
+    const spk = mapSpeakerName(data.speaker ?? data.speaker_id);
     segments.push({
       t: recordingSeconds,
       speaker: spk,
@@ -1418,7 +1410,7 @@ function handleSTTMessage(data) {
       const finalText = data.tokens.filter(t => t.text !== '<end>').map(t => t.text).join('').trim();
       if (finalText && finalText !== lastFinalText) {
         lastFinalText = finalText;
-        const rawSpk = data.tokens.find(t => t.speaker)?.speaker || data.speaker || "Sally";
+        const rawSpk = data.tokens.find(t => t.speaker !== null && t.speaker !== undefined)?.speaker ?? data.speaker;
         const spk = mapSpeakerName(rawSpk);
         segments.push({
           t: recordingSeconds,
@@ -1437,7 +1429,7 @@ function handleSTTMessage(data) {
     const currentText = textTokens.map(t => t.text).join('').trim();
     if (currentText) {
       livePartialText = currentText;
-      const rawSpk = textTokens.find(t => t.speaker)?.speaker || data.speaker || "Sally";
+      const rawSpk = textTokens.find(t => t.speaker !== null && t.speaker !== undefined)?.speaker ?? data.speaker;
       livePartialSpeaker = mapSpeakerName(rawSpk);
       renderTranscriptAndStats();
     }

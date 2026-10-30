@@ -1,6 +1,11 @@
 // Add INSIDE the existing match /databases/{database}/documents block.
 // Do not replace the project's existing rules or broaden users/{uid}.
 // The emulator wrapper is test-only. Review live overlapping wildcard grants first.
+function communityCloudCover(url,uid) {
+  let cloud = get(/databases/$(database)/documents/communityConfig/release).data.get('mediaCloudName','');
+  return cloud is string && cloud.matches('^[a-z0-9-]{1,80}$')
+    && url.matches('https://res[.]cloudinary[.]com/' + cloud + '/image/upload/v[0-9]+/kimkim/covers/' + uid + '/cover[.]jpg');
+}
 function communitySigned() { return request.auth != null; }
 function communityMember(members) { return communitySigned() && request.auth.uid in members; }
 function communityUnblocked(a,b) {
@@ -34,7 +39,7 @@ match /communityProfiles/{uid} {
     && (request.resource.data.avatarUrl == '' || request.resource.data.avatarUrl.matches('https://.*'))
     && (!('coverPreset' in request.resource.data) || request.resource.data.coverPreset in ['royal','midnight','sky','mint','lavender','rose'])
     && (!('coverUrl' in request.resource.data) || (request.resource.data.coverUrl is string && request.resource.data.coverUrl.size() <= 2048
-      && (request.resource.data.coverUrl == '' || request.resource.data.coverUrl.matches('https://firebasestorage[.]googleapis[.]com/v0/b/adolfkimkim[.]firebasestorage[.]app/o/covers%2F' + uid + '%2F[a-zA-Z0-9-]{20,80}[.]jpg[?].*'))))
+      && (request.resource.data.coverUrl == '' || request.resource.data.coverUrl.matches('https://firebasestorage[.]googleapis[.]com/v0/b/adolfkimkim[.]firebasestorage[.]app/o/covers%2F' + uid + '%2F[a-zA-Z0-9-]{20,80}[.]jpg[?].*') || communityCloudCover(request.resource.data.coverUrl,uid))))
     && getAfter(/databases/$(database)/documents/communityHandles/$(request.resource.data.handle)).data.uid == uid
     && request.resource.data.updatedAt == request.time
     && ((resource == null && request.resource.data.createdAt == request.time)

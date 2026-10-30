@@ -127,3 +127,15 @@ test('cover presets persist through profile edits and cover URLs belong to the o
  await assertFails(a.db.doc('communityProfiles/alice').update({coverUrl:'https://firebasestorage.googleapis.com/v0/b/adolfkimkim.firebasestorage.app/o/covers%2Fbob%2F12345678901234567890.jpg?alt=media',updatedAt:stamp()}));
  await assertSucceeds(a.db.doc('communityProfiles/alice').update({coverUrl:'https://firebasestorage.googleapis.com/v0/b/adolfkimkim.firebasestorage.app/o/covers%2Falice%2F12345678901234567890.jpg?alt=media',updatedAt:stamp()}));
 });
+
+test('Cloudinary covers require configured account and owner path; other clouds and peers denied',async()=>{
+ const a=client(A);await a.s.saveProfile({name:'Alice Test',handle:'alice',bio:''});
+ const patch=url=>a.db.doc('communityProfiles/alice').update({coverUrl:url,updatedAt:stamp()});
+ const url='https://res.cloudinary.com/kimkim-test/image/upload/v123/kimkim/covers/alice/cover.jpg';
+ await assertFails(patch(url));
+ await admin(db=>db.doc('communityConfig/release').set({enabled:true,version:1,mediaCloudName:'kimkim-test'}));
+ await assertSucceeds(patch(url));
+ await assertFails(patch(url.replace('kimkim-test','other-cloud')));
+ await assertFails(patch(url.replace('/alice/','/bob/')));
+ await assertFails(patch(url+'?anything=1'));
+});

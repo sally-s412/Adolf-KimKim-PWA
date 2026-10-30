@@ -20,6 +20,7 @@ from routes.transcription import router as transcription_router
 from routes.documents import router as documents_router
 from routes.chatbot import router as chatbot_router
 from routes.meet_bot import router as meet_bot_router
+from routes.profile_media import router as profile_media_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -53,6 +54,7 @@ app.include_router(transcription_router)
 app.include_router(documents_router)
 app.include_router(chatbot_router)
 app.include_router(meet_bot_router)
+app.include_router(profile_media_router)
 
 
 @app.get("/health")
@@ -170,3 +172,4 @@ if __name__ == "__main__":
 
     port = int(os.getenv("PORT", 8899))
     uvicorn.run(app, host="0.0.0.0", port=port)
+

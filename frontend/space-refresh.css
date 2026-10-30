@@ -191,4 +191,4 @@ html .sidebar>.nav-item{gap:12px}html .sidebar>.nav-item .ic{width:24px!importan
 
 .sally-edit{--sally-icon:url('assets/sally/edit.svg')}.sally-plus{--sally-icon:url('assets/sally/plus.svg')}.sally-sun{--sally-icon:url('assets/sally/sun.svg')}.sally-icon{pointer-events:none}.community-detail-theme{font-size:13px!important}
 @media(max-width:700px){.calendar-toolbar{position:relative}.calendar-toolbar>div:first-child{padding-right:62px}.calendar-controls>.btn-primary{position:absolute;right:0;top:10px;margin:0}.calendar-agenda-heading>.btn{display:none}}
-@media(max-width:700px){#app .calendar-controls .btn{font-size:11px;line-height:18px;white-space:nowrap}}
+@media(max-width:700px){#app .calendar-controls .btn{font-size:11px;line-height:18px;white-space:nowrap;padding:7px}}

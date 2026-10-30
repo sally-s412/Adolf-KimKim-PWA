@@ -14,7 +14,7 @@
   const profileRef = id => col('Profiles').doc(id);
   const normalizeHandle = value => String(value||'').trim().replace(/^@/,'').toLowerCase();
 
-  async function saveProfile({name,handle,bio='',useGoogleAvatar=false}) {
+  async function saveProfile({name,handle,bio='',useGoogleAvatar=false,keepAvatar=true}) {
     const me=uid(); handle=normalizeHandle(handle); name=String(name||'').trim(); bio=String(bio||'').trim();
     if(!/^[a-z0-9_]{3,24}$/.test(handle))throw new Error('community/handle-format');
     if(name.length<2||name.length>80||bio.length>300)throw new Error('community/profile-format');
@@ -27,7 +27,7 @@
       if(owner.exists&&owner.data().uid!==me)throw new Error('community/handle-taken');
       if(!owner.exists)tx.set(hr,{uid:me});
       const cover=old.exists?Object.fromEntries(['coverPreset','coverUrl'].filter(k=>Object.hasOwn(old.data(),k)).map(k=>[k,old.data()[k]])):{};
-      tx.set(ref,{...cover,name,handle,bio,avatarUrl:photo,createdAt:old.exists?old.data().createdAt:stamp(),updatedAt:stamp()});
+      tx.set(ref,{...cover,name,handle,bio,avatarUrl:useGoogleAvatar?photo:(keepAvatar&&old.exists?old.data().avatarUrl:''),createdAt:old.exists?old.data().createdAt:stamp(),updatedAt:stamp()});
     });
   }
   const getProfile=id=>profileRef(id).get().then(data);
@@ -73,16 +73,16 @@
     return {rows:rows(snap).reverse(),cursor:snap.docs.at(-1)||null};
   };
   const messageId=()=>global.crypto.randomUUID?global.crypto.randomUUID():Array.from(global.crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');
-  async function sendMessage(id,text,clientMessageId){
+  async function sendMessage(id,text,clientMessageId,mediaId=null){
     const me=uid(); text=String(text||'').trim();
-    if(!text||text.length>2000||!/^[a-zA-Z0-9-]{20,80}$/.test(clientMessageId))throw new Error('community/message-format');
+    if((!text&&!mediaId)||text.length>2000||!/^[a-zA-Z0-9-]{20,80}$/.test(clientMessageId))throw new Error('community/message-format');
     const tr=col('Threads').doc(id),mr=messagesRef(id).doc(clientMessageId);
     // Transaction retries and explicit client retry share one document ID.
     return FC.db.runTransaction(async tx=>{
       const old=await tx.get(mr);
-      if(old.exists){if(old.data().senderId!==me||old.data().text!==text)throw new Error('community/message-conflict');return;}
+      if(old.exists){if(old.data().senderId!==me||old.data().text!==text||(old.data().mediaId||null)!==mediaId)throw new Error('community/message-conflict');return;}
       tx.set(gate('message'),{lastAt:stamp()});
-      tx.set(mr,{senderId:me,text,clientMessageId,createdAt:stamp()});
+      tx.set(mr,{senderId:me,text,clientMessageId,createdAt:stamp(),...(mediaId?{mediaId}:{})});
       tx.update(tr,{updatedAt:stamp(),lastText:text,lastMessageId:clientMessageId,lastSenderId:me});
     });
   }
@@ -97,5 +97,21 @@
     batch.set(col('Reports').doc(),{reporterId:me,peerId:peer,threadId,messageId,reason,detail,createdAt:stamp()});
     await batch.commit();
   }
-  global.CommunityService={pair,normalizeHandle,saveProfile,getProfile,watchRelease,watchProfile,search,watchConnections,invite,respond,unfriend,watchBlocks,block,unblock,openThread,watchThreads,watchMessages,olderMessages,messageId,sendMessage,markRead,watchReceipt,watchPeerReceipt,getReceipt,report};
+
+  async function createGroup(name,members){
+    const me=uid();name=String(name||'').trim();members=[...new Set([me,...members])].sort();
+    if(name.length<2||name.length>60||members.length<3||members.length>4)throw new Error('community/group-format');
+    const ref=col('Threads').doc('g-'+messageId());
+    await ref.set({type:'group',name,ownerId:me,members,theme:'royal',createdAt:stamp(),updatedAt:stamp(),lastText:'',lastMessageId:'',lastSenderId:me});return ref.id;
+  }
+  const setTheme=(id,theme)=>col('Threads').doc(id).update({theme});
+  const watchTyping=(id,cb,fail)=>col('Threads').doc(id).collection('typing').limit(6).onSnapshot(s=>cb(rows(s)),fail);
+  const setTyping=(id)=>col('Threads').doc(id).collection('typing').doc(uid()).set({at:stamp()});
+  const clearTyping=id=>col('Threads').doc(id).collection('typing').doc(uid()).delete();
+  const watchReceipts=(id,cb,fail)=>col('Threads').doc(id).collection('receipts').limit(6).onSnapshot(s=>cb(rows(s)),fail);
+  const notificationRef=()=>col('NotificationState').doc(uid());
+  const watchNotificationState=(cb,fail)=>notificationRef().onSnapshot(s=>cb(s.exists?s.data().readAt?.toMillis?.()||0:0),fail);
+  const readNotifications=()=>notificationRef().set({readAt:stamp()});
+
+  global.CommunityService={createGroup,setTheme,watchTyping,setTyping,clearTyping,watchReceipts,watchNotificationState,readNotifications,pair,normalizeHandle,saveProfile,getProfile,watchRelease,watchProfile,search,watchConnections,invite,respond,unfriend,watchBlocks,block,unblock,openThread,watchThreads,watchMessages,olderMessages,messageId,sendMessage,markRead,watchReceipt,watchPeerReceipt,getReceipt,report};
 })(window);

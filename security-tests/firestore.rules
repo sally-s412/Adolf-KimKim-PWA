@@ -56,7 +56,7 @@ match /communityProfiles/{uid} {
     && request.resource.data.handle is string && request.resource.data.handle.matches('^[a-z0-9_]{3,24}$')
     && request.resource.data.avatarUrl is string && request.resource.data.avatarUrl.size() <= 2048
     && (request.resource.data.avatarUrl == '' || request.resource.data.avatarUrl.matches('https://.*'))
-    && (!('coverPreset' in request.resource.data) || request.resource.data.coverPreset in ['royal','midnight','sky','mint','lavender','rose'])
+    && (!('coverPreset' in request.resource.data) || request.resource.data.coverPreset in ['royal','midnight','sky','mint','lavender','rose','aurora','cosmos','sunrise','dunes','lagoon','bloom','orbit','clouds','forest','peach','waves','noir'])
     && (!('coverUrl' in request.resource.data) || (request.resource.data.coverUrl is string && request.resource.data.coverUrl.size() <= 2048
       && (request.resource.data.coverUrl == '' || request.resource.data.coverUrl.matches('https://firebasestorage[.]googleapis[.]com/v0/b/adolfkimkim[.]firebasestorage[.]app/o/covers%2F' + uid + '%2F[a-zA-Z0-9-]{20,80}[.]jpg[?].*') || communityCloudCover(request.resource.data.coverUrl,uid))))
     && getAfter(/databases/$(database)/documents/communityHandles/$(request.resource.data.handle)).data.uid == uid
@@ -108,37 +108,81 @@ match /communityBlocks/{uid}/targets/{peer} {
     && request.resource.data.keys().hasOnly(['createdAt']) && request.resource.data.createdAt == request.time;
   allow delete: if communitySigned() && request.auth.uid == uid;
 }
+function communityFriendOf(peer) {
+  let me = request.auth.uid;
+  let id = me < peer ? me + '~' + peer : peer + '~' + me;
+  return peer == me || (get(/databases/$(database)/documents/communityConnections/$(id)).data.status == 'accepted'
+    && communityUnblocked(me,peer));
+}
+function communityGroupPeers(m) {
+  return communityFriendOf(m[0]) && communityFriendOf(m[1]) && communityFriendOf(m[2])
+    && (m.size() < 4 || communityFriendOf(m[3]));
+}
+function communityTalk(id,t) {
+  return t.get('type','direct') == 'group'
+    ? (communityUnblocked(request.auth.uid,t.members[0]) && communityUnblocked(request.auth.uid,t.members[1])
+      && communityUnblocked(request.auth.uid,t.members[2]) && (t.members.size() < 4 || communityUnblocked(request.auth.uid,t.members[3])))
+    : communityFriends(id,t.members);
+}
+function communityTheme(theme) { return theme in ['royal','aurora','rose','cosmos','mint','sunset']; }
+match /communityNotificationState/{uid} {
+  allow get: if communitySigned() && request.auth.uid == uid;
+  allow create, update: if communitySigned() && request.auth.uid == uid
+    && request.resource.data.keys().hasOnly(['readAt']) && request.resource.data.readAt == request.time;
+}
 match /communityThreads/{id} {
   allow get: if communitySigned() && (resource == null || communityMember(resource.data.members));
   allow list: if communityMember(resource.data.members) && request.query.limit <= 50;
-  allow create: if communitySigned() && request.resource.data.keys().hasOnly(['members','createdAt','updatedAt','lastText','lastMessageId','lastSenderId'])
-    && communityPair(id,request.resource.data.members) && communityMember(request.resource.data.members)
-    && communityFriends(id,request.resource.data.members)
-    && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
-    && request.resource.data.lastText == '' && request.resource.data.lastMessageId == '' && request.resource.data.lastSenderId == request.auth.uid;
-  allow update: if communityMember(resource.data.members)
-    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['updatedAt','lastText','lastMessageId','lastSenderId'])
-    && request.resource.data.updatedAt == request.time && request.resource.data.lastSenderId == request.auth.uid
-    && getAfter(/databases/$(database)/documents/communityThreads/$(id)/messages/$(request.resource.data.lastMessageId)).data.createdAt == request.time
-    && getAfter(/databases/$(database)/documents/communityThreads/$(id)/messages/$(request.resource.data.lastMessageId)).data.senderId == request.auth.uid
-    && getAfter(/databases/$(database)/documents/communityThreads/$(id)/messages/$(request.resource.data.lastMessageId)).data.text == request.resource.data.lastText;
+  function baseCreate() {
+    let d=request.resource.data;
+    return d.createdAt == request.time && d.updatedAt == request.time
+      && d.lastText == '' && d.lastMessageId == '' && d.lastSenderId == request.auth.uid;
+  }
+  allow create: if communitySigned() && communityMember(request.resource.data.members) && baseCreate() && (
+    (request.resource.data.keys().hasOnly(['members','createdAt','updatedAt','lastText','lastMessageId','lastSenderId'])
+      && communityPair(id,request.resource.data.members) && communityFriends(id,request.resource.data.members))
+    || (request.resource.data.keys().hasOnly(['type','name','ownerId','members','theme','createdAt','updatedAt','lastText','lastMessageId','lastSenderId'])
+      && request.resource.data.type == 'group' && id.matches('^g-[a-zA-Z0-9-]{20,80}$')
+      && request.resource.data.ownerId == request.auth.uid && request.resource.data.name is string
+      && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 60
+      && request.resource.data.members.size() >= 3 && request.resource.data.members.size() <= 4
+      && request.resource.data.members.toSet().size() == request.resource.data.members.size()
+      && communityTheme(request.resource.data.theme) && communityGroupPeers(request.resource.data.members)));
+  allow update: if communityMember(resource.data.members) && (
+    (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['theme'])
+      && communityTheme(request.resource.data.theme) && communityTalk(id,resource.data))
+    || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['updatedAt','lastText','lastMessageId','lastSenderId'])
+      && request.resource.data.updatedAt == request.time && request.resource.data.lastSenderId == request.auth.uid
+      && getAfter(/databases/$(database)/documents/communityThreads/$(id)/messages/$(request.resource.data.lastMessageId)).data.createdAt == request.time
+      && getAfter(/databases/$(database)/documents/communityThreads/$(id)/messages/$(request.resource.data.lastMessageId)).data.senderId == request.auth.uid
+      && getAfter(/databases/$(database)/documents/communityThreads/$(id)/messages/$(request.resource.data.lastMessageId)).data.text == request.resource.data.lastText));
   match /messages/{messageId} {
     function thread() { return get(/databases/$(database)/documents/communityThreads/$(id)).data; }
     allow get: if communityMember(thread().members);
     allow list: if communityMember(thread().members) && request.query.limit <= 30;
-    allow create: if communityMember(thread().members) && communityFriends(id,thread().members) && communityGate('message')
-      && request.resource.data.keys().hasOnly(['senderId','text','clientMessageId','createdAt'])
+    allow create: if communityMember(thread().members) && communityTalk(id,thread()) && communityGate('message')
+      && request.resource.data.keys().hasOnly(['senderId','text','clientMessageId','createdAt','mediaId'])
       && request.resource.data.senderId == request.auth.uid && request.resource.data.createdAt == request.time
-      && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 2000
+      && request.resource.data.text is string && request.resource.data.text.size() <= 2000
+      && (request.resource.data.text.size() > 0 || 'mediaId' in request.resource.data)
+      && (!('mediaId' in request.resource.data) || request.resource.data.mediaId == 'kimkim/messages/' + id + '/' + request.auth.uid + '/' + messageId)
       && messageId.matches('^[a-zA-Z0-9-]{20,80}$') && request.resource.data.clientMessageId == messageId
       && getAfter(/databases/$(database)/documents/communityThreads/$(id)).data.lastMessageId == messageId;
     allow update, delete: if false;
   }
   match /receipts/{uid} {
-    allow read: if communityMember(get(/databases/$(database)/documents/communityThreads/$(id)).data.members);
+    allow read: if communityMember(get(/databases/$(database)/documents/communityThreads/$(id)).data.members) && (request.method != 'list' || request.query.limit <= 6);
     allow create, update: if communitySigned() && request.auth.uid == uid
       && communityMember(get(/databases/$(database)/documents/communityThreads/$(id)).data.members)
       && request.resource.data.keys().hasOnly(['readAt']) && request.resource.data.readAt == request.time;
+  }
+  match /typing/{uid} {
+    function thread() { return get(/databases/$(database)/documents/communityThreads/$(id)).data; }
+    allow read: if communityMember(thread().members) && (request.method != 'list' || request.query.limit <= 6);
+    allow create, update: if communitySigned() && request.auth.uid == uid && communityMember(thread().members) && communityTalk(id,thread())
+      && request.resource.data.keys().hasOnly(['at']) && request.resource.data.at == request.time
+      && (resource == null || request.time >= resource.data.at + duration.value(1,'s'));
+    allow delete: if communitySigned() && request.auth.uid == uid;
   }
 }
 match /communityReports/{id} {

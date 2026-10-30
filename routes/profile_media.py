@@ -66,7 +66,7 @@ def normalize_image(raw, purpose):
                 if original.width * original.height > 16_000_000:
                     raise ValueError("pixels")
                 image = ImageOps.exif_transpose(original).convert("RGB")
-                image.thumbnail((1600, 480) if purpose == "cover" else (512, 512))
+                image.thumbnail((1600, 900) if purpose in ("cover", "chat") else (512, 512))
                 out = io.BytesIO()
                 image.save(out, "JPEG", quality=85)  # strips EXIF and other metadata
                 return out.getvalue()

@@ -66,5 +66,17 @@
     return url;
   }
 
+  // Restore the user's chosen image if a subsequent Google sign-in refreshes
+  // provider photoURL. The private users document is the persistent preference.
+  if (FC.ready && global.AuthService) global.AuthService.onAuthChange(async user => {
+    if (!user) return;
+    const id=user.uid;
+    try {
+      const profile=await global.AuthService.getUserProfile();
+      if (firebase.auth().currentUser?.uid !== id || !global.ProfileMedia?.safeURL(profile?.avatarUrl)) return;
+      if (user.photoURL !== profile.avatarUrl) await user.updateProfile({photoURL:profile.avatarUrl});
+      if (firebase.auth().currentUser?.uid === id && typeof updateUserUI === 'function') updateUserUI(user);
+    } catch { /* Keep the current auth photo if the profile cannot be read. */ }
+  });
   global.AvatarService = { uploadAvatar, validate };
 })(window);

@@ -139,3 +139,43 @@ test('Cloudinary covers require configured account and owner path; other clouds 
  await assertFails(patch(url.replace('/alice/','/bob/')));
  await assertFails(patch(url+'?anything=1'));
 });
+
+test('group creation requires friends, immutable members, member-only theme and messages',async()=>{
+ await seed();const a=client(A),b=client(B),c=client(C);await a.s.invite(B);await b.s.respond(A,'accepted');await clearGate(A,'invite');await a.s.invite(C);await c.s.respond(A,'accepted');
+ const id=await a.s.createGroup('Project KimKim',[B,C]);assert(id.startsWith('g-'));
+ await assertSucceeds(b.s.setTheme(id,'aurora'));
+ await assertFails(client('intruder').s.setTheme(id,'rose'));
+ await assertFails(b.db.doc('communityThreads/'+id).update({members:[A,B,'intruder']}));
+ await assertSucceeds(b.s.sendMessage(id,'Group hello',crypto.randomUUID()));
+ await assertFails(client('intruder').db.doc('communityThreads/'+id).get());
+ await b.s.block(A);await clearGate(B);await assertFails(b.s.sendMessage(id,'Blocked',crypto.randomUUID()));
+});
+test('groups cannot add strangers or use arbitrary themes',async()=>{
+ await seed();await assertFails(client(A).s.createGroup('Strangers',[B,C]));
+ const a=client(A);await assert.rejects(a.s.createGroup('Oversized',[B,C,'d','e']));
+ const {id}=await thread();await assertFails(a.s.setTheme(id,'javascript:bad'));
+});
+test('typing identity, timestamps and read receipts cannot be forged',async()=>{
+ const {a,b,id}=await thread();await assertSucceeds(a.s.setTyping(id));
+ await assertFails(b.db.doc(`communityThreads/${id}/typing/alice`).set({at:stamp()}));
+ await assertFails(a.db.doc(`communityThreads/${id}/typing/alice`).set({at:firebase.firestore.Timestamp.fromMillis(1)}));
+ const typed=await b.db.collection(`communityThreads/${id}/typing`).limit(6).get();assert.equal(typed.size,1);
+ await assertSucceeds(a.s.clearTyping(id));await assertSucceeds(b.s.markRead(id));
+ await assertFails(a.db.doc(`communityThreads/${id}/receipts/bob`).set({readAt:stamp()}));
+});
+test('image message paths bind to thread, sender and message ID',async()=>{
+ const {a,b,id}=await thread();let mid=crypto.randomUUID();
+ await assertSucceeds(a.s.sendMessage(id,'',mid,`kimkim/messages/${id}/${A}/${mid}`));
+ await clearGate(A);mid=crypto.randomUUID();await assertFails(a.s.sendMessage(id,'',mid,`kimkim/messages/${id}/${B}/${mid}`));
+ await clearGate(A);mid=crypto.randomUUID();await assertFails(a.s.sendMessage(id,'',mid,'https://public.example/photo.jpg'));
+ await assertFails(b.db.doc(`communityNotificationState/${A}`).set({readAt:stamp()}));
+ await assertSucceeds(a.s.readNotifications());
+});
+test('four-person groups pass access-call limits; private calendar is owner-only',async()=>{
+ await seed();await admin(async db=>{for(const peer of [B,C,'david'])await db.doc('communityConnections/'+[A,peer].sort().join('~')).set({members:[A,peer].sort(),status:'accepted',senderId:A,createdAt:firebase.firestore.Timestamp.now(),updatedAt:firebase.firestore.Timestamp.now()});});
+ const a=client(A),id=await a.s.createGroup('Four friends',[B,C,'david']);
+ await assertSucceeds(a.s.sendMessage(id,'Hello four',crypto.randomUUID()));
+ await assertSucceeds(a.db.doc('users/alice/calendarEvents/test').set({title:'Private calendar'}));
+ await assertFails(client(B).db.doc('users/alice/calendarEvents/test').get());
+ await assertFails(client(B).db.doc('users/alice/calendarEvents/test').set({title:'Spoof'}));
+});

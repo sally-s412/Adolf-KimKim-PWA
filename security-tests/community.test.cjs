@@ -179,3 +179,13 @@ test('four-person groups pass access-call limits; private calendar is owner-only
  await assertFails(client(B).db.doc('users/alice/calendarEvents/test').get());
  await assertFails(client(B).db.doc('users/alice/calendarEvents/test').set({title:'Spoof'}));
 });
+test('social posts and highlights are friends-only, drafts private, strangers and blocked peers denied',async()=>{
+ await seed();const a=client(A),b=client(B),c=client(C),id=crypto.randomUUID(),ref=a.db.doc(`communityProfiles/${A}/posts/${id}`);
+ await assertSucceeds(ref.set({kind:'story',text:'Friends only',createdAt:stamp(),updatedAt:stamp(),highlight:false,published:false,mediaId:''}));
+ await assertFails(b.db.doc(ref.path).get());await a.s.invite(B);await b.s.respond(A,'accepted');await assertFails(b.db.doc(ref.path).get());
+ await assertSucceeds(ref.update({published:true,highlight:true,updatedAt:stamp(),mediaId:`kimkim/social/${A}/${id}`}));
+ await assertSucceeds(b.db.doc(ref.path).get());await assertSucceeds(b.db.collection(`communityProfiles/${A}/posts`).where('published','==',true).limit(20).get());
+ await assertFails(c.db.doc(ref.path).get());await assertFails(b.db.doc(ref.path).update({text:'Forged'}));
+ await b.s.block(A);await assertFails(b.db.doc(ref.path).get());
+ await assertFails(env.unauthenticatedContext().firestore().doc(ref.path).get());
+});

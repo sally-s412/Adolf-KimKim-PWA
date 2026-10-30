@@ -200,6 +200,20 @@ match /communityReports/{id} {
     && (request.resource.data.messageId == '' || get(/databases/$(database)/documents/communityThreads/$(request.resource.data.threadId)/messages/$(request.resource.data.messageId)).data.senderId == request.resource.data.peerId);
 }
 
+match /communityProfiles/{author}/posts/{post} {
+ allow get,list: if communitySigned() && (request.auth.uid == author || (resource.data.published == true && communityFriendOf(author))) && (request.method != 'list' || request.query.limit <= 20);
+ allow create: if communitySigned() && request.auth.uid == author && post.matches('^[a-zA-Z0-9-]{20,80}$')
+  && request.resource.data.keys().hasOnly(['kind','text','createdAt','updatedAt','highlight','published','mediaId'])
+  && request.resource.data.kind in ['post','story'] && request.resource.data.text is string && request.resource.data.text.size() <= 2000
+  && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
+  && request.resource.data.highlight == false && request.resource.data.published == false && request.resource.data.mediaId == '';
+ allow update: if communitySigned() && request.auth.uid == author
+  && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['updatedAt','highlight','published','mediaId'])
+  && request.resource.data.updatedAt == request.time && request.resource.data.highlight is bool && request.resource.data.published is bool
+  && request.resource.data.mediaId in ['', 'kimkim/social/' + author + '/' + post];
+ allow delete: if communitySigned() && request.auth.uid == author;
+}
+
 // END KimKim Community beta v1
 }
 }

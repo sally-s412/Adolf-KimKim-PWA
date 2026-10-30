@@ -22,6 +22,7 @@ from routes.chatbot import router as chatbot_router
 from routes.meet_bot import router as meet_bot_router
 from routes.profile_media import router as profile_media_router
 from routes.chat_media import router as chat_media_router
+from routes.social_media import router as social_media_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -57,6 +58,7 @@ app.include_router(chatbot_router)
 app.include_router(meet_bot_router)
 app.include_router(profile_media_router)
 app.include_router(chat_media_router)
+app.include_router(social_media_router)
 
 
 @app.get("/health")

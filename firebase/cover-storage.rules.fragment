@@ -1,0 +1,10 @@
+// Insert inside the existing match /b/{bucket}/o block. Keep other Storage rules.
+match /covers/{uid}/{fileName} {
+  allow read: if request.auth != null;
+  allow create: if request.auth != null && request.auth.uid == uid
+    && fileName.matches('^[a-zA-Z0-9-]{20,80}[.]jpg$')
+    && request.resource.size <= 2 * 1024 * 1024
+    && request.resource.contentType == 'image/jpeg';
+  allow delete: if request.auth != null && request.auth.uid == uid;
+  allow update: if false;
+}

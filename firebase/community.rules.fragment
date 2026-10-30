@@ -26,12 +26,15 @@ match /communityProfiles/{uid} {
   allow get: if communitySigned();
   allow list: if communitySigned() && request.query.limit <= 20;
   allow create, update: if communitySigned() && request.auth.uid == uid
-    && request.resource.data.keys().hasOnly(['name','handle','bio','avatarUrl','createdAt','updatedAt'])
+    && request.resource.data.keys().hasOnly(['name','handle','bio','avatarUrl','createdAt','updatedAt','coverPreset','coverUrl'])
     && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 80
     && request.resource.data.bio is string && request.resource.data.bio.size() <= 300
     && request.resource.data.handle is string && request.resource.data.handle.matches('^[a-z0-9_]{3,24}$')
     && request.resource.data.avatarUrl is string && request.resource.data.avatarUrl.size() <= 2048
     && (request.resource.data.avatarUrl == '' || request.resource.data.avatarUrl.matches('https://.*'))
+    && (!('coverPreset' in request.resource.data) || request.resource.data.coverPreset in ['royal','midnight','sky','mint','lavender','rose'])
+    && (!('coverUrl' in request.resource.data) || (request.resource.data.coverUrl is string && request.resource.data.coverUrl.size() <= 2048
+      && (request.resource.data.coverUrl == '' || request.resource.data.coverUrl.matches('https://firebasestorage[.]googleapis[.]com/v0/b/adolfkimkim[.]firebasestorage[.]app/o/covers%2F' + uid + '%2F[a-zA-Z0-9-]{20,80}[.]jpg[?].*'))))
     && getAfter(/databases/$(database)/documents/communityHandles/$(request.resource.data.handle)).data.uid == uid
     && request.resource.data.updatedAt == request.time
     && ((resource == null && request.resource.data.createdAt == request.time)

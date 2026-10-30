@@ -1,5 +1,22 @@
 rules_version = '2';
-service cloud.firestore { match /databases/{database}/documents {
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Mỗi user chỉ đọc/ghi được document của chính mình và các subcollection bên trong
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      match /{subcollection}/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // Chặn tất cả những gì không khớp rule ở trên
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  
+// BEGIN KimKim Community beta v1
 // Add INSIDE the existing match /databases/{database}/documents block.
 // Do not replace the project's existing rules or broaden users/{uid}.
 // The emulator wrapper is test-only. Review live overlapping wildcard grants first.
@@ -28,12 +45,15 @@ match /communityProfiles/{uid} {
   allow get: if communitySigned();
   allow list: if communitySigned() && request.query.limit <= 20;
   allow create, update: if communitySigned() && request.auth.uid == uid
-    && request.resource.data.keys().hasOnly(['name','handle','bio','avatarUrl','createdAt','updatedAt'])
+    && request.resource.data.keys().hasOnly(['name','handle','bio','avatarUrl','createdAt','updatedAt','coverPreset','coverUrl'])
     && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 80
     && request.resource.data.bio is string && request.resource.data.bio.size() <= 300
     && request.resource.data.handle is string && request.resource.data.handle.matches('^[a-z0-9_]{3,24}$')
     && request.resource.data.avatarUrl is string && request.resource.data.avatarUrl.size() <= 2048
     && (request.resource.data.avatarUrl == '' || request.resource.data.avatarUrl.matches('https://.*'))
+    && (!('coverPreset' in request.resource.data) || request.resource.data.coverPreset in ['royal','midnight','sky','mint','lavender','rose'])
+    && (!('coverUrl' in request.resource.data) || (request.resource.data.coverUrl is string && request.resource.data.coverUrl.size() <= 2048
+      && (request.resource.data.coverUrl == '' || request.resource.data.coverUrl.matches('https://firebasestorage[.]googleapis[.]com/v0/b/adolfkimkim[.]firebasestorage[.]app/o/covers%2F' + uid + '%2F[a-zA-Z0-9-]{20,80}[.]jpg[?].*'))))
     && getAfter(/databases/$(database)/documents/communityHandles/$(request.resource.data.handle)).data.uid == uid
     && request.resource.data.updatedAt == request.time
     && ((resource == null && request.resource.data.createdAt == request.time)
@@ -131,5 +151,6 @@ match /communityReports/{id} {
     && (request.resource.data.messageId == '' || get(/databases/$(database)/documents/communityThreads/$(request.resource.data.threadId)/messages/$(request.resource.data.messageId)).data.senderId == request.resource.data.peerId);
 }
 
-match /users/{uid}/{doc=**} {allow read, write: if request.auth != null && request.auth.uid == uid;}
-}}
+// END KimKim Community beta v1
+}
+}

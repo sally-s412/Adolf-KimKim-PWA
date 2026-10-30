@@ -26,7 +26,8 @@
       if(old.exists&&old.data().handle!==handle)throw new Error('community/handle-immutable');
       if(owner.exists&&owner.data().uid!==me)throw new Error('community/handle-taken');
       if(!owner.exists)tx.set(hr,{uid:me});
-      tx.set(ref,{name,handle,bio,avatarUrl:photo,createdAt:old.exists?old.data().createdAt:stamp(),updatedAt:stamp()});
+      const cover=old.exists?Object.fromEntries(['coverPreset','coverUrl'].filter(k=>Object.hasOwn(old.data(),k)).map(k=>[k,old.data()[k]])):{};
+      tx.set(ref,{...cover,name,handle,bio,avatarUrl:photo,createdAt:old.exists?old.data().createdAt:stamp(),updatedAt:stamp()});
     });
   }
   const getProfile=id=>profileRef(id).get().then(data);
@@ -87,6 +88,7 @@
   }
   const markRead=id=>col('Threads').doc(id).collection('receipts').doc(uid()).set({readAt:stamp()});
   const watchReceipt=(id,cb,fail)=>col('Threads').doc(id).collection('receipts').doc(uid()).onSnapshot(s=>cb(data(s)),fail);
+  const watchPeerReceipt=(id,peer,cb,fail)=>col('Threads').doc(id).collection('receipts').doc(peer).onSnapshot(s=>cb(data(s)),fail);
   const getReceipt=id=>col('Threads').doc(id).collection('receipts').doc(uid()).get().then(data);
   async function report({peer,threadId='',messageId='',reason,detail=''}){
     const me=uid();pair(me,peer);
@@ -95,5 +97,5 @@
     batch.set(col('Reports').doc(),{reporterId:me,peerId:peer,threadId,messageId,reason,detail,createdAt:stamp()});
     await batch.commit();
   }
-  global.CommunityService={pair,normalizeHandle,saveProfile,getProfile,watchRelease,watchProfile,search,watchConnections,invite,respond,unfriend,watchBlocks,block,unblock,openThread,watchThreads,watchMessages,olderMessages,messageId,sendMessage,markRead,watchReceipt,getReceipt,report};
+  global.CommunityService={pair,normalizeHandle,saveProfile,getProfile,watchRelease,watchProfile,search,watchConnections,invite,respond,unfriend,watchBlocks,block,unblock,openThread,watchThreads,watchMessages,olderMessages,messageId,sendMessage,markRead,watchReceipt,watchPeerReceipt,getReceipt,report};
 })(window);

@@ -114,3 +114,16 @@ test('reports cannot attribute another member’s message to an unrelated person
  await assertFails(a.s.report({peer:B,threadId:id,messageId:msg,reason:'abuse'}));
  await assertSucceeds(b.s.report({peer:A,threadId:id,messageId:msg,reason:'abuse'}));
 });
+
+
+test('cover presets persist through profile edits and cover URLs belong to the owner',async()=>{
+ const a=client(A),b=client(B);await a.s.saveProfile({name:'Alice Test',handle:'alice',bio:''});
+ await assertSucceeds(a.db.doc('communityProfiles/alice').update({coverPreset:'mint',coverUrl:'',updatedAt:stamp()}));
+ await a.s.saveProfile({name:'Alice Changed',handle:'alice',bio:'Updated'});
+ assert.equal((await a.s.getProfile(A)).coverPreset,'mint');
+ await assertFails(b.db.doc('communityProfiles/alice').update({coverPreset:'royal',updatedAt:stamp()}));
+ await assertFails(a.db.doc('communityProfiles/alice').update({coverPreset:'unknown',updatedAt:stamp()}));
+ await assertFails(a.db.doc('communityProfiles/alice').update({coverUrl:'javascript:alert(1)',updatedAt:stamp()}));
+ await assertFails(a.db.doc('communityProfiles/alice').update({coverUrl:'https://firebasestorage.googleapis.com/v0/b/adolfkimkim.firebasestorage.app/o/covers%2Fbob%2F12345678901234567890.jpg?alt=media',updatedAt:stamp()}));
+ await assertSucceeds(a.db.doc('communityProfiles/alice').update({coverUrl:'https://firebasestorage.googleapis.com/v0/b/adolfkimkim.firebasestorage.app/o/covers%2Falice%2F12345678901234567890.jpg?alt=media',updatedAt:stamp()}));
+});

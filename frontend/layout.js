@@ -8,7 +8,7 @@
   header.append(document.getElementById('globalSearch'));
   const spacer=document.createElement('div');spacer.className='header-space';header.append(spacer,old.querySelector('.lang-switch'));
   const theme=document.createElement('button');theme.className='theme-toggle';theme.type='button';theme.setAttribute('aria-label','Switch light / dark');
-  const sync=()=>{theme.textContent=root.dataset.theme==='dark'?'☀':'☾';theme.setAttribute('aria-pressed',String(root.dataset.theme==='light'))};
+  const sync=()=>{document.querySelector('meta[name=theme-color]')?.setAttribute('content',root.dataset.theme==='light'?'#e7ebf7':'#23293f');theme.textContent=root.dataset.theme==='dark'?'☀':'☾';theme.setAttribute('aria-pressed',String(root.dataset.theme==='light'))};
   theme.onclick=()=>{root.dataset.theme=root.dataset.theme==='dark'?'light':'dark';try{localStorage.setItem('akk_theme',root.dataset.theme)}catch{}sync()};sync();header.append(theme);app.prepend(header);old.remove();
   const sidebar=document.querySelector('.sidebar');
   const oldBrand=sidebar.firstElementChild;if(oldBrand?.textContent.includes('ADOLF KIMKIM'))oldBrand.remove();

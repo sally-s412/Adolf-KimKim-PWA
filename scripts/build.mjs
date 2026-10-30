@@ -3,6 +3,13 @@ import {join, relative} from 'node:path';
 import {createHash} from 'node:crypto';
 
 const source = 'frontend';
+// A fresh sharing URL for platforms that retain the old root preview.
+// Regenerate it on every build so it always opens the latest complete app.
+const shareEntry = readFileSync(join(source, 'index.html'), 'utf8')
+  .replace('<head>', '<head>\n<base href="/">')
+  .replace('rel="canonical" href="https://adolf-kimkim-pwa.onrender.com/"', 'rel="canonical" href="https://adolf-kimkim-pwa.onrender.com/kimkim.html"')
+  .replace('property="og:url" content="https://adolf-kimkim-pwa.onrender.com/"', 'property="og:url" content="https://adolf-kimkim-pwa.onrender.com/kimkim.html"');
+writeFileSync(join(source, 'kimkim.html'), shareEntry);
 function files(dir) {
   return readdirSync(dir, {withFileTypes: true}).flatMap(entry => {
     const path = join(dir, entry.name);

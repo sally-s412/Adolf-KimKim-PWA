@@ -31,7 +31,7 @@
 
   async function startRecording() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert(typeof t === 'function' ? t('recNoMic') : 'Microphone not available.');
+      notify(typeof t === 'function' ? t('recNoMic') : 'Microphone not available.');
       return;
     }
     try {

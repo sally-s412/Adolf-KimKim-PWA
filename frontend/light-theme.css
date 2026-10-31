@@ -1,0 +1,62 @@
+/* Light mode: ice-blue ambient canvas and translucent blue glass. */
+:root[data-theme="light"]{
+  --bg-0:#dceafa;--bg-1:#eaf3ff;--navy-glow:#bdd9ff;
+  --accent:#2864dc;--accent-soft:rgba(52,111,218,.12);
+  --border:rgba(64,112,181,.20);
+  --text-0:#182f50;--text-1:#435d7b;--text-2:#536c89;
+  --surface:rgba(244,249,255,.64);--chrome:rgba(233,243,255,.82);
+  --card:var(--surface);--field:rgba(222,236,254,.60);--brand:#607da5;
+  --green:#147348;--amber:#925707;--red:#b62e45;
+  --canvas:
+    radial-gradient(ellipse 80% 75% at 92% 12%,rgba(114,166,246,.34),transparent 70%),
+    radial-gradient(ellipse 70% 65% at 12% 85%,rgba(130,204,230,.22),transparent 72%),
+    radial-gradient(ellipse 60% 55% at 48% 48%,rgba(196,215,255,.45),transparent 75%),
+    linear-gradient(145deg,#eaf3ff 0%,#d9e8fc 48%,#e9f5fb 100%);
+}
+html[data-theme="light"]{background:#dceafa;}
+html[data-theme="light"] body,
+html[data-theme="light"] body:has(#authScreen:not([style*="display: none"])){
+  background:var(--canvas);background-attachment:fixed;
+}
+[data-theme="light"] :is(.card,.table-wrap,.dropzone){
+  background:linear-gradient(135deg,rgba(255,255,255,.76),rgba(232,242,255,.52));
+  border-color:var(--border);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 8px 28px rgba(45,85,145,.07);
+  -webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);
+}
+[data-theme="light"] .hero-card{
+  background:linear-gradient(115deg,rgba(242,249,255,.82),rgba(205,226,255,.52));
+}
+[data-theme="light"] :is(.app-header,.sidebar){
+  background:var(--chrome);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);
+}
+[data-theme="light"] .app-header{box-shadow:0 1px 12px rgba(54,94,155,.04);}
+[data-theme="light"] #chatPanel{
+  background:rgba(238,246,255,.94);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 16px 48px rgba(36,76,134,.16);
+}
+[data-theme="light"] .bubble.agent{background:rgba(220,235,255,.72);}
+[data-theme="light"] .bubble.user{color:#fff;}
+[data-theme="light"] .btn-danger{color:var(--red);background:rgba(192,45,67,.07);border-color:rgba(192,45,67,.24);}
+[data-theme="light"] :is(.field-error,.auth-error){color:var(--red);}
+[data-theme="light"] .confirm-dialog::backdrop{background:rgba(39,68,108,.22);}
+[data-theme="light"] #authScreen .auth-card{
+  background:linear-gradient(135deg,rgba(250,253,255,.86),rgba(224,238,255,.76));
+  border-color:var(--border);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 20px 64px rgba(50,91,151,.12);
+}
+[data-theme="light"] #authScreen .auth-logo span{color:var(--brand);}
+[data-theme="light"] #authScreen .auth-card h1{color:var(--text-0);}
+[data-theme="light"] #authScreen .auth-card :is(p.sub,label,.auth-tabs){color:var(--text-1);}
+[data-theme="light"] #authScreen .auth-card input{
+  background:rgba(224,237,255,.68);border-color:var(--border);color:var(--text-0);
+}
+[data-theme="light"] #authScreen .auth-card input::placeholder{color:var(--text-2);}
+[data-theme="light"] #authScreen .auth-google{
+  background:rgba(249,252,255,.58);border-color:var(--border);color:var(--text-0);
+}
+[data-theme="light"] #authScreen .auth-tabs a{color:#245ecb;}
+
+[data-theme="light"] :is(.auth-language,.pwa-actions button){background:var(--chrome);color:var(--text-0);border-color:var(--border);}
+[data-theme="light"] .switch{background:rgba(76,112,165,.25);}
+[data-theme="light"] :is(.sp-bar,.upload-row .prog){background:rgba(76,112,165,.16);}

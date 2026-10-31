@@ -27,7 +27,7 @@ window.I18N.en = {
   forgotBtn: "Send instructions",
   addNew: "+ Add New",
   navHome: "Home",
-  navMeetings: "Meetings",
+  navMeetings: "Library",
   navNotes: "Notes",
   navUploads: "Uploads",
   navTeam: "Team",
@@ -65,7 +65,7 @@ window.I18N.en = {
   uploadSub: "Upload audio, video, PDF or Word files for AI analysis and transcription",
   dropText: "Drag & drop MP3, WAV, MP4, PDF or DOCX here, or select a file to upload",
   selectFile: "Select File",
-  teamSub: "Manage members with access",
+  teamSub: "Beta invitation list. Email delivery and shared document permissions are not connected yet.",
   inviteBtn: "+ Invite members",
   sAccount: "Account",
   sMeeting: "Meeting",
@@ -207,7 +207,7 @@ window.I18N.en = {
   addNewNoteOpt: "📝 New note",
   addNewUploadOpt: "📤 Upload",
   inviteKimkimLbl: "Invite Adolf KimKim to this meeting",
-  inviteKimkimHint: "KimKim will automatically join and record this meeting",
+  inviteKimkimHint: "Request KimKim when saving. Scheduled auto-join is not available yet.",
   teamInviteTitle: "Invite member",
   teamInviteEmailLbl: "Email",
   teamInviteSendBtn: "Send invite",
@@ -221,3 +221,7 @@ window.I18N.en = {
   notLoggedIn: "Not logged in.",
   errStorageCheckHint: "Check: Cloud Storage is enabled for the project, the storageBucket in config is correct, and storage.rules has been deployed to allow the user to write to avatars/{uid}/.",
 };
+
+Object.assign(window.I18N.en,{"uiAddNote": "+ Add note", "uiNewNote": "New note", "uiNoteTitle": "Title", "uiNoteContent": "Content", "uiNoteTitlePh": "Give your note a title", "uiNoteContentPh": "Write your note here...", "uiNoteTitleRequired": "Enter a title for your note.", "uiNoteSaveFailed": "Your note could not be saved. Please try again.", "uiNoteSaved": "Note saved.", "uiAccountHelp": "Update your display information. Your sign-in account manages your email.", "uiMeetingHelp": "Preferences are saved. Scheduled auto-join is not available in beta.", "uiAIHelp": "Preferences are saved; application depends on the existing AI pipeline.", "uiPasswordHelp": "Enter your current and new passwords to update your account.", "uiAdvancedConnection": "Advanced connection", "uiConfirmTitle": "Confirm action", "uiConfirmAction": "Confirm", "uiCloseMessage": "Dismiss message"});
+
+Object.assign(window.I18N.en,{"uiEmptyNoteTitle": "A space for your ideas", "uiEmptyNoteHelp": "Create a note or choose one from the list.", "uiSaving": "Saving..."});

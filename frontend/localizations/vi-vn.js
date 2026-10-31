@@ -10,7 +10,7 @@ window.I18N.vi = {
   kimkimMeetingTitlePh: 'Tiêu đề cuộc họp (tuỳ chọn)',
   signinTitle: "Đăng nhập",
   signinSub: "Thống trị thế giới cùng Adolf KimKim",
-  signinGoogle: "🪐Đăng nhập với Google",
+  signinGoogle: "Đăng nhập với Google",
   emailLbl: "Email",
   pwLbl: "Mật khẩu",
   signinBtn: "Đăng nhập",
@@ -27,7 +27,7 @@ window.I18N.vi = {
   forgotBtn: "Gửi hướng dẫn",
   addNew: "+ Thêm mới",
   navHome: "Trang chủ",
-  navMeetings: "Cuộc họp",
+  navMeetings: "Thư viện",
   navNotes: "Ghi chú",
   navUploads: "Tải lên",
   navTeam: "Nhóm",
@@ -65,7 +65,7 @@ window.I18N.vi = {
   uploadSub: "Tải file âm thanh, video, PDF hoặc Word để AI phân tích và tạo bản ghi tự động",
   dropText: "Kéo thả file MP3, WAV, MP4, PDF hoặc DOCX vào đây, hoặc chọn file để tải lên",
   selectFile: "Chọn file",
-  teamSub: "Quản lý thành viên có quyền truy cập",
+  teamSub: "Danh sách lời mời beta. Chưa gửi email hoặc cấp quyền tài liệu chung.",
   inviteBtn: "+ Mời thành viên",
   sAccount: "Tài khoản",
   sMeeting: "Cuộc họp",
@@ -207,7 +207,7 @@ window.I18N.vi = {
   addNewNoteOpt: "📝 Ghi chú mới",
   addNewUploadOpt: "📤 Upload",
   inviteKimkimLbl: "Mời Adolf KimKim vào lịch",
-  inviteKimkimHint: "KimKim sẽ tự động tham gia và ghi âm cuộc họp này",
+  inviteKimkimHint: "Gửi yêu cầu mời KimKim ngay khi lưu. Chưa hỗ trợ tự vào theo lịch.",
   teamInviteTitle: "Mời thành viên",
   teamInviteEmailLbl: "Email",
   teamInviteSendBtn: "Gửi lời mời",
@@ -221,3 +221,7 @@ window.I18N.vi = {
   notLoggedIn: "Chưa đăng nhập.",
   errStorageCheckHint: "Kiểm tra: đã bật Cloud Storage cho project, đúng storageBucket trong cấu hình, và đã deploy storage.rules cho phép user ghi vào avatars/{uid}/.",
 };
+
+Object.assign(window.I18N.vi,{"uiAddNote": "+ Thêm ghi chú", "uiNewNote": "Ghi chú mới", "uiNoteTitle": "Tiêu đề", "uiNoteContent": "Nội dung", "uiNoteTitlePh": "Đặt tên cho ghi chú", "uiNoteContentPh": "Viết nội dung ghi chú...", "uiNoteTitleRequired": "Vui lòng nhập tiêu đề ghi chú.", "uiNoteSaveFailed": "Chưa lưu được ghi chú. Vui lòng thử lại.", "uiNoteSaved": "Đã lưu ghi chú.", "uiAccountHelp": "Cập nhật thông tin hiển thị của bạn. Email được quản lý bởi tài khoản đăng nhập.", "uiMeetingHelp": "Các tuỳ chọn được lưu. Tự vào họp theo lịch chưa được hỗ trợ trong beta.", "uiAIHelp": "Các tuỳ chọn được lưu; việc áp dụng phụ thuộc pipeline AI hiện tại.", "uiPasswordHelp": "Nhập mật khẩu hiện tại và mật khẩu mới để cập nhật tài khoản.", "uiAdvancedConnection": "Kết nối nâng cao", "uiConfirmTitle": "Xác nhận thao tác", "uiConfirmAction": "Xác nhận", "uiCloseMessage": "Đóng thông báo"});
+
+Object.assign(window.I18N.vi,{"uiEmptyNoteTitle": "Sẵn sàng ghi lại ý tưởng?", "uiEmptyNoteHelp": "Tạo ghi chú mới hoặc chọn một ghi chú ở bên trái.", "uiSaving": "Đang lưu..."});

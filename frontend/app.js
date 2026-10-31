@@ -43,7 +43,7 @@ function clearAuthErrors(){
 }
 function requireFirebase(){
   if(!firebaseReadyCheck()){
-    alert(t('needFirebaseConfig'));
+    notify(t('needFirebaseConfig'));
     return false;
   }
   return true;
@@ -114,10 +114,18 @@ function updateUserUI(user){
   const initialsText=initials(name);
   applyAvatar(document.getElementById('sideAvatar'),user,initialsText);
   applyAvatar(document.getElementById('profileAvatar'),user,initialsText);
+  if(typeof renderHome==='function') renderHome();
   const sideName=document.getElementById('sideUserName');
   const hero=document.querySelector('[data-i18n="heroTitle"]');
   if(sideName)sideName.textContent=name;
-  if(hero){hero.textContent=lang==='vi'?`Hi ${name}, chào mừng đến với Adolf KimKim 💙`:`Hi ${name}, Welcome to Adolf KimKim 💙`;}
+  if(hero){
+    const greeting=document.createElement('span');greeting.className='hero-greeting';greeting.textContent=`Hi ${name},`;
+    const welcome=document.createElement('span');welcome.className='hero-welcome';
+    const prefix=document.createElement('span');prefix.className='welcome-phrase';prefix.textContent=lang==='vi'?'chào mừng đến với':'Welcome to';
+    welcome.append(prefix,document.createTextNode(' '));
+    const brand=document.createElement('span');brand.className='brand-phrase';brand.textContent='Adolf KimKim 💙';welcome.append(brand);
+    hero.replaceChildren(greeting,document.createTextNode(' '),welcome);
+  }
   const nameInput=document.querySelector('#settingsAccount .field input');
   const emailInput=document.querySelectorAll('#settingsAccount .field input')[1];
   if(nameInput)nameInput.value=name;
@@ -131,9 +139,9 @@ async function saveProfileName(){
   if(!currentUser) return;
   const el=document.getElementById('profileNameInput');
   const newName=el ? el.value.trim() : '';
-  if(!newName){ alert(t('pleaseEnterName')); return; }
-  try{ await AuthService.updateProfileName(newName); updateUserUI(firebase.auth().currentUser); alert(t('savedMsg')); }
-  catch(err){ alert(err.message); }
+  if(!newName){ notify(t('pleaseEnterName')); return; }
+  try{ await AuthService.updateProfileName(newName); updateUserUI(firebase.auth().currentUser); notify(t('savedMsg')); }
+  catch(err){ notify(err.message); }
 }
 async function handleAvatarSelected(input){
   const file=input.files[0];
@@ -196,6 +204,7 @@ function closeMobileMenu(){
 function toggleAddNewMenu(e){
   if(e) e.stopPropagation();
   const m = document.getElementById('addNewMenu');
+  if(!m) return;
   m.classList.toggle('hidden');
   if(!m.classList.contains('hidden')){
     document.addEventListener('click', closeAddNewMenu, {once:true});
@@ -225,12 +234,19 @@ function showView(v,el){
   const target=document.getElementById('view-'+v);
   if(target) target.classList.remove('hidden');
   if(el){ document.querySelectorAll('.nav-item[data-view]').forEach(n=>n.classList.remove('active')); el.classList.add('active'); }
+  document.dispatchEvent(new CustomEvent('akk:viewchange',{detail:{view:v}}));
 }
-function showSettings(s,el){
-  ['account','meeting','ai','password'].forEach(k=>document.getElementById('settings'+k[0].toUpperCase()+k.slice(1)).classList.add('hidden'));
-  document.getElementById('settings'+s[0].toUpperCase()+s.slice(1)).classList.remove('hidden');
-  el.parentNode.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  el.classList.add('active');
+function showSettings(section, element){
+  const ids={account:'settingsAccount',meeting:'settingsMeeting',ai:'settingsAI',password:'settingsPassword'};
+  if(!ids[section]) return;
+  for(const [key,id] of Object.entries(ids)) document.getElementById(id)?.classList.toggle('hidden',key!==section);
+  for(const tab of document.querySelectorAll('.settings-tabs [data-s]')){
+    const selected=tab.dataset.s===section;
+    tab.classList.toggle('active',selected);tab.setAttribute('aria-selected',String(selected));
+  }
+}
+function toggleSettingSwitch(button){
+  button.classList.toggle('on');button.setAttribute('aria-checked',String(button.classList.contains('on')));
 }
 
 /* ---------------- Data & render — all reads/writes go through the *Service layer ---------------- */
@@ -253,7 +269,7 @@ let isMeetingRecording = false;
 let sttWs = null, audioCtx = null, processor = null, micStream = null;
 let recordingTimer = null, recordingSeconds = 0;
 let livePartialText = "";
-let livePartialSpeaker = "Sally";
+let livePartialSpeaker = "UNKNOWN";
 let lastFinalText = "";
 
 function escapeHtml(text) {
@@ -287,7 +303,8 @@ function loadUserSettings(){
     if(styleSel) styleSel.value = s.speechStyle==='casual' ? I18N[lang].styleCasual : I18N[lang].styleFormal;
     const aiToggle=document.querySelector('#settingsAI .switch');
     if(aiToggle) aiToggle.classList.toggle('on', !!s.vocabDetect);
-  });
+    document.querySelectorAll('.settings-pane .switch').forEach(button=>button.setAttribute('aria-checked',String(button.classList.contains('on'))));
+  }).catch(err=>notify(err.message));
 }
 function saveMeetingSettings(){
   const langSel=document.querySelector('#settingsMeeting select');
@@ -296,7 +313,7 @@ function saveMeetingSettings(){
     meetingLang: langSel && langSel.value==='English' ? 'en' : 'vi',
     autoJoin: toggles[0] ? toggles[0].classList.contains('on') : true,
     autoRecord: toggles[1] ? toggles[1].classList.contains('on') : false
-  }).then(()=>alert(t('savedMsg')));
+  }).then(()=>notify(t('savedMsg'))).catch(err=>notify(err.message));
 }
 function saveAISettings(){
   const styleSel=document.querySelector('#settingsAI select');
@@ -304,30 +321,30 @@ function saveAISettings(){
   SettingsService.saveAISettings({
     speechStyle: styleSel && styleSel.value===I18N[lang].styleCasual ? 'casual' : 'formal',
     vocabDetect: aiToggle ? aiToggle.classList.contains('on') : true
-  }).then(()=>alert(t('savedMsg')));
+  }).then(()=>notify(t('savedMsg'))).catch(err=>notify(err.message));
 }
 async function saveAccountSettings(){
   if(!currentUser) return;
   const nameInput=document.querySelector('#settingsAccount .field input');
   const newName=nameInput ? nameInput.value.trim() : '';
-  if(!newName) return;
-  try{ await AuthService.updateProfileName(newName); updateUserUI(currentUser); alert(t('savedMsg')); }
-  catch(err){ alert(err.message); }
+  if(!newName){notify(t('pleaseEnterName'));return;}
+  try{ await AuthService.updateProfileName(newName); updateUserUI(currentUser); notify(t('savedMsg')); }
+  catch(err){ notify(err.message); }
 }
 async function updatePasswordSettings(){
   if(!currentUser) return;
   const inputs=document.querySelectorAll('#settingsPassword input[type=password]');
   const curPw=inputs[0] ? inputs[0].value : '';
   const newPw=inputs[1] ? inputs[1].value : '';
-  if(!curPw || !newPw){alert(t('pleaseEnterBothPw'));return;}
-  try{ await AuthService.changePassword(curPw,newPw); alert(t('pwUpdatedMsg')); inputs.forEach(i=>i.value=''); }
-  catch(err){ alert(err.message); }
+  if(!curPw || !newPw){notify(t('pleaseEnterBothPw'));return;}
+  try{ await AuthService.changePassword(curPw,newPw); notify(t('pwUpdatedMsg')); inputs.forEach(i=>i.value=''); }
+  catch(err){ notify(err.message); }
 }
 async function deleteAccount(){
   if(!currentUser) return;
-  if(!confirm(t('confirmDeleteAccount'))) return;
-  try{ await AuthService.deleteAccount(); alert(t('accountDeletedMsg')); }
-  catch(err){ alert(t('reauthRequiredMsg')+err.message); }
+  if(!await confirmAction(t('confirmDeleteAccount'))) return;
+  try{ await AuthService.deleteAccount(); notify(t('accountDeletedMsg')); }
+  catch(err){ notify(t('reauthRequiredMsg')+err.message); }
 }
 
 function loadPlan(){
@@ -403,9 +420,9 @@ async function submitCreateMeeting(){
 }
 async function deleteMeetingHandler(id){
   if(!id) return;
-  if(!confirm(t('confirmDeleteMeeting'))) return;
+  if(!await confirmAction(t('confirmDeleteMeeting'))) return;
   try{ await MeetingService.deleteMeeting(id); showView('meetings',document.querySelector('[data-view=meetings]')); }
-  catch(err){ alert(err.message); }
+  catch(err){ notify(err.message); }
 }
 let mdChatUnsub=null, mdJobsUnsub=null;
 function openMeeting(id){
@@ -459,13 +476,12 @@ function openMeeting(id){
     } else if (currentMeetingObj && currentMeetingObj.chatHistory && currentMeetingObj.chatHistory.length) {
       renderChatRows(currentMeetingObj.chatHistory);
     }
+  }, () => {
+    notify(lang === 'vi' ? 'Không thể đọc lịch sử chat của cuộc họp. Vui lòng kiểm tra quyền Firebase.' : 'Meeting chat history could not be loaded. Please check Firebase permissions.');
   });
-
-  mdJobsUnsub = AiService.watchGenerationJobs(id, rows=>{
-    const el=document.getElementById('mdGenerationJobs');
-    if(!el) return;
-    el.innerHTML = rows.length ? rows.map(j=>`<div>• ${j.kind} — ${j.status==='queued'?t('genQueued'):j.status} ${j.status==='queued'?`<span style="opacity:.7">${t('genComingSoon')}</span>`:''}</div>`).join('') : '';
-  });
+  // Generation buttons call the API directly and render their own status.
+  // The unused prototype generationJobs collection is not part of that flow.
+  mdJobsUnsub = null;
 }
 function showMeetingTab(which){
   document.getElementById('mdTabTranscriptBtn').classList.toggle('active', which==='transcript');
@@ -560,7 +576,7 @@ async function requestGenerationHandler(kind){
     }catch(err){ if(jobsEl) jobsEl.textContent='❌ Lỗi: '+err.message; }
 
   }else if(kind==='slides'){
-    if(!summary){ alert('Vui lòng tóm tắt cuộc họp trước.'); return; }
+    if(!summary){ notify('Vui lòng tóm tắt cuộc họp trước.'); return; }
     if(jobsEl) jobsEl.textContent='⏳ Đang tạo PowerPoint...';
     try{
       const res=await apiFetch(`${getApiUrl()}/api/powerpoint`,{method:'POST',headers:{'Content-Type':'application/json'},
@@ -572,7 +588,7 @@ async function requestGenerationHandler(kind){
     }catch(err){ if(jobsEl) jobsEl.textContent='❌ Lỗi: '+err.message; }
 
   }else if(kind==='image'){
-    if(!summary){ alert('Vui lòng tóm tắt cuộc họp trước.'); return; }
+    if(!summary){ notify('Vui lòng tóm tắt cuộc họp trước.'); return; }
     if(jobsEl) jobsEl.textContent='⏳ Đang tạo hình ảnh...';
     try{
       const res=await apiFetch(`${getApiUrl()}/api/visualization`,{method:'POST',headers:{'Content-Type':'application/json'},
@@ -612,6 +628,15 @@ function extractActionItems(summary) {
 
 function renderMeetingDetail(){
   const m=currentMeetingObj;
+  const isDocument = !!m?.document;
+  document.querySelector('#view-meetingDetail .video-controls')?.classList.toggle('hidden', isDocument);
+  document.getElementById('mdParticipants')?.closest('.card')?.classList.toggle('hidden', isDocument);
+  const contentTab = document.getElementById('mdTabTranscriptBtn');
+  if (contentTab) contentTab.textContent = isDocument ? (lang === 'vi' ? 'Nội dung tài liệu' : 'Document content') : 'Transcript';
+  const summaryButton = document.getElementById('btnQuickSummarize');
+  if (summaryButton) summaryButton.textContent = isDocument
+    ? (lang === 'vi' ? 'Tóm tắt tài liệu với AI' : 'Summarize document with AI')
+    : (lang === 'vi' ? '⚡ Tóm tắt cuộc họp với AI' : '⚡ Summarize meeting with AI');
   const titleEl = document.querySelector('#view-meetingDetail .view-title');
   if (titleEl) titleEl.textContent = m ? m.title : '';
   const subEl = document.querySelector('#view-meetingDetail .view-sub');
@@ -654,7 +679,7 @@ function renderMeetingDetail(){
 function saveMeetingNotes(){
   if(!currentMeetingId) return;
   const val=document.getElementById('mdNotesInput').value;
-  MeetingService.updateMeeting(currentMeetingId, {notes:val}).catch(err=>alert(err.message));
+  MeetingService.updateMeeting(currentMeetingId, {notes:val}).catch(err=>notify(err.message));
 }
 function filterMeetings(status,btn){
   activeMeetingFilter=status;
@@ -674,12 +699,40 @@ function visibleMeetings(){
 }
 
 /* ---- Notes ---- */
-async function createNote(){
-  const title=prompt(t('promptNewNoteTitle'),t('defaultNoteTitle'));
-  if(!title) return;
-  try{ currentNoteId = await NoteService.createNote(title); }
-  catch(err){ alert(err.message); }
+function createNote(){
+  showView('notes',document.querySelector('[data-view=notes]'));
+  document.getElementById('noteComposer').classList.remove('hidden');
+  document.getElementById('newNoteTitle').focus();
 }
+function cancelNewNote(){
+  const form=document.getElementById('noteComposer');form.reset();delete form.dataset.pendingId;form.classList.add('hidden');
+  document.getElementById('newNoteError').textContent='';
+  document.querySelector('#view-notes [onclick="createNote()"]')?.focus();
+}
+async function submitNewNote(event){
+  event.preventDefault();
+  const title=document.getElementById('newNoteTitle').value.trim();
+  const content=document.getElementById('newNoteContent').value;
+  const error=document.getElementById('newNoteError'),button=document.getElementById('newNoteSubmit');
+  if(!title){error.textContent=t('uiNoteTitleRequired');document.getElementById('newNoteTitle').focus();return;}
+  error.textContent='';button.disabled=true;
+  document.querySelector('#noteComposer [type=button]').disabled=true;
+  try{
+    // Keep an already-created id for retry if saving the body fails.
+    const form=document.getElementById('noteComposer');
+    const id=form.dataset.pendingId || await NoteService.createNote(title);
+    if(!id) throw new Error(t('uiNoteSaveFailed'));
+    form.dataset.pendingId=id;
+    await NoteService.updateNote(id,{title,content});
+    currentNoteId=id;
+    const index=notesArr.findIndex(n=>n.id===id);
+    if(index<0) notesArr.unshift({id,title,content});else Object.assign(notesArr[index],{title,content});
+    delete form.dataset.pendingId;
+    cancelNewNote();openNote(id);notify(t('uiNoteSaved'));
+  }catch(err){error.textContent=err.message;}
+  finally{button.disabled=false;document.querySelector('#noteComposer [type=button]').disabled=false;}
+}
+
 function openNote(id){ currentNoteId=id; noteTranslated=false; renderAll(); }
 let noteTranslated=false;
 async function toggleNoteTranslation(){
@@ -705,16 +758,19 @@ function saveCurrentNote(){
   if(!currentNoteId) return;
   const editor=document.querySelector('#view-notes .editor');
   const h1=editor.querySelector('h1'); const p=editor.querySelector('p');
+  const status=document.getElementById('noteSaveStatus');
+  if(status) status.textContent=t('uiSaving');
   NoteService.updateNote(currentNoteId, { title: h1 ? h1.textContent : '', content: p ? p.textContent : '' })
-    .catch(err=>alert(err.message));
+    .then(()=>{if(status) status.textContent=t('savedMsg');})
+    .catch(err=>{if(status) status.textContent=err.message;});
 }
 async function deleteNoteHandler(){
   if(!currentNoteId) return;
-  if(!confirm(t('confirmDeleteNote'))) return;
+  if(!await confirmAction(t('confirmDeleteNote'))) return;
   try{
     await NoteService.deleteNote(currentNoteId);
     currentNoteId = notesArr.find(n=>n.id!==currentNoteId) ? notesArr.find(n=>n.id!==currentNoteId).id : null;
-  }catch(err){ alert(err.message); }
+  }catch(err){ notify(err.message); }
 }
 
 /* ---- Team ---- */
@@ -733,25 +789,25 @@ async function submitInviteMember(){
   try{
     await TeamService.inviteMember(email);
     closeInviteMemberModal();
-    alert(t('inviteSentMsg'));
+    notify(t('inviteSentMsg'));
   }catch(err){ errEl.textContent=err.message; }
 }
 async function inviteMember(){ openInviteMemberModal(); }
 async function removeMemberHandler(id){
-  if(!confirm(t('confirmRemoveMember'))) return;
-  try{ await TeamService.removeMember(id); } catch(err){ alert(err.message); }
+  if(!await confirmAction(t('confirmRemoveMember'))) return;
+  try{ await TeamService.removeMember(id); } catch(err){ notify(err.message); }
 }
 async function changeRoleHandler(id,role){
-  try{ await TeamService.changeRole(id,role); } catch(err){ alert(err.message); }
+  try{ await TeamService.changeRole(id,role); } catch(err){ notify(err.message); }
 }
 
 /* ---- Uploads (uploadApi abstraction — mock adapter today, real REST later) ---- */
 function selectUploadFile(){
   document.getElementById('hiddenFileInput').click();
 }
-async function addProcessedMeeting(title, transcript, durSeconds) {
+async function addProcessedMeeting(title, transcript, durSeconds, documentInfo = null) {
   const now = new Date();
-  const durFormatted = durSeconds ? fmt(durSeconds) : '00:30';
+  const durFormatted = documentInfo ? '—' : (durSeconds ? fmt(durSeconds) : '00:30');
   const meetingData = {
     title: title || 'Cuộc họp ' + now.toLocaleString('vi-VN'),
     date: now.toISOString().slice(0, 10),
@@ -763,7 +819,8 @@ async function addProcessedMeeting(title, transcript, durSeconds) {
     keyPoints: [],
     actionItems: [],
     notes: '',
-    participants: []
+    participants: [],
+    ...(documentInfo ? {document: documentInfo} : {})
   };
 
   let meetingId = 'm_' + Date.now();
@@ -789,10 +846,17 @@ async function handleFileSelected(fileOrInput){
   const file = (fileOrInput instanceof File) ? fileOrInput : (fileOrInput && fileOrInput.files ? fileOrInput.files[0] : fileOrInput);
   if(!file) return;
 
+  const isDocument = /\.(pdf|docx)$/i.test(file.name);
   const isAudioVideo = (file.type && (file.type.startsWith('audio/') || file.type.startsWith('video/'))) ||
                        /\.(mp3|wav|ogg|m4a|aac|flac|webm|mp4|mov|mkv)$/i.test(file.name);
-  if(!isAudioVideo){
-    alert('Chỉ hỗ trợ file âm thanh hoặc video (mp3, wav, mp4, webm, ogg, m4a...).');
+  if (!isDocument && !isAudioVideo) {
+    notify(lang === 'vi'
+      ? 'Hỗ trợ âm thanh, video, PDF và Word DOCX. File DOC cần lưu lại thành DOCX.'
+      : 'Supported: audio, video, PDF and Word DOCX. Save DOC files as DOCX first.');
+    return;
+  }
+  if (isDocument && file.size > 10 * 1024 * 1024) {
+    notify(lang === 'vi' ? 'Tài liệu tối đa 10 MB.' : 'Documents must be 10 MB or smaller.');
     return;
   }
 
@@ -803,6 +867,10 @@ async function handleFileSelected(fileOrInput){
   if(upEl) upEl.prepend(row);
 
   try{
+    if (isDocument) {
+      await importDocumentFile(file, row);
+      return;
+    }
     const transcript = await transcribeAudioBlob(file, msg => {
       row.textContent = msg + ' — ' + file.name;
     });
@@ -814,6 +882,28 @@ async function handleFileSelected(fileOrInput){
     console.error("Upload error:", err);
     row.textContent = '❌ ' + file.name + ': ' + err.message;
   }
+}
+
+async function importDocumentFile(file, row) {
+  row.textContent = (lang === 'vi' ? 'Đang đọc tài liệu: ' : 'Reading document: ') + file.name;
+  const body = new FormData();
+  body.append('file', file, file.name);
+  const response = await apiFetch(getApiUrl() + '/api/documents/extract', {
+    method: 'POST', headers: {'Accept-Language': lang}, body
+  });
+  const result = await response.json();
+  const transcript = result.sections.map(section => ({
+    t: 0, speaker: 'DOCUMENT', color: getSpeakerColor('DOCUMENT'),
+    text: section.text, page: section.page
+  }));
+  const documentInfo = {
+    name: file.name, kind: result.kind,
+    pageCount: result.page_count, characterCount: result.character_count
+  };
+  await addProcessedMeeting(file.name.replace(/\.[^.]+$/, ''), transcript, 0, documentInfo);
+  row.textContent = '✓ ' + file.name + (lang === 'vi'
+    ? ' — Đã đọc và lưu nội dung. Bạn có thể tóm tắt hoặc hỏi KimKim về tài liệu.'
+    : ' — Content imported. You can summarize it or ask KimKim about the document.');
 }
 
 async function audioBufferTo16kPcm(audioBuffer) {
@@ -865,7 +955,7 @@ async function transcribeAudioBlob(blob, onProgress) {
 
   const rawSegments = result.segments || [];
   const collectedSegments = rawSegments.map(s => {
-    const spk = mapSpeakerName(s.speaker || "Sally");
+    const spk = mapSpeakerName(s.speaker ?? s.speaker_id);
     return {
       t: Math.floor(s.start || 0),
       speaker: spk,
@@ -897,7 +987,7 @@ window.saveRecording = async function() {
     RecordingService.cancelRecording();
   } catch (err) {
     console.error("Recording transcription error:", err);
-    alert('Lỗi phiên âm: ' + err.message);
+    notify('Lỗi phiên âm: ' + err.message);
   } finally {
     if (saveBtn) {
       saveBtn.disabled = false;
@@ -928,21 +1018,7 @@ function renderMeetingsTable(){
 }
 
 function renderAll(){
-  // upcoming (home)
-  const upcomingEl=document.getElementById('upcomingList');
-  if(upcomingEl) upcomingEl.innerHTML = meetings.slice(0,3).map(m=>`
-    <div class="list-row" onclick="openMeeting('${m.id}')">
-      <div class="avatar" style="background:#3b82f6">${initials(m.title)}</div>
-      <div class="info"><div class="t">${m.title}</div><div class="d">${m.date||''} · ${m.dur||''}</div></div>
-      ${statusBadge(m.status)}
-    </div>`).join('') || `<div style="color:var(--text-2);font-size:13px;">${I18N[lang].noMeetings}</div>`;
-  // recent notes
-  const recentEl=document.getElementById('recentNotesList');
-  if(recentEl) recentEl.innerHTML = notesArr.slice(0,3).map(n=>`
-    <div class="list-row" onclick="showView('notes',document.querySelector('[data-view=notes]'));openNote('${n.id}')">
-      <div class="avatar" style="background:#22c55e">📝</div>
-      <div class="info"><div class="t">${n.title}</div></div>
-    </div>`).join('') || `<div style="color:var(--text-2);font-size:13px;">${I18N[lang].noNotes}</div>`;
+  if(typeof renderHome==='function') renderHome();
   // meetings table
   renderMeetingsTable();
   // notes sidebar + editor
@@ -953,7 +1029,10 @@ function renderAll(){
     </div>`).join('') || `<div style="color:var(--text-2);font-size:13px;padding:8px;">${I18N[lang].noNotes}</div>`;
   const curNote=notesArr.find(n=>n.id===currentNoteId);
   const editor=document.querySelector('#view-notes .editor');
-  if(editor){
+  document.getElementById('noteEmptyState')?.classList.toggle('hidden',!!curNote);
+  if(editor) editor.classList.toggle('hidden',!curNote);
+  document.querySelectorAll('#view-notes .notes-workspace .btn').forEach(button=>button.disabled=!curNote);
+  if(editor && !editor.contains(document.activeElement)){
     const h1=editor.querySelector('h1'); const p=editor.querySelector('p');
     if(curNote){ if(h1)h1.textContent=curNote.title||''; if(p)p.textContent=curNote.content||''; }
     else { if(h1)h1.textContent=''; if(p)p.textContent=''; }
@@ -978,6 +1057,14 @@ function renderAll(){
 }
 function renderTranscriptAndStats(){
   const segEl=document.getElementById('segList');
+  if (currentMeetingObj?.document) {
+    if (segEl) segEl.innerHTML = segments.map(section => '<div class="seg">' +
+      (section.page ? '<div class="meta">' + (lang === 'vi' ? 'Trang' : 'Page') + ' ' + section.page + '</div>' : '') +
+      '<p style="white-space:pre-wrap">' + escapeHtml(section.text) + '</p></div>').join('');
+    const stats = document.getElementById('speakerStats');
+    if (stats) stats.innerHTML = '';
+    return;
+  }
   if(segEl) {
     let html = segments.map(s=>`
       <div class="seg" onclick="highlightSeg(this)">
@@ -986,7 +1073,7 @@ function renderTranscriptAndStats(){
     if (livePartialText) {
       html += `
         <div class="seg partial">
-          <div class="meta"><span class="live-dot"></span><b>${escapeHtml(livePartialSpeaker || "Sally")} (đang nói...)</b></div>
+          <div class="meta"><span class="live-dot"></span><b>${escapeHtml(mapSpeakerName(livePartialSpeaker))} (đang nói...)</b></div>
           <p style="color:var(--text-0);font-style:italic;">${escapeHtml(livePartialText)}</p>
         </div>`;
     }
@@ -998,7 +1085,7 @@ function renderTranscriptAndStats(){
   const statEl=document.getElementById('speakerStats');
   if(statEl) statEl.innerHTML = Object.entries(totals).map(([name,c])=>{
     const sp = segments.find(s=>s.speaker===name);
-    return `<div class="sp-row"><span style="width:50px">${name}</span><div class="sp-bar"><i style="width:${(c/max)*100}%;background:${sp ? sp.color : '#00d4ff'}"></i></div></div>`;
+    return `<div class="sp-row"><span style="width:110px;max-width:40%;flex-shrink:0;overflow-wrap:anywhere">${escapeHtml(name)}</span><div class="sp-bar"><i style="width:${(c/max)*100}%;background:${sp ? sp.color : '#00d4ff'}"></i></div></div>`;
   }).join('') || (statEl ? `<div style="color:var(--text-2);font-size:12px;">${I18N[lang].aiProcessing}</div>` : '');
 }
 function fmt(s){const m=Math.floor(s/60),sec=s%60;return `${m}:${sec.toString().padStart(2,'0')}`;}
@@ -1115,13 +1202,13 @@ async function sendChat(){
 
 async function clearGlobalChatHistory(){
   const msg = lang === 'vi' ? 'Bạn có chắc muốn xoá toàn bộ lịch sử trò chuyện?' : 'Are you sure you want to clear chat history?';
-  if (!confirm(msg)) return;
+  if (!await confirmAction(msg)) return;
   try {
     await AiService.clearChatHistory();
     globalChatHistoryCache = [];
     renderGlobalChat();
   } catch (err) {
-    alert("Lỗi khi xoá lịch sử: " + err.message);
+    notify("Lỗi khi xoá lịch sử: " + err.message);
   }
 }
 document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
@@ -1139,26 +1226,18 @@ document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='
    (Preserved & Modularized Backend AI Integration)
    ============================================================ */
 
-const SPEAKER_NAMES = ["Sally", "Miles", "Curtis", "Sean"];
-const SPEAKER_COLORS = {
-  "Sally": "#3b82f6",
-  "Miles": "#f59e0b",
-  "Curtis": "#22c55e",
-  "Sean": "#ef4444"
-};
-
+// Speaker identity comes from STT/Meet; colors are presentation only.
 function mapSpeakerName(spk) {
-  if (!spk) return "Sally";
-  if (SPEAKER_COLORS[spk]) return spk;
-  const num = parseInt(spk.replace(/\D/g, ''), 10);
-  if (!isNaN(num) && num < SPEAKER_NAMES.length) return SPEAKER_NAMES[num];
-  return spk;
+  if (spk === null || spk === undefined || String(spk).trim() === '') return 'UNKNOWN';
+  return String(spk).trim();
 }
 function getSpeakerColor(name) {
-  if (SPEAKER_COLORS[name]) return SPEAKER_COLORS[name];
   const palette = ["#3b82f6", "#f59e0b", "#22c55e", "#ef4444", "#a855f7", "#06b6d4", "#ec4899"];
+  const label = mapSpeakerName(name);
+  const speakerId = /^SPEAKER_(\d+)$/i.exec(label);
+  if (speakerId) return palette[Number(speakerId[1]) % palette.length];
   let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = (hash << 5) - hash + name.charCodeAt(i);
+  for (let i = 0; i < label.length; i++) hash = ((hash << 5) - hash + label.charCodeAt(i)) | 0;
   return palette[Math.abs(hash) % palette.length];
 }
 
@@ -1180,6 +1259,24 @@ function getApiUrl() {
   return (storedEndpoint('api_url') || getDefaultApiUrl()).replace(/\/$/, '');
 }
 // Firebase credentials are sent only to the configured backend, never persisted.
+function apiErrorMessage(status, detail, path) {
+  if (['/api/transcribe', '/transcribe'].includes(path.replace(/\/$/, ''))) {
+    if ([502, 503].includes(status)) {
+      return lang === 'vi'
+        ? 'Chưa kết nối được dịch vụ chuyển giọng nói thành văn bản. Vui lòng thử lại khi server AI hoạt động trở lại.'
+        : 'The speech-to-text service is unavailable. Please try again when the AI service is back online.';
+    }
+    if (status === 504) {
+      return lang === 'vi'
+        ? 'Xử lý âm thanh quá thời gian chờ. Vui lòng thử lại sau.'
+        : 'Audio processing timed out. Please try again later.';
+    }
+  }
+  if (typeof detail === 'string' && detail) return detail;
+  if (detail && typeof detail.message === 'string') return detail.message;
+  return lang === 'vi' ? `Yêu cầu không thành công (mã ${status}).` : `Request failed (${status}).`;
+}
+
 async function apiFetch(url, options = {}) {
   const user = firebase.auth().currentUser;
   if (!user) throw new Error(lang === 'vi' ? 'Vui lòng đăng nhập.' : 'Please sign in.');
@@ -1190,7 +1287,7 @@ async function apiFetch(url, options = {}) {
   const response = await fetch(target.href, {...options, headers});
   if (!response.ok) {
     const data = await response.clone().json().catch(() => ({}));
-    throw new Error(data.detail || `API error (${response.status})`);
+    throw new Error(apiErrorMessage(response.status, data.detail, target.pathname));
   }
   return response;
 }
@@ -1279,7 +1376,7 @@ async function startMeetingRecording() {
 
   } catch (e) {
     console.error("Microphone access error:", e);
-    alert("Không thể truy cập microphone: " + e.message);
+    notify("Không thể truy cập microphone: " + e.message);
     stopMeetingRecording();
   }
 }
@@ -1331,7 +1428,7 @@ function handleSTTMessage(data) {
     const text = (data.text || '').trim();
     if (!text || text === lastFinalText) return;
     lastFinalText = text;
-    const spk = mapSpeakerName(data.speaker || data.speaker_id || "Sally");
+    const spk = mapSpeakerName(data.speaker ?? data.speaker_id);
     segments.push({
       t: recordingSeconds,
       speaker: spk,
@@ -1352,7 +1449,7 @@ function handleSTTMessage(data) {
       const finalText = data.tokens.filter(t => t.text !== '<end>').map(t => t.text).join('').trim();
       if (finalText && finalText !== lastFinalText) {
         lastFinalText = finalText;
-        const rawSpk = data.tokens.find(t => t.speaker)?.speaker || data.speaker || "Sally";
+        const rawSpk = data.tokens.find(t => t.speaker !== null && t.speaker !== undefined)?.speaker ?? data.speaker;
         const spk = mapSpeakerName(rawSpk);
         segments.push({
           t: recordingSeconds,
@@ -1371,7 +1468,7 @@ function handleSTTMessage(data) {
     const currentText = textTokens.map(t => t.text).join('').trim();
     if (currentText) {
       livePartialText = currentText;
-      const rawSpk = textTokens.find(t => t.speaker)?.speaker || data.speaker || "Sally";
+      const rawSpk = textTokens.find(t => t.speaker !== null && t.speaker !== undefined)?.speaker ?? data.speaker;
       livePartialSpeaker = mapSpeakerName(rawSpk);
       renderTranscriptAndStats();
     }
@@ -1392,7 +1489,7 @@ async function startMeetBotFromRecording() {
   const title = (titleInput?.value || '').trim();
 
   if (!meetUrl || !meetUrl.includes('meet.google.com/')) {
-    alert('Vui lòng nhập link Google Meet hợp lệ (ví dụ: https://meet.google.com/xxx-xxxx-xxx).');
+    notify('Vui lòng nhập link Google Meet hợp lệ (ví dụ: https://meet.google.com/xxx-xxxx-xxx).');
     return;
   }
   await startMeetBotJob(meetUrl, title, null);
@@ -1400,7 +1497,7 @@ async function startMeetBotFromRecording() {
 
 async function startMeetBotJob(meetUrl, title, existingMeetingId) {
   if (activeMeetBot && activeMeetBot.pollTimer) {
-    alert('Hiện đang có một Bot đang chạy. Vui lòng dừng phiên hiện tại trước.');
+    notify('Hiện đang có một Bot đang chạy. Vui lòng dừng phiên hiện tại trước.');
     return;
   }
 
@@ -1430,7 +1527,7 @@ async function startMeetBotJob(meetUrl, title, existingMeetingId) {
   } catch (err) {
     console.error('Failed to start Meet Bot:', err);
     updateMeetBotUI({ active: false, status: 'error', message: '❌ Không thể khởi động Bot: ' + err.message });
-    alert('Không thể khởi động KimKim Meeting: ' + err.message);
+    notify('Không thể khởi động KimKim Meeting: ' + err.message);
   }
 }
 
@@ -1479,7 +1576,7 @@ async function pollMeetBotStatus(jobId) {
       clearInterval(activeMeetBot.pollTimer);
       const errMsg = data.message || 'Bot đã dừng.';
       activeMeetBot = null;
-      alert(errMsg);
+      notify(errMsg);
       return;
     }
 
@@ -1615,7 +1712,7 @@ async function endMeetingAndSummarize() {
 
 async function generateSummaryFromCurrentTranscript() {
   if (!segments || segments.length === 0) {
-    alert("Chưa có nội dung cuộc họp nào để tóm tắt.");
+    notify("Chưa có nội dung cuộc họp nào để tóm tắt.");
     return;
   }
 
@@ -1698,13 +1795,13 @@ async function generateSummaryFromCurrentTranscript() {
       renderMeetingDetail();
       renderAll();
 
-      alert(`Tóm tắt thành công: "${finalTitle}"!\nKết quả đã được cập nhật vào cuộc họp và mục Ghi chú.`);
+      notify(`Tóm tắt thành công: "${finalTitle}"!\nKết quả đã được cập nhật vào cuộc họp và mục Ghi chú.`);
     } else {
-      alert("Lỗi khi tóm tắt: " + (data.message || "Unknown error"));
+      notify("Lỗi khi tóm tắt: " + (data.message || "Unknown error"));
     }
   } catch (err) {
     console.error("Summarization error:", err);
-    alert("Không thể kết nối đến AI backend (" + getApiUrl() + "). Vui lòng đảm bảo server đang chạy.");
+    notify("Không thể kết nối đến AI backend (" + getApiUrl() + "). Vui lòng đảm bảo server đang chạy.");
   } finally {
     if (badge) badge.classList.add('hidden');
     if (btn) { btn.disabled = false; btn.textContent = '⚡ Tóm tắt cuộc họp với AI'; }

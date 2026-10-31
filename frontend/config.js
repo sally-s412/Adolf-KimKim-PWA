@@ -5,5 +5,5 @@
  */
 window.AKK_CONFIG = Object.freeze({
   apiBaseUrl: '',
-  sttUrl: '',
+  sttUrl: 'wss://imperial-pushing-advantage-trackback.trycloudflare.com/v1/ws/realtime-speech',
 });

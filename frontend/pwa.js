@@ -60,11 +60,11 @@
       console.warn('PWA registration unavailable:', error);
     }
   });
-  update.addEventListener('click', () => {
+  update.addEventListener('click', async () => {
     const message = en()
       ? 'Save your work and stop any recording before updating. Reload now?'
       : 'Hãy lưu công việc và dừng ghi âm trước khi cập nhật. Tải lại ngay?';
-    if (!waitingWorker || !window.confirm(message)) return;
+    if (!waitingWorker || !await confirmAction(message, {destructive:false})) return;
     reloadForUpdate = true;
     waitingWorker.postMessage({type: 'SKIP_WAITING'});
   });

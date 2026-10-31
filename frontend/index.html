@@ -3,19 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Adolf Kim Kim</title>
-<link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
-<link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=2">
+<title>ADOLF KIMKIM</title>
+<meta name="description" content="Không gian của bạn cùng KimKim: ghi âm, tóm tắt cuộc họp và kết nối với bạn bè.">
+<link rel="canonical" href="https://adolf-kimkim-pwa.onrender.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ADOLF KIMKIM">
+<meta property="og:title" content="ADOLF KIMKIM">
+<meta property="og:description" content="Không gian của bạn cùng KimKim: ghi âm, tóm tắt cuộc họp và kết nối với bạn bè.">
+<meta property="og:url" content="https://adolf-kimkim-pwa.onrender.com/">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:image" content="https://adolf-kimkim-pwa.onrender.com/assets/icons/kimkim-share-v3.png">
+<meta property="og:image:secure_url" content="https://adolf-kimkim-pwa.onrender.com/assets/icons/kimkim-share-v3.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:image:alt" content="Favicon ADOLF KIMKIM — KimKim trên nền xanh">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ADOLF KIMKIM">
+<meta name="twitter:description" content="Không gian của bạn cùng KimKim: ghi âm, tóm tắt cuộc họp và kết nối với bạn bè.">
+<meta name="twitter:image" content="https://adolf-kimkim-pwa.onrender.com/assets/icons/kimkim-share-v3.png">
+<meta name="twitter:image:alt" content="Favicon ADOLF KIMKIM — KimKim trên nền xanh">
+<link rel="icon" type="image/x-icon" href="favicon.ico?v=kimkim-blue-20261029">
+<link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=kimkim-blue-20261029">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="design-system.css">
+<link rel="stylesheet" href="auth-final.css">
+<link rel="stylesheet" href="light-theme.css">
+<link rel="stylesheet" href="home.css">
+<link rel="stylesheet" href="community.css?v=2">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#050b1f">
+<meta name="theme-color" content="#23293f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="KimKim">
-<link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png">
-<script src="config.js"></script>
+<meta name="apple-mobile-web-app-title" content="ADOLF KIMKIM">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon-v2.png">
+<script src="config.js?v=2"></script>
+<link rel="stylesheet" href="social-v4.css?v=3">
+<link rel="stylesheet" href="space-refresh.css?v=2">
+<link rel="stylesheet" href="story-editor.css?v=1">
+<link rel="stylesheet" href="chat-widget.css?v=1">
 </head>
 <body>
 
@@ -70,16 +97,7 @@
   <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="closeMobileMenu()"></div>
   <aside class="sidebar">
      <div style="font-size:20px; color:#93a4c3; font-weight:700; margin-bottom:10px;">  🐶 ADOLF KIMKIM 🐶 </div>
-    <div style="position:relative;">
-      <button class="btn btn-primary side-add" data-i18n="addNew" onclick="toggleAddNewMenu(event)">+ Thêm mới</button>
-      <div id="addNewMenu" class="hidden" style="position:absolute; top:100%; left:0; right:0; z-index:40; background:var(--card,#141a2b); border:1px solid var(--border,#26304a); border-radius:10px; margin-top:4px; overflow:hidden;">
-        <div class="list-row" style="cursor:pointer;padding:8px 8px;" onclick="closeAddNewMenu(); startLiveRecording();"><span data-i18n="addNewMeetingOpt">🔴 Ghi trực tiếp</span></div>
-        <div class="list-row" style="cursor:pointer;padding:8px 8px;" onclick="closeAddNewMenu(); scheduleNewMeeting();"><span data-i18n="addNewScheduleOpt">📆 Lên lịch</span></div>
-        <div class="list-row" style="cursor:pointer;padding:8px 8px;" onclick="closeAddNewMenu(); createNote();"><span data-i18n="addNewNoteOpt">📝 Ghi chú mới</span></div>
-        <div class="list-row" style="cursor:pointer;padding:8px 8px;" onclick="closeAddNewMenu(); showView('uploads',document.querySelector('[data-view=uploads]'));"><span data-i18n="addNewUploadOpt">📤 Upload</span></div>
-      </div>
-    </div>
-    <div class="nav-item active" data-view="home" onclick="showView('home',this)"><span class="ic">🏠</span><span data-i18n="navHome">Trang chủ</span></div>
+        <div class="nav-item active" data-view="home" onclick="showView('home',this)"><span class="ic">🏠</span><span data-i18n="navHome">Trang chủ</span></div>
     <div class="nav-item" data-view="meetings" onclick="showView('meetings',this)"><span class="ic">📅</span><span data-i18n="navMeetings">Cuộc họp</span></div>
     <div class="nav-item" data-view="notes" onclick="showView('notes',this)"><span class="ic">📝</span><span data-i18n="navNotes">Ghi chú</span></div>
     <div class="nav-item" data-view="recording" onclick="showView('recording',this)"><span class="ic">🎙️</span><span data-i18n="navRecording">Recording</span></div>
@@ -109,30 +127,18 @@
 
     <!-- ===== HOME ===== -->
     <div class="view" id="view-home">
-      <div class="hero-card card">
-        <h2 data-i18n="heroTitle">Hi Sally, chào mừng đến với Adolf KimKim 💙 </h2>
-        <p data-i18n="heroSub">Hãy mời KimKim vào lịch của bạn hoặc chọn ghi âm để bắt đầu ghi lại cuộc họp.</p>
-        <div class="hero-actions">
-          <button class="btn btn-primary" onclick="showView('recording')" data-i18n="recordLive">🔴 Ghi cuộc họp trực tiếp</button>
-      
-          <button class="btn btn-ghost" onclick="openCreateMeeting('processing')" data-i18n="scheduleNew">📆 Lên lịch cuộc họp mới</button>
-        </div>
+      <header class="home-intro"><h1 id="homeHeading">Bạn muốn bắt đầu từ đâu?</h1><p data-home-copy="sub">Để KimKim ghi lại, đọc hiểu và tóm tắt cho bạn.</p></header>
+      <div class="home-actions">
+        <article class="home-action primary"><span class="home-action-icon" data-home-icon="recording" aria-hidden="true"></span><h2 data-home-copy="record"></h2><p data-home-copy="recordSub"></p><button type="button" class="btn btn-primary" onclick="homeRecord()" data-home-copy="recordAction"></button></article>
+        <article class="home-action "><span class="home-action-icon" data-home-icon="meetings" aria-hidden="true"></span><h2 data-home-copy="meet"></h2><p data-home-copy="meetSub"></p><button type="button" class="btn btn-ghost" onclick="homeMeet()" data-home-copy="meetAction"></button></article>
+        <article class="home-action "><span class="home-action-icon" data-home-icon="uploads" aria-hidden="true"></span><h2 data-home-copy="upload"></h2><p data-home-copy="uploadSub"></p><button type="button" class="btn btn-ghost" onclick="homeUpload()" data-home-copy="uploadAction"></button></article>
       </div>
-      <div class="grid-2">
-        <div class="card" style="padding:16px;">
-          <div class="view-sub" style="margin-bottom:10px" data-i18n="upcoming">Cuộc họp sắp tới</div>
-          <div id="upcomingList"></div>
-        </div>
-        <div class="card" style="padding:16px;">
-          <div class="view-sub" style="margin-bottom:10px" data-i18n="recentNotes">Ghi chú gần đây</div>
-          <div id="recentNotesList"></div>
-        </div>
-      </div>
+      <section class="home-recent-section" aria-labelledby="homeRecentHeading"><div class="home-section-heading"><h2 id="homeRecentHeading" data-home-copy="recent">Tệp &amp; bản ghi gần đây</h2><button type="button" class="home-view-all" onclick="showView('meetings',document.querySelector('[data-view=meetings]'))" data-home-copy="all">Xem tất cả</button></div><div id="homeRecent" class="home-recent-list"></div></section>
     </div>
 
     <!-- ===== MEETINGS ===== -->
     <div class="view hidden" id="view-meetings">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div class="page-heading">
         <div>
           <div class="view-title" data-i18n="navMeetings">Cuộc họp</div>
           <div class="view-sub" data-i18n="meetingsSub">Quản lý toàn bộ cuộc họp đã ghi và đang xử lý</div>
@@ -158,7 +164,7 @@
 
     <!-- ===== MEETING DETAIL ===== -->
     <div class="view hidden" id="view-meetingDetail">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div class="page-heading">
         <button class="btn btn-ghost" onclick="showView('meetings',document.querySelector('[data-view=meetings]'))">← Quay lại</button>
         <div style="display:flex;gap:8px;">
           <button class="btn btn-ghost" onclick="editMeeting(currentMeetingId)" data-i18n="editMeeting">✏️ Sửa</button>
@@ -247,7 +253,7 @@
       <div class="view-title" id="cmFormTitle" data-i18n="createMeetingTitle">Tạo cuộc họp mới</div>
       <div class="card" style="max-width:520px;padding:20px;">
         <div class="field"><label data-i18n="cmTitleLbl">Tiêu đề</label><input id="cmTitle" style="width:100%"></div>
-        <div style="display:flex;gap:10px;">
+        <div class="field-pair">
           <div class="field" style="flex:1"><label data-i18n="cmDateLbl">Ngày</label><input id="cmDate" type="date" style="width:100%"></div>
           <div class="field" style="flex:1"><label data-i18n="cmTimeLbl">Giờ</label><input id="cmTime" type="time" style="width:100%"></div>
         </div>
@@ -276,19 +282,28 @@
       <div class="view-title" data-i18n="navNotes">Ghi chú</div>
       <div class="view-sub" data-i18n="notesSub">Toàn bộ ghi chú được tạo tự động và thủ công</div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
-        <button class="btn btn-primary" onclick="createNote()">+ Thêm ghi chú</button>
+        <button class="btn btn-primary" onclick="createNote()" data-i18n="uiAddNote">+ Thêm ghi chú</button>
       </div>
-      <div style="display:flex;gap:16px;">
+      <form id="noteComposer" class="card note-composer hidden" onsubmit="submitNewNote(event)" aria-labelledby="noteComposerHeading">
+        <h2 id="noteComposerHeading" data-i18n="uiNewNote">Ghi chú mới</h2>
+        <div class="field"><label for="newNoteTitle" data-i18n="uiNoteTitle">Tiêu đề</label><input id="newNoteTitle" maxlength="160" required data-i18n-ph="uiNoteTitlePh" placeholder="Đặt tên cho ghi chú"></div>
+        <div class="field"><label for="newNoteContent" data-i18n="uiNoteContent">Nội dung</label><textarea id="newNoteContent" rows="5" data-i18n-ph="uiNoteContentPh" placeholder="Viết nội dung ghi chú..."></textarea></div>
+        <p id="newNoteError" class="field-error" role="alert"></p>
+        <div class="form-actions"><button type="button" class="btn btn-ghost" onclick="cancelNewNote()" data-i18n="cancelBtn">Huỷ</button><button id="newNoteSubmit" type="submit" class="btn btn-primary" data-i18n="saveBtn">Lưu</button></div>
+      </form>
+      <div class="notes-workspace">
         <div class="card" style="width:260px;flex-shrink:0;padding:10px;" id="notesSidebarList"></div>
         <div class="card" style="flex:1;padding:20px;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+          <div class="editor-toolbar">
             <button class="btn btn-ghost" id="noteTranslateBtn" onclick="toggleNoteTranslation()" data-i18n="translateBtn">🌐 Dịch sang tiếng Anh</button>
             <button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);" onclick="deleteNoteHandler()" data-i18n="deleteNoteBtn">🗑️ Xoá ghi chú</button>
           </div>
+          <div id="noteEmptyState" class="note-empty"><h3 data-i18n="uiEmptyNoteTitle">Sẵn sàng ghi lại ý tưởng?</h3><p data-i18n="uiEmptyNoteHelp">Tạo ghi chú mới hoặc chọn một ghi chú ở bên trái.</p></div>
           <div class="editor" contenteditable="true" style="font-size:14px;line-height:1.8;" onblur="saveCurrentNote()">
             <h1 style="margin:0 0 10px;font-size:19px;"></h1>
             <p style="color:var(--text-1);"></p>
           </div>
+          <span id="noteSaveStatus" class="save-status" role="status"></span>
         </div>
       </div>
     </div>
@@ -335,12 +350,12 @@
     <!-- ===== UPLOADS ===== -->
     <div class="view hidden" id="view-uploads">
       <div class="view-title" data-i18n="navUploads">Tải lên</div>
-      <div class="view-sub" data-i18n="uploadSub">Tải file âm thanh hoặc video để tạo bản ghi tự động</div>
+      <div class="view-sub" data-i18n="uploadSub">Tải âm thanh, video, PDF hoặc DOCX để đọc nội dung và phân tích với AI</div>
       <div class="card dropzone" ondragover="event.preventDefault()" ondrop="event.preventDefault(); if(event.dataTransfer && event.dataTransfer.files[0]){ handleFileSelected(event.dataTransfer.files[0]); }">
         <div class="ic">🎧</div>
         <p data-i18n="dropText">Kéo thả file MP3, WAV hoặc MP4 vào đây, hoặc chọn file để tải lên</p>
         <button class="btn btn-primary" onclick="selectUploadFile()" data-i18n="selectFile">Chọn file</button>
-        <input type="file" id="hiddenFileInput" accept="audio/*,video/*,.mp3,.wav,.mp4,.m4a,.webm,.ogg,.flac" style="display:none" onchange="if(this.files[0]) handleFileSelected(this.files[0]); this.value='';">
+        <input type="file" id="hiddenFileInput" accept="audio/*,video/*,.mp3,.wav,.mp4,.m4a,.webm,.ogg,.flac,.pdf,.docx,.doc" style="display:none" onchange="if(this.files[0]) handleFileSelected(this.files[0]); this.value='';">
       </div>
       <div class="card" id="uploadList"></div>
     </div>
@@ -374,39 +389,46 @@
     <div class="view hidden" id="view-settings">
       <div class="view-title" data-i18n="navSettings">Cài đặt</div>
       <div class="settings-wrap">
-        <div class="settings-tabs">
-          <div class="nav-item active" data-s="account" onclick="showSettings('account',this)"><span data-i18n="sAccount">Tài khoản</span></div>
-          <div class="nav-item" data-s="meeting" onclick="showSettings('meeting',this)"><span data-i18n="sMeeting">Cuộc họp</span></div>
-          <div class="nav-item" data-s="ai" onclick="showSettings('ai',this)"><span data-i18n="sAI">Tuỳ chỉnh AI</span></div>
-          <div class="nav-item" data-s="password" onclick="showSettings('password',this)"><span data-i18n="sPassword">Mật khẩu</span></div>
+        <div class="settings-tabs" role="tablist" aria-label="Settings">
+          <button type="button" role="tab" aria-selected="true" aria-controls="settingsAccount" class="nav-item active" data-s="account" onclick="showSettings('account',this)"><span data-i18n="sAccount">Tài khoản</span></button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="settingsMeeting" class="nav-item" data-s="meeting" onclick="showSettings('meeting',this)"><span data-i18n="sMeeting">Cuộc họp</span></button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="settingsAI" class="nav-item" data-s="ai" onclick="showSettings('ai',this)"><span data-i18n="sAI">Tuỳ chỉnh AI</span></button>
+          <button type="button" role="tab" aria-selected="false" aria-controls="settingsPassword" class="nav-item" data-s="password" onclick="showSettings('password',this)"><span data-i18n="sPassword">Mật khẩu</span></button>
         </div>
-        <div class="card settings-pane" id="settingsAccount">
+        <div class="card settings-pane" id="settingsAccount" role="tabpanel">
           <h3 data-i18n="sAccount">Tài khoản</h3>
-          <div class="field"><label data-i18n="nameLbl">Họ tên</label><input value=""></div>
-          <div class="field"><label data-i18n="emailLbl">Email</label><input value="" disabled></div>
-          <button class="btn btn-primary" onclick="saveAccountSettings()">Lưu</button>
+          <p class="settings-description" data-i18n="uiAccountHelp"></p>
+          <div class="field"><label for="accountField1" data-i18n="nameLbl">Họ tên</label><input id="accountField1" value=""></div>
+          <div class="field"><label for="accountField2" data-i18n="emailLbl">Email</label><input id="accountField2" value="" disabled></div>
+          <button class="btn btn-primary" onclick="saveAccountSettings()" data-i18n="saveBtn">Lưu</button>
           <button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);" onclick="deleteAccount()" data-i18n="delAccount">Xoá tài khoản</button>
         </div>
-        <div class="card settings-pane hidden" id="settingsMeeting">
+        <div class="card settings-pane hidden" id="settingsMeeting" role="tabpanel">
           <h3 data-i18n="sMeeting">Cuộc họp</h3>
-          <div class="field"><label>STT WebSocket URL</label><input id="settingSttUrl" value="" placeholder="wss://speech.your-domain.com/v1/ws/realtime-speech"></div>
-          <div class="field"><label>Backend API URL</label><input id="settingApiUrl" value="" placeholder="https://api.your-domain.com"></div>
+          <p class="settings-description" data-i18n="uiMeetingHelp"></p>
 
-          <div class="field"><label data-i18n="meetLang">Ngôn ngữ ghi</label><select><option>Tiếng Việt</option><option>English</option></select></div>
-          <div class="toggle-row"><span data-i18n="autoJoin">Tự động tham gia</span><div class="switch on" onclick="this.classList.toggle('on')"><i></i></div></div>
-          <div class="toggle-row"><span data-i18n="autoRecord">Tự động ghi âm</span><div class="switch" onclick="this.classList.toggle('on')"><i></i></div></div>
-          <button class="btn btn-primary" onclick="saveMeetingSettings()">Lưu</button>
+
+          <div class="field"><label for="settingsMeetingSelect1" data-i18n="meetLang">Ngôn ngữ ghi</label><select id="settingsMeetingSelect1"><option>Tiếng Việt</option><option>English</option></select></div>
+          <div class="toggle-row"><span data-i18n="autoJoin">Tự động tham gia</span><button type="button" role="switch" aria-checked="true" class="switch on" onclick="toggleSettingSwitch(this)"><i></i></button></div>
+          <div class="toggle-row"><span data-i18n="autoRecord">Tự động ghi âm</span><button type="button" role="switch" aria-checked="false" class="switch" onclick="toggleSettingSwitch(this)"><i></i></button></div>
+          <details class="settings-advanced"><summary data-i18n="uiAdvancedConnection">Kết nối nâng cao</summary>
+          <div class="field"><label for="settingSttUrl">STT WebSocket URL</label><input id="settingSttUrl" value="" placeholder="wss://speech.your-domain.com/v1/ws/realtime-speech"></div>
+          <div class="field"><label for="settingApiUrl">Backend API URL</label><input id="settingApiUrl" value="" placeholder="https://api.your-domain.com"></div>
+          </details>
+          <button class="btn btn-primary" onclick="saveMeetingSettings()" data-i18n="saveBtn">Lưu</button>
         </div>
-        <div class="card settings-pane hidden" id="settingsAI">
+        <div class="card settings-pane hidden" id="settingsAI" role="tabpanel">
           <h3 data-i18n="sAI">Tuỳ chỉnh AI</h3>
-          <div class="field"><label data-i18n="speechStyle">Phong cách trả lời</label><select><option data-i18n="styleFormal">Trang trọng</option><option data-i18n="styleCasual">Thân mật</option></select></div>
-          <div class="toggle-row"><span data-i18n="vocabDetect">Nhận diện thuật ngữ chuyên ngành</span><div class="switch on" onclick="this.classList.toggle('on')"><i></i></div></div>
-          <button class="btn btn-primary" onclick="saveAISettings()">Lưu</button>
+          <p class="settings-description" data-i18n="uiAIHelp"></p>
+          <div class="field"><label for="settingsAISelect1" data-i18n="speechStyle">Phong cách trả lời</label><select id="settingsAISelect1"><option data-i18n="styleFormal">Trang trọng</option><option data-i18n="styleCasual">Thân mật</option></select></div>
+          <div class="toggle-row"><span data-i18n="vocabDetect">Nhận diện thuật ngữ chuyên ngành</span><button type="button" role="switch" aria-checked="true" class="switch on" onclick="toggleSettingSwitch(this)"><i></i></button></div>
+          <button class="btn btn-primary" onclick="saveAISettings()" data-i18n="saveBtn">Lưu</button>
         </div>
-        <div class="card settings-pane hidden" id="settingsPassword">
+        <div class="card settings-pane hidden" id="settingsPassword" role="tabpanel">
           <h3 data-i18n="sPassword">Mật khẩu</h3>
-          <div class="field"><label data-i18n="curPw">Mật khẩu hiện tại</label><input type="password"></div>
-          <div class="field"><label data-i18n="newPw">Mật khẩu mới</label><input type="password"></div>
+          <p class="settings-description" data-i18n="uiPasswordHelp"></p>
+          <div class="field"><label for="passwordField1" data-i18n="curPw">Mật khẩu hiện tại</label><input id="passwordField1" type="password"></div>
+          <div class="field"><label for="passwordField2" data-i18n="newPw">Mật khẩu mới</label><input id="passwordField2" type="password"></div>
           <button class="btn btn-primary" onclick="updatePasswordSettings()" data-i18n="updatePw">Cập nhật mật khẩu</button>
         </div>
       </div>
@@ -459,10 +481,10 @@
     <!-- ===== UPGRADE ===== -->
     <div class="view hidden" id="view-upgrade">
       <div class="view-title" data-i18n="upgradeTitle">Nâng cấp gói</div>
-      <div style="display:flex;gap:20px;max-width:700px;">
+      <div class="upgrade-layout">
         <div class="card" style="flex:1;padding:18px;">
           <div class="field"><label data-i18n="cardNum">Số thẻ</label><input placeholder="4242 4242 4242 4242"></div>
-          <div style="display:flex;gap:10px;">
+          <div class="field-pair">
             <div class="field" style="flex:1"><label>Expiry</label><input placeholder="MM/YY"></div>
             <div class="field" style="flex:1"><label>CVC</label><input placeholder="123"></div>
           </div>
@@ -521,21 +543,55 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="localizations/vi-vn.js?v=3"></script>
-<script src="localizations/eng-en.js?v=3"></script>
+<script src="localizations/vi-vn.js?v=4"></script>
+<script src="localizations/eng-en.js?v=4"></script>
 <script src="services/firebaseClient.js?v=3"></script>
-<script src="services/avatarService.js?v=3"></script>
+<script src="services/profileMedia.js?v=1"></script>
+<script src="services/avatarService.js?v=5"></script>
 <script src="services/authService.js?v=4"></script>
-<script src="services/meetingService.js?v=3"></script>
+<script src="services/meetingService.js?v=4"></script>
 <script src="services/noteService.js?v=3"></script>
 <script src="services/recordingService.js?v=3"></script>
 <script src="services/teamService.js?v=3"></script>
 <script src="services/uploadService.js?v=3"></script>
 <script src="services/settingsService.js?v=3"></script>
-<script src="services/aiService.js?v=6"></script>
+<script src="services/aiService.js?v=7"></script>
 <script src="services/translationService.js?v=3"></script>
 <script src="layout.js"></script>
-<script src="app.js?v=10"></script>
+<script src="ui-feedback.js"></script>
+<script src="app.js?v=16"></script>
+<script src="home.js?v=1"></script>
+<script src="services/communityService.js?v=4"></script>
+<script src="communityCover.js?v=5"></script>
+<script src="services/chatMedia.js?v=1"></script>
+<script src="community.js?v=9"></script>
+<script src="storyEditor.js?v=1"></script>
+<script src="socialStudio.js?v=5"></script>
+<script src="calendar.js?v=2"></script>
+<script src="appearance.js?v=1"></script>
+<script src="ux-completeness.js?v=1"></script>
+<script src="chat-widget.js?v=1"></script>
 <script src="pwa.js"></script>
+<script>
+// Recover only a failed app boot; a working app keeps the normal update prompt.
+if(typeof signInWithEmail !== 'function' && 'serviceWorker' in navigator){
+  const error=document.getElementById('authError');
+  error.textContent='Đang tải lại bản cập nhật đăng nhập… / Updating sign-in…';
+  navigator.serviceWorker.getRegistration().then(reg=>{
+    if(!reg){error.textContent='Không tải được ứng dụng. Vui lòng tải lại trang. / Please reload the page.';return;}
+    navigator.serviceWorker.addEventListener('controllerchange',()=>location.reload(),{once:true});
+    const activate=()=>{if(reg.waiting)reg.waiting.postMessage({type:'SKIP_WAITING'});};
+    activate();reg.addEventListener('updatefound',()=>{
+      const worker=reg.installing;
+      worker?.addEventListener('statechange',()=>{if(worker.state==='installed')activate();});
+    });
+    reg.update().catch(()=>{error.textContent='Không tải được bản cập nhật. Vui lòng thử lại khi có mạng. / Please retry when online.';});
+  }).catch(()=>{error.textContent='Vui lòng đóng và mở lại ứng dụng. / Please reopen the app.';});
+}
+</script>
+<div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="false"></div>
+<dialog id="confirmDialog" class="confirm-dialog" aria-labelledby="confirmHeading" aria-describedby="confirmMessage">
+  <form method="dialog"><h2 id="confirmHeading"></h2><p id="confirmMessage"></p><div class="form-actions"><button class="btn btn-ghost" value="cancel" id="confirmCancel"></button><button class="btn btn-danger" value="confirm" id="confirmAccept"></button></div></form>
+</dialog>
 </body>
 </html>

@@ -1,0 +1,9 @@
+/* The fixed hit target never animates or contributes transformed overflow. */
+html body #chatToggle.kimkim-movable{position:fixed!important;left:var(--kimkim-x,calc(100vw - 90px))!important;top:var(--kimkim-y,100px)!important;right:auto!important;bottom:auto!important;width:76px!important;height:98px!important;box-sizing:border-box;animation:none!important;transform:none!important;transition:none!important;overflow:hidden;contain:layout paint;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;cursor:grab;isolation:isolate}
+html body #chatToggle.kimkim-movable img{width:100%;height:calc(100% - 8px);pointer-events:none;animation:kimkim-float 4.5s ease-in-out infinite;transform:translateY(0);will-change:auto}
+html body #chatToggle.kimkim-dragging{cursor:grabbing}
+html body.kimkim-input-active #chatToggle img,html body #chatToggle.kimkim-dragging img{animation:none!important;transform:none!important}
+html #chatPanel.kimkim-anchored{right:auto!important;bottom:auto!important;max-width:calc(100vw - 24px)}
+html .community-inbox,html .community-conversation,html .community-composer{transition:none!important}
+@media(max-width:760px){html body #chatToggle.kimkim-movable{width:66px!important;height:86px!important}html body.community-chat-open #chatToggle.kimkim-movable{width:50px!important;height:64px!important}html body.community-chat-open #chatToggle img{animation:none!important;transform:none!important}html .community-inbox{min-height:0!important}html body.community-chat-open{height:var(--community-viewport,100dvh);overflow:hidden}html body.community-chat-open #app.active{height:calc(var(--community-viewport,100dvh) - var(--safe-top) - var(--safe-bottom))}html body.community-chat-open .main{min-height:0;overflow:hidden}html #chatPanel.kimkim-anchored{max-height:calc(var(--community-viewport,100dvh) - 24px)}}
+@media(prefers-reduced-motion:reduce){html body #chatToggle.kimkim-movable img{animation:none!important}}

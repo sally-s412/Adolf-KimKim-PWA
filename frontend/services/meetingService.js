@@ -46,6 +46,7 @@
       keyPoints: [],
       actionItems: [],
       notes: '',
+      ...(data.document ? {document: data.document} : {}),
       createdAt: FC.serverTimestamp()
     });
     return ref.id;

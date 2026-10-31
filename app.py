@@ -17,8 +17,13 @@ from routes.mindmap import generate_mindmap, render_preview_html
 from routes.powerpoint import generate_pptx
 from routes.visualization import generate_image
 from routes.transcription import router as transcription_router
+from routes.documents import router as documents_router
 from routes.chatbot import router as chatbot_router
 from routes.meet_bot import router as meet_bot_router
+from routes.profile_media import router as profile_media_router
+from routes.chat_media import router as chat_media_router
+from routes.social_media import router as social_media_router
+from routes.story_bundle import router as story_bundle_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -49,8 +54,13 @@ app.add_middleware(
 
 # Mount routes
 app.include_router(transcription_router)
+app.include_router(documents_router)
 app.include_router(chatbot_router)
 app.include_router(meet_bot_router)
+app.include_router(profile_media_router)
+app.include_router(chat_media_router)
+app.include_router(social_media_router)
+app.include_router(story_bundle_router)
 
 
 @app.get("/health")
@@ -168,3 +178,4 @@ if __name__ == "__main__":
 
     port = int(os.getenv("PORT", 8899))
     uvicorn.run(app, host="0.0.0.0", port=port)
+

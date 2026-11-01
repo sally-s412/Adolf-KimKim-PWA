@@ -150,7 +150,8 @@ async function handleAvatarSelected(input){
   const statusEl=document.getElementById('avatarUploadStatus');
   if(statusEl) statusEl.textContent=t('avatarUploading');
   try{
-    await AvatarService.uploadAvatar(file);
+    const url=await AvatarService.uploadAvatar(file);
+    if(!url){if(statusEl)statusEl.textContent='';input.value='';return;}
     updateUserUI(firebase.auth().currentUser);
     if(statusEl) statusEl.textContent=t('avatarUploaded');
   }catch(err){
@@ -1868,3 +1869,4 @@ for (const [id, action] of [['signinPassword',signInWithEmail],['signupPassword'
     if(event.key==='Enter'&&!event.isComposing){event.preventDefault();action();}
   });
 }
+

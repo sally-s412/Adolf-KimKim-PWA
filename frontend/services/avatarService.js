@@ -17,43 +17,14 @@
     return null;
   }
 
-  // Resize/re-encode any input image to a JPEG blob capped at maxDim px on
-  // the long edge. This avoids storage/unknown errors caused by huge
-  // originals, unsupported formats (HEIC, etc.), or broken EXIF orientation.
-  function resizeToJpeg(file, maxDim) {
-    maxDim = maxDim || 512;
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      img.onload = () => {
-        try {
-          let { width, height } = img;
-          if (width > maxDim || height > maxDim) {
-            if (width >= height) { height = Math.round(height * (maxDim / width)); width = maxDim; }
-            else { width = Math.round(width * (maxDim / height)); height = maxDim; }
-          }
-          const canvas = document.createElement('canvas');
-          canvas.width = width; canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          canvas.toBlob(blob => {
-            URL.revokeObjectURL(url);
-            if (!blob) return reject(new Error(typeof t === 'function' ? t('errImageProcessFailed') : 'Không xử lý được ảnh.'));
-            resolve(blob);
-          }, 'image/jpeg', 0.88);
-        } catch (e) { URL.revokeObjectURL(url); reject(e); }
-      };
-      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(typeof t === 'function' ? t('errImageProcessFailed') : 'Không đọc được ảnh.')); };
-      img.src = url;
-    });
-  }
-
   async function uploadAvatar(file) {
     const err = validate(file);
     if (err) throw new Error(err);
     const user = firebase.auth().currentUser;
     if (!user) throw new Error(typeof t === 'function' ? t('notLoggedIn') : 'Chưa đăng nhập.');
-    const blob = await resizeToJpeg(file, 512);
+    const blob = await global.ImageCropper.open(file, {kind:'avatar'});
+    if (!blob) return null;
+    if (firebase.auth().currentUser?.uid !== user.uid) throw new Error('media/sign-in');
     const url = await global.ProfileMedia.upload(blob, 'avatar').promise;
     if (firebase.auth().currentUser?.uid !== user.uid) throw new Error('media/sign-in');
     await user.updateProfile({ photoURL: url });
@@ -80,3 +51,4 @@
   });
   global.AvatarService = { uploadAvatar, validate };
 })(window);
+

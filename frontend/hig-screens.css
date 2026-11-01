@@ -13,3 +13,23 @@ html dialog.story-viewer{width:100vw;max-width:none;height:100dvh;max-height:non
 
 /* The wordmark uses a separate cutout; the floating KimKim assistant stays unchanged. */
 html .sidebar-brand>img{width:32px;height:38px;object-fit:contain;flex-shrink:0}html .header-mobile-brand>img{width:26px;height:32px;object-fit:contain;flex-shrink:0}
+
+/* Avatar/media ownership: only the ring may extend outside the image clip. */
+html .community-avatar{position:relative;overflow:hidden!important;flex-shrink:0;aspect-ratio:1;border-radius:50%!important}
+html .community-avatar>img{position:absolute;inset:0;display:block;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;object-position:center;border-radius:inherit;margin:0}
+html .social-story-ring{--story-avatar-size:58px;position:relative;width:76px;min-width:76px;max-width:76px;box-sizing:border-box;align-self:flex-start}
+html .social-story-ring>.community-avatar{width:var(--story-avatar-size);height:var(--story-avatar-size);min-height:var(--story-avatar-size);flex:none;overflow:hidden!important}
+html .social-story-ring.own-story>.community-avatar::after{display:none!important}
+html .social-story-ring.own-story:not(.has-story)::after{content:'+';position:absolute;top:40px;right:4px;display:grid;place-items:center;width:20px;height:20px;border:2px solid var(--panel);border-radius:50%;background:var(--color-primary);color:var(--color-on-primary);font-size:16px;line-height:1;pointer-events:none}
+html .social-profile-story-ring{aspect-ratio:1;display:grid;place-items:center;box-sizing:border-box;border-radius:50%;flex-shrink:0}
+html .social-profile-story-ring>.community-avatar{width:100%;height:100%;min-width:0;min-height:0}
+html .social-highlight-item{flex:none;width:68px;min-width:68px;max-width:68px;overflow:visible}
+html .social-highlight-cover{display:grid;width:56px!important;height:56px!important;min-height:56px;position:relative;flex:none;overflow:hidden;border-radius:50%;place-items:center;background:var(--field)}
+html .social-highlight-cover>img{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none;max-height:none;object-fit:cover;display:block;border-radius:50%}
+html .social-highlight-item>small{width:68px;max-width:68px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html .community-profile-preview>.community-cover,html .social-settings-identity>.community-cover{height:auto;aspect-ratio:16/7;min-height:0}
+html dialog.profile-cropper-dialog{width:min(620px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:24px;box-sizing:border-box;overflow:auto}
+.cropper-heading{display:flex;justify-content:space-between;align-items:center;gap:16px}.cropper-heading h2{font-size:22px;margin:0;letter-spacing:-.5px}.cropper-heading .btn{font-size:12px}
+.cropper-frame{position:relative;overflow:hidden;background:var(--panel);touch-action:none;user-select:none;cursor:grab;border:1px solid var(--border);box-sizing:border-box;margin:24px auto;width:100%;outline-offset:4px}.cropper-frame:active{cursor:grabbing}.cropper-frame.cropper-avatar{max-width:320px;border-radius:50%}.cropper-frame.cropper-cover{border-radius:16px}.cropper-frame>img{position:absolute;display:block;max-width:none!important;max-height:none!important;object-fit:fill!important;border-radius:0!important;pointer-events:none;user-select:none}
+.cropper-controls{display:flex;flex-direction:column;gap:18px}.cropper-control{display:grid;grid-template-columns:125px minmax(0,1fr);align-items:center;gap:16px;font-size:13px;color:var(--text-1)}.cropper-control input{width:100%;accent-color:var(--color-primary);min-height:30px;margin:0}.profile-cropper-dialog>.btn{margin-top:20px}.cropper-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:22px}.cropper-actions .btn{min-width:120px}.cover-cropped-preview{aspect-ratio:16/7;border-radius:16px;overflow:hidden;background:var(--panel)}.cover-cropped-preview img{display:block;width:100%;height:100%;object-fit:cover}
+@media(max-width:760px){html .social-story-ring{--story-avatar-size:52px;min-width:64px;width:64px;max-width:64px}html .social-story-ring.own-story:not(.has-story)::after{top:35px;right:1px}html dialog.profile-cropper-dialog{padding:20px}.cropper-heading h2{font-size:20px}.cropper-frame.cropper-avatar{max-width:280px}.cropper-control{grid-template-columns:100px minmax(0,1fr);gap:12px;font-size:12px}.cropper-actions .btn{min-width:0;flex:1}.cropper-actions{justify-content:stretch}}

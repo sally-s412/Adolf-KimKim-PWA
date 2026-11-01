@@ -227,3 +227,7 @@ Object.assign(window.I18N.vi,{"uiAddNote": "+ Thêm ghi chú", "uiNewNote": "Ghi
 Object.assign(window.I18N.vi,{"uiEmptyNoteTitle": "Sẵn sàng ghi lại ý tưởng?", "uiEmptyNoteHelp": "Tạo ghi chú mới hoặc chọn một ghi chú ở bên trái.", "uiSaving": "Đang lưu..."});
 
 Object.assign(window.I18N.vi,{loginMeetKimKim:"Gặp KimKim.",loginKimKimHelp:"Trợ lý AI giúp bạn ghi lại, đọc hiểu và tóm tắt nội dung.",loginRecord:"Ghi âm",loginRead:"Đọc tệp",loginSummarize:"Tóm tắt"});
+
+Object.assign(window.I18N.vi,{"studioLoginSub": "Tập trung vào cuộc trò chuyện. Để KimKim lo phần ghi nhớ.", "studioRecord": "Ghi âm cùng KimKim", "studioRecordSub": "Lưu lại nội dung quan trọng của cuộc trò chuyện.", "studioRead": "Đọc tệp thông minh", "studioReadSub": "Từ âm thanh, video đến PDF và tài liệu Word.", "studioSummarize": "Hiểu nhanh với AI", "studioSummarizeSub": "Tìm điểm chính, tóm tắt và trao đổi với KimKim.", "accountSettingsTitle": "Cài đặt tài khoản", "accountSettingsSub": "Quản lý tài khoản đăng nhập, bảo mật và tùy chọn ứng dụng."});
+
+Object.assign(window.I18N.vi,{authWelcome:"CHÀO MỪNG ĐẾN VỚI<br>ADOLF KIMKIM"});

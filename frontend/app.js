@@ -85,7 +85,7 @@ async function sendPasswordReset(){
     document.getElementById('resetError').style.color='var(--green)';
     document.getElementById('resetError').textContent='Đã gửi email đặt lại mật khẩu. Hãy kiểm tra hộp thư.';
   }catch(err){
-    document.getElementById('resetError').style.color='#fca5a5';
+    document.getElementById('resetError').style.color='var(--color-danger)';
     document.getElementById('resetError').textContent=err.message;
   }
 }
@@ -1047,7 +1047,7 @@ function renderAll(){
   // team table
   const teamEl=document.getElementById('teamTable');
   if(teamEl) teamEl.innerHTML = teamArr.map(t=>`
-    <tr><td style="display:flex;align-items:center;gap:9px;"><div class="avatar" style="background:${t.color||'#3b82f6'}">${initials(t.name)}</div>${t.name}</td>
+    <tr><td style="display:flex;align-items:center;gap:9px;"><div class="avatar" style="background:${t.color||'var(--color-primary)'}">${initials(t.name)}</div>${t.name}</td>
     <td>${t.email}</td><td>${statusBadge(t.status)}</td>
     <td><select onchange="changeRoleHandler('${t.id}',this.value)"><option value="member" ${t.role==='member'?'selected':''}>Member</option><option value="admin" ${t.role==='admin'?'selected':''}>Admin</option></select></td>
     <td><button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);padding:4px 10px;" onclick="removeMemberHandler('${t.id}')">✕</button></td></tr>`).join('') || `<tr><td colspan="5" style="color:var(--text-2)">${I18N[lang].noTeam}</td></tr>`;
@@ -1092,7 +1092,7 @@ function renderTranscriptAndStats(){
   const statEl=document.getElementById('speakerStats');
   if(statEl) statEl.innerHTML = Object.entries(totals).map(([name,c])=>{
     const sp = segments.find(s=>s.speaker===name);
-    return `<div class="sp-row"><span style="width:110px;max-width:40%;flex-shrink:0;overflow-wrap:anywhere">${escapeHtml(name)}</span><div class="sp-bar"><i style="width:${(c/max)*100}%;background:${sp ? sp.color : '#00d4ff'}"></i></div></div>`;
+    return `<div class="sp-row"><span style="width:110px;max-width:40%;flex-shrink:0;overflow-wrap:anywhere">${escapeHtml(name)}</span><div class="sp-bar"><i style="width:${(c/max)*100}%;background:${sp ? sp.color : 'var(--color-primary)'}"></i></div></div>`;
   }).join('') || (statEl ? `<div style="color:var(--text-2);font-size:12px;">${I18N[lang].aiProcessing}</div>` : '');
 }
 function fmt(s){const m=Math.floor(s/60),sec=s%60;return `${m}:${sec.toString().padStart(2,'0')}`;}
@@ -1239,7 +1239,7 @@ function mapSpeakerName(spk) {
   return String(spk).trim();
 }
 function getSpeakerColor(name) {
-  const palette = ["#3b82f6", "#f59e0b", "#22c55e", "#ef4444", "#a855f7", "#06b6d4", "#ec4899"];
+  const palette = ["var(--speaker-1)", "var(--speaker-2)", "var(--speaker-3)", "var(--speaker-4)", "var(--speaker-5)", "var(--speaker-6)", "var(--speaker-7)"];
   const label = mapSpeakerName(name);
   const speakerId = /^SPEAKER_(\d+)$/i.exec(label);
   if (speakerId) return palette[Number(speakerId[1]) % palette.length];

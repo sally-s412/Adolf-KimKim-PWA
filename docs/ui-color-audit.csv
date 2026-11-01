@@ -1,0 +1,729 @@
+file,line,original_color,classification
+frontend/app.js,88,#fca5a5,UI
+frontend/app.js,1050,#3b82f6,UI
+frontend/app.js,1095,#00d4ff,UI
+frontend/app.js,1242,#3b82f6,UI
+frontend/app.js,1242,#f59e0b,UI
+frontend/app.js,1242,#22c55e,UI
+frontend/app.js,1242,#ef4444,UI
+frontend/app.js,1242,#a855f7,UI
+frontend/app.js,1242,#06b6d4,UI
+frontend/app.js,1242,#ec4899,UI
+frontend/appearance.js,2,#07152e,content / canvas / data validation
+frontend/appearance.js,2,#ffffff,content / canvas / data validation
+frontend/appearance.js,4,#2f64ec,content / canvas / data validation
+frontend/appearance.js,4,#2f64ec,content / canvas / data validation
+frontend/auth-final.css,3,#091e4c,UI
+frontend/auth-final.css,3,#113072,UI
+frontend/auth-final.css,3,#071c4c,UI
+frontend/auth-final.css,3,#113072,UI
+frontend/auth-final.css,3,#071d4e,UI
+frontend/auth-final.css,6,#143667,UI
+frontend/auth-final.css,6,"rgba(11,23,52,.94)",UI
+frontend/auth-final.css,6,"rgba(160,195,255,.04)",UI
+frontend/auth-final.css,8,"rgba(59,130,245,.35)",UI
+frontend/auth-final.css,9,#93a4c3,UI
+frontend/auth-final.css,10,#e8edf7,UI
+frontend/auth-final.css,11,#788cac,UI
+frontend/auth-final.css,12,#1e4274,UI
+frontend/auth-final.css,12,#e8edf7,UI
+frontend/auth-final.css,13,#93a4c3,UI
+frontend/auth-final.css,14,#143667,UI
+frontend/auth-final.css,14,#1e4274,UI
+frontend/auth-final.css,14,#e8edf7,UI
+frontend/auth-final.css,15,#8697b2,UI
+frontend/auth-final.css,16,#2f64ec,UI
+frontend/auth-final.css,19,#93a4c3,UI
+frontend/auth-final.css,20,#5599ff,UI
+frontend/community.css,5,"rgba(59,130,246,.15)",UI
+frontend/community.css,5,"rgba(96,165,250,.45)",UI
+frontend/community.css,6,"rgba(59,130,246,.17)",UI
+frontend/community.css,6,#93baff,UI
+frontend/community.css,10,#4b91ff,UI
+frontend/community.css,11,"rgba(148,163,184,.1)",UI
+frontend/community.css,11,#275fd1,UI
+frontend/community.css,11,#fff,UI
+frontend/community.css,12,"rgba(148,163,184,.07)",UI
+frontend/community.css,13,#75aaff,UI
+frontend/community.css,14,"rgba(255,255,255,.86)",UI
+frontend/community.css,14,#1d2d49,UI
+frontend/community.css,14,#edf2fa,UI
+frontend/community.css,14,#1d2d49,UI
+frontend/community.css,14,#e7efff,UI
+frontend/community.css,14,#2d5bb3,UI
+frontend/community.css,14,#fff,UI
+frontend/community.css,25,#0b1734,UI
+frontend/community.css,25,#143667,UI
+frontend/community.css,25,#b5c1d6,UI
+frontend/community.css,25,#20365b,UI
+frontend/community.css,25,#2f64ec,UI
+frontend/community.css,25,#e9edf7,UI
+frontend/community.css,26,#fff,UI
+frontend/community.css,26,#eef3fc,UI
+frontend/community.css,26,#5d6d86,UI
+frontend/community.css,26,#dce3ef,UI
+frontend/community.css,26,#172e51,UI
+frontend/community.css,27,#0c1427,UI
+frontend/community.css,27,#f3f6fc,UI
+frontend/community.css,28,#fff,UI
+frontend/community.css,28,#bcd3ff,UI
+frontend/community.css,28,#203b65,UI
+frontend/community.css,28,#c3ece4,UI
+frontend/community.css,28,#e4d0fb,UI
+frontend/community.css,28,#ffd9bd,UI
+frontend/community.css,28,#d0dcfa,UI
+frontend/community.css,29,"rgba(47,100,236,.18)",UI
+frontend/community.css,30,#244c9d,UI
+frontend/community.css,30,#547df3,UI
+frontend/community.css,30,"rgba(12,28,59,.82)",UI
+frontend/community.css,30,#fff,UI
+frontend/community.css,30,#ffffff33,UI
+frontend/community.css,31,#0003,UI
+frontend/community.css,32,"rgba(47,100,236,.18)",UI
+frontend/community.css,34,#030814a6,UI
+frontend/community.css,34,#2f64ec,UI
+frontend/community.css,34,#fff,UI
+frontend/community.css,34,"rgba(47,100,236,.18)",UI
+frontend/community.css,34,#8cafff,UI
+frontend/community.css,34,#fff,UI
+frontend/community.css,34,#08122a,UI
+frontend/community.css,34,#2f64ec,UI
+frontend/communityCover.js,4,#244c9d,content / canvas / data validation
+frontend/communityCover.js,4,#547df3,content / canvas / data validation
+frontend/communityCover.js,4,#0c1733,content / canvas / data validation
+frontend/communityCover.js,4,#375d9f,content / canvas / data validation
+frontend/communityCover.js,4,#b7d8fa,content / canvas / data validation
+frontend/communityCover.js,4,#7aa9f2,content / canvas / data validation
+frontend/communityCover.js,4,#d2efe9,content / canvas / data validation
+frontend/communityCover.js,4,#91c6e1,content / canvas / data validation
+frontend/communityCover.js,4,#d5c7f2,content / canvas / data validation
+frontend/communityCover.js,4,#8dabe8,content / canvas / data validation
+frontend/communityCover.js,4,#f1d9e6,content / canvas / data validation
+frontend/communityCover.js,4,#b7c8ef,content / canvas / data validation
+frontend/communityCover.js,4,#102353,content / canvas / data validation
+frontend/communityCover.js,4,#6ce2d0,content / canvas / data validation
+frontend/communityCover.js,4,#1c1850,content / canvas / data validation
+frontend/communityCover.js,4,#9876ee,content / canvas / data validation
+frontend/communityCover.js,4,#feccaa,content / canvas / data validation
+frontend/communityCover.js,4,#e189b8,content / canvas / data validation
+frontend/communityCover.js,4,#dabda2,content / canvas / data validation
+frontend/communityCover.js,4,#816b93,content / canvas / data validation
+frontend/communityCover.js,4,#72c6d1,content / canvas / data validation
+frontend/communityCover.js,4,#1759a3,content / canvas / data validation
+frontend/communityCover.js,4,#f8cddd,content / canvas / data validation
+frontend/communityCover.js,4,#d597c6,content / canvas / data validation
+frontend/communityCover.js,4,#1c4ba8,content / canvas / data validation
+frontend/communityCover.js,4,#8cc7fa,content / canvas / data validation
+frontend/communityCover.js,4,#cdeaff,content / canvas / data validation
+frontend/communityCover.js,4,#879cdb,content / canvas / data validation
+frontend/communityCover.js,4,#163c4e,content / canvas / data validation
+frontend/communityCover.js,4,#83bca7,content / canvas / data validation
+frontend/communityCover.js,4,#ffd6be,content / canvas / data validation
+frontend/communityCover.js,4,#f4a3a3,content / canvas / data validation
+frontend/communityCover.js,4,#2347b8,content / canvas / data validation
+frontend/communityCover.js,4,#61a5f4,content / canvas / data validation
+frontend/communityCover.js,4,#171d31,content / canvas / data validation
+frontend/communityCover.js,4,#7885ad,content / canvas / data validation
+frontend/communityCover.js,24,#16284e,content / canvas / data validation
+frontend/design-system.css,2,#3b82f6,UI
+frontend/design-system.css,2,"rgba(117,157,247,.13)",UI
+frontend/design-system.css,2,"rgba(110,160,245,.22)",UI
+frontend/design-system.css,2,#edf2fc,UI
+frontend/design-system.css,2,#becbdd,UI
+frontend/design-system.css,2,#99abc4,UI
+frontend/design-system.css,2,"rgba(12,25,58,.48)",UI
+frontend/design-system.css,2,"rgba(5,12,29,.94)",UI
+frontend/design-system.css,2,"rgba(51,100,190,.08)",UI
+frontend/design-system.css,2,#a5b7d1,UI
+frontend/design-system.css,2,"rgba(37,82,203,.48)",UI
+frontend/design-system.css,2,#071125,UI
+frontend/design-system.css,2,#0b1c43,UI
+frontend/design-system.css,2,#070e21,UI
+frontend/design-system.css,3,#3569db,UI
+frontend/design-system.css,3,"rgba(53,105,219,.1)",UI
+frontend/design-system.css,3,"rgba(67,93,132,.17)",UI
+frontend/design-system.css,3,#20344f,UI
+frontend/design-system.css,3,#526781,UI
+frontend/design-system.css,3,#647996,UI
+frontend/design-system.css,3,"rgba(255,255,255,.82)",UI
+frontend/design-system.css,3,"rgba(247,250,255,.94)",UI
+frontend/design-system.css,3,"rgba(70,100,150,.045)",UI
+frontend/design-system.css,3,#607797,UI
+frontend/design-system.css,3,#dce9fb,UI
+frontend/design-system.css,3,#f3f7fd,UI
+frontend/design-system.css,3,#eaf1fa,UI
+frontend/design-system.css,17,"rgba(5,16,32,.05)",UI
+frontend/design-system.css,20,#fff,UI
+frontend/design-system.css,20,"rgba(240,93,107,.13)",UI
+frontend/design-system.css,20,"rgba(240,93,107,.3)",UI
+frontend/design-system.css,20,#ffa5af,UI
+frontend/design-system.css,25,#ffb0b8,UI
+frontend/design-system.css,27,"rgba(77,126,222,.24)",UI
+frontend/design-system.css,28,"rgba(5,14,28,.22)",UI
+frontend/design-system.css,30,"rgba(0,0,0,.16)",UI
+frontend/design-system.css,31,"rgba(0,0,0,.28)",UI
+frontend/design-system.css,31,"rgba(5,14,30,.4)",UI
+frontend/design-system.css,33,#1e40af,UI
+frontend/design-system.css,33,#02040c,UI
+frontend/design-system.css,33,#050b1f,UI
+frontend/design-system.css,33,#02040c,UI
+frontend/design-system.css,33,"rgba(10,18,40,.55)",UI
+frontend/design-system.css,33,#e8edf7,UI
+frontend/design-system.css,33,#3b82f6,UI
+frontend/design-system.css,33,#2563eb,UI
+frontend/design-system.css,41,#050c1d,UI
+frontend/design-system.css,41,#f3f7fd,UI
+frontend/design-tokens.css,2,#fcc188,token foundation
+frontend/design-tokens.css,2,#2834e7,token foundation
+frontend/design-tokens.css,2,#9765be,token foundation
+frontend/design-tokens.css,2,#fff,token foundation
+frontend/design-tokens.css,2,#5068e0,token foundation
+frontend/design-tokens.css,2,#fff,token foundation
+frontend/design-tokens.css,2,#6178ed,token foundation
+frontend/design-tokens.css,2,#e07a85,token foundation
+frontend/design-tokens.css,2,#7fbeac,token foundation
+frontend/design-tokens.css,2,#d6b77f,token foundation
+frontend/design-tokens.css,2,#9dacff,token foundation
+frontend/design-tokens.css,2,#202b43,token foundation
+frontend/design-tokens.css,2,#263653,token foundation
+frontend/design-tokens.css,2,"rgba(43,57,85,.9)",token foundation
+frontend/design-tokens.css,2,#283752,token foundation
+frontend/design-tokens.css,2,"rgba(32,44,66,.86)",token foundation
+frontend/design-tokens.css,2,"rgba(200,214,255,.07)",token foundation
+frontend/design-tokens.css,2,"rgba(205,216,248,.14)",token foundation
+frontend/design-tokens.css,2,#f2f5fd,token foundation
+frontend/design-tokens.css,2,#d1dcef,token foundation
+frontend/design-tokens.css,2,#a8b8d1,token foundation
+frontend/design-tokens.css,2,"rgba(101,126,231,.18)",token foundation
+frontend/design-tokens.css,2,"rgba(139,158,221,.08)",token foundation
+frontend/design-tokens.css,2,"rgba(214,224,247,.1)",token foundation
+frontend/design-tokens.css,2,"rgba(109,133,232,.17)",token foundation
+frontend/design-tokens.css,2,#bacaff,token foundation
+frontend/design-tokens.css,2,"rgba(10,20,42,.22)",token foundation
+frontend/design-tokens.css,2,"rgba(252,193,136,.1)",token foundation
+frontend/design-tokens.css,2,"rgba(40,52,231,.25)",token foundation
+frontend/design-tokens.css,2,"rgba(151,101,190,.18)",token foundation
+frontend/design-tokens.css,2,#566fce,token foundation
+frontend/design-tokens.css,2,#344b9f,token foundation
+frontend/design-tokens.css,2,#a97f72,token foundation
+frontend/design-tokens.css,2,#4267a9,token foundation
+frontend/design-tokens.css,2,#324f96,token foundation
+frontend/design-tokens.css,2,#806ca8,token foundation
+frontend/design-tokens.css,3,#3655c7,token foundation
+frontend/design-tokens.css,3,#fff,token foundation
+frontend/design-tokens.css,3,#2c48b1,token foundation
+frontend/design-tokens.css,3,#b84756,token foundation
+frontend/design-tokens.css,3,#307b68,token foundation
+frontend/design-tokens.css,3,#8e6829,token foundation
+frontend/design-tokens.css,3,#4867d4,token foundation
+frontend/design-tokens.css,3,#edf1fa,token foundation
+frontend/design-tokens.css,3,#e7edf8,token foundation
+frontend/design-tokens.css,3,"rgba(253,254,255,.85)",token foundation
+frontend/design-tokens.css,3,#f7f9fd,token foundation
+frontend/design-tokens.css,3,"rgba(247,250,255,.86)",token foundation
+frontend/design-tokens.css,3,"rgba(74,99,163,.045)",token foundation
+frontend/design-tokens.css,3,"rgba(57,77,128,.14)",token foundation
+frontend/design-tokens.css,3,#21304b,token foundation
+frontend/design-tokens.css,3,#465a79,token foundation
+frontend/design-tokens.css,3,#627592,token foundation
+frontend/design-tokens.css,3,"rgba(65,91,201,.1)",token foundation
+frontend/design-tokens.css,3,"rgba(69,88,144,.07)",token foundation
+frontend/design-tokens.css,3,"rgba(71,99,202,.1)",token foundation
+frontend/design-tokens.css,3,#3655b1,token foundation
+frontend/design-tokens.css,3,#f2c6a5,token foundation
+frontend/design-tokens.css,3,#c3d3f2,token foundation
+frontend/design-tokens.css,3,#b8caec,token foundation
+frontend/design-tokens.css,3,#d5bfdf,token foundation
+frontend/design-tokens.css,3,"rgba(47,70,115,.13)",token foundation
+frontend/hig-components.css,9,"rgba(0,0,0,.18)",UI
+frontend/hig-components.css,10,"rgba(10,20,50,.1)",UI
+frontend/hig-components.css,12,"rgba(12,22,42,.4)",UI
+frontend/hig-screens.css,3,"rgba(255,255,255,.86)",UI
+frontend/hig-screens.css,4,"rgba(255,255,255,.86)",UI
+frontend/hig-screens.css,8,"rgba(9,15,28,.98)",UI
+frontend/hig-screens.css,8,"rgba(0,0,0,.4)",UI
+frontend/hig-screens.css,8,"rgba(255,255,255,.35)",UI
+frontend/hig-screens.css,8,"rgba(255,255,255,.35)",UI
+frontend/hig-screens.css,8,"rgba(255,255,255,.06)",UI
+frontend/hig-screens.css,8,"rgba(255,255,255,.75)",UI
+frontend/hig-screens.css,8,"rgba(9,15,28,.98)",UI
+frontend/home.css,4,#000,UI
+frontend/home.css,5,#3b82f6,UI
+frontend/home.css,5,#fff,UI
+frontend/home.css,6,#526781,UI
+frontend/home.css,7,#20344f,UI
+frontend/home.css,12,"rgba(13,33,75,.58)",UI
+frontend/home.css,12,"rgba(105,157,248,.28)",UI
+frontend/home.css,12,"rgba(0,10,40,.1)",UI
+frontend/home.css,13,"rgba(22,89,221,.75)",UI
+frontend/home.css,13,#4b9bff,UI
+frontend/home.css,14,"rgba(79,135,247,.22)",UI
+frontend/home.css,14,"rgba(133,181,255,.36)",UI
+frontend/home.css,14,#d6e7ff,UI
+frontend/home.css,17,#bdcfea,UI
+frontend/home.css,18,#e0eaff,UI
+frontend/home.css,24,#70acff,UI
+frontend/home.css,28,"rgba(70,131,240,.2)",UI
+frontend/home.css,28,#9fc8ff,UI
+frontend/home.css,35,"rgba(246,250,255,.8)",UI
+frontend/home.css,35,"rgba(67,117,200,.22)",UI
+frontend/home.css,36,#2667e4,UI
+frontend/home.css,36,#4d8af4,UI
+frontend/home.css,37,#526781,UI
+frontend/home.css,38,#e0eaff,UI
+frontend/home.css,39,#3569db,UI
+frontend/home.css,40,#275bbd,UI
+frontend/home.css,41,#275bbd,UI
+frontend/index.html,35,#23293f,UI
+frontend/index.html,74,"rgba(59,130,246,.6)",UI
+frontend/index.html,87,"rgba(59,130,246,.6)",UI
+frontend/index.html,102,#93a4c3,UI
+frontend/index.html,114,#3b82f6,UI
+frontend/index.html,181,"rgba(59,130,246,0.12)",UI
+frontend/index.html,181,"rgba(59,130,246,0.4)",UI
+frontend/index.html,376,"rgba(0,0,0,.5)",UI
+frontend/index.html,442,#3b82f6,UI
+frontend/index.html,499,"rgba(0,0,0,.5)",UI
+frontend/index.html,519,"rgba(255,255,255,0.08)",UI
+frontend/layout.js,11,#e7ebf7,UI
+frontend/layout.js,11,#23293f,UI
+frontend/light-theme.css,3,#dceafa,UI
+frontend/light-theme.css,3,#eaf3ff,UI
+frontend/light-theme.css,3,#bdd9ff,UI
+frontend/light-theme.css,4,#2864dc,UI
+frontend/light-theme.css,4,"rgba(52,111,218,.12)",UI
+frontend/light-theme.css,5,"rgba(64,112,181,.20)",UI
+frontend/light-theme.css,6,#182f50,UI
+frontend/light-theme.css,6,#435d7b,UI
+frontend/light-theme.css,6,#536c89,UI
+frontend/light-theme.css,7,"rgba(244,249,255,.64)",UI
+frontend/light-theme.css,7,"rgba(233,243,255,.82)",UI
+frontend/light-theme.css,8,"rgba(222,236,254,.60)",UI
+frontend/light-theme.css,8,#607da5,UI
+frontend/light-theme.css,9,#147348,UI
+frontend/light-theme.css,9,#925707,UI
+frontend/light-theme.css,9,#b62e45,UI
+frontend/light-theme.css,11,"rgba(114,166,246,.34)",UI
+frontend/light-theme.css,12,"rgba(130,204,230,.22)",UI
+frontend/light-theme.css,13,"rgba(196,215,255,.45)",UI
+frontend/light-theme.css,14,#eaf3ff,UI
+frontend/light-theme.css,14,#d9e8fc,UI
+frontend/light-theme.css,14,#e9f5fb,UI
+frontend/light-theme.css,16,#dceafa,UI
+frontend/light-theme.css,22,"rgba(255,255,255,.76)",UI
+frontend/light-theme.css,22,"rgba(232,242,255,.52)",UI
+frontend/light-theme.css,24,"rgba(255,255,255,.85)",UI
+frontend/light-theme.css,24,"rgba(45,85,145,.07)",UI
+frontend/light-theme.css,28,"rgba(242,249,255,.82)",UI
+frontend/light-theme.css,28,"rgba(205,226,255,.52)",UI
+frontend/light-theme.css,33,"rgba(54,94,155,.04)",UI
+frontend/light-theme.css,35,"rgba(238,246,255,.94)",UI
+frontend/light-theme.css,36,"rgba(255,255,255,.85)",UI
+frontend/light-theme.css,36,"rgba(36,76,134,.16)",UI
+frontend/light-theme.css,38,"rgba(220,235,255,.72)",UI
+frontend/light-theme.css,39,#fff,UI
+frontend/light-theme.css,40,"rgba(192,45,67,.07)",UI
+frontend/light-theme.css,40,"rgba(192,45,67,.24)",UI
+frontend/light-theme.css,42,"rgba(39,68,108,.22)",UI
+frontend/light-theme.css,44,"rgba(250,253,255,.86)",UI
+frontend/light-theme.css,44,"rgba(224,238,255,.76)",UI
+frontend/light-theme.css,46,"rgba(255,255,255,.9)",UI
+frontend/light-theme.css,46,"rgba(50,91,151,.12)",UI
+frontend/light-theme.css,52,"rgba(224,237,255,.68)",UI
+frontend/light-theme.css,56,"rgba(249,252,255,.58)",UI
+frontend/light-theme.css,58,#245ecb,UI
+frontend/notes-studio.js,37,#202b45,content / canvas / data validation
+frontend/notes-studio.js,37,#f2f5ff,content / canvas / data validation
+frontend/offline.html,2,#050b1f,UI
+frontend/offline.html,3,#050b1f,UI
+frontend/offline.html,3,#e8edf7,UI
+frontend/offline.html,3,#1e3a68,UI
+frontend/offline.html,3,#0b1734,UI
+frontend/offline.html,3,#93a4c3,UI
+frontend/offline.html,3,#2f64ec,UI
+frontend/offline.html,3,#a8b6ce,UI
+frontend/postStudio.js,13,#18233b,content / canvas / data validation
+frontend/postStudio.js,13,#aebbd3,content / canvas / data validation
+frontend/services/teamService.js,13,#3b82f6,content / canvas / data validation
+frontend/services/teamService.js,13,#f59e0b,content / canvas / data validation
+frontend/services/teamService.js,13,#22c55e,content / canvas / data validation
+frontend/services/teamService.js,13,#ef4444,content / canvas / data validation
+frontend/services/teamService.js,13,#a855f7,content / canvas / data validation
+frontend/social-complete.css,2,#bf87f0,UI
+frontend/social-complete.css,3,#92f0ed,UI
+frontend/social-complete.css,3,#92f0ed,UI
+frontend/social-complete.css,4,#090f23a6,UI
+frontend/social-complete.css,4,#e88bac,UI
+frontend/social-complete.css,4,#111827,UI
+frontend/social-complete.css,4,#0008,UI
+frontend/social-complete.css,4,#ffffff20,UI
+frontend/social-v4.css,1,#0b1734,UI
+frontend/social-v4.css,1,#143667,UI
+frontend/social-v4.css,1,#b5c1d6,UI
+frontend/social-v4.css,1,#20365b,UI
+frontend/social-v4.css,1,#2f64ec,UI
+frontend/social-v4.css,1,#e9edf7,UI
+frontend/social-v4.css,2,#fff,UI
+frontend/social-v4.css,2,#eef3fc,UI
+frontend/social-v4.css,2,#5d6d86,UI
+frontend/social-v4.css,2,#dce3ef,UI
+frontend/social-v4.css,2,#172e51,UI
+frontend/social-v4.css,4,#ffffff50,UI
+frontend/social-v4.css,4,#ffffff35,UI
+frontend/social-v4.css,4,#ffffff88,UI
+frontend/social-v4.css,4,#ffffff22,UI
+frontend/social-v4.css,4,#fff4,UI
+frontend/social-v4.css,4,#fff3,UI
+frontend/social-v4.css,5,#386df1,UI
+frontend/social-v4.css,5,#287b85,UI
+frontend/social-v4.css,5,#24868d24,UI
+frontend/social-v4.css,5,#2fa6b51a,UI
+frontend/social-v4.css,5,#b64680,UI
+frontend/social-v4.css,5,#ae548f22,UI
+frontend/social-v4.css,5,#f171a81a,UI
+frontend/social-v4.css,5,#7e59d6,UI
+frontend/social-v4.css,5,#9567c824,UI
+frontend/social-v4.css,5,#7450d329,UI
+frontend/social-v4.css,5,#208273,UI
+frontend/social-v4.css,5,#349c7e20,UI
+frontend/social-v4.css,5,#57caab22,UI
+frontend/social-v4.css,5,#bc6642,UI
+frontend/social-v4.css,5,#c77b4922,UI
+frontend/social-v4.css,5,#edaa6f22,UI
+frontend/social-v4.css,6,#101d37,UI
+frontend/social-v4.css,6,#ffffff20,UI
+frontend/social-v4.css,6,#030814a6,UI
+frontend/social-v4.css,6,#87b3ff,UI
+frontend/social-v4.css,6,#386df125,UI
+frontend/social-v4.css,6,#386df1,UI
+frontend/social-v4.css,6,#ee5b81,UI
+frontend/social-v4.css,6,#5583ef77,UI
+frontend/social-v4.css,6,#386df119,UI
+frontend/social-v4.css,7,#739cfa,UI
+frontend/social-v4.css,7,#7297ff,UI
+frontend/social-v4.css,7,#2f58bd,UI
+frontend/social-v4.css,7,#e98ec8,UI
+frontend/social-v4.css,7,#668ee9,UI
+frontend/social-v4.css,7,#668ee90d,UI
+frontend/social-v4.css,7,#365fbd50,UI
+frontend/social-v4.css,7,#a68cef35,UI
+frontend/social-v4.css,7,#a7c5ff,UI
+frontend/social-v4.css,7,#070e1d,UI
+frontend/social-v4.css,7,#345ec6,UI
+frontend/social-v4.css,7,#ae76bb,UI
+frontend/social-v4.css,7,#0005,UI
+frontend/social-v4.css,9,#386df126,UI
+frontend/social-v4.css,9,#386df111,UI
+frontend/social-v4.css,9,#386df1,UI
+frontend/social-v4.css,9,#fff,UI
+frontend/social-v4.css,9,#386df12a,UI
+frontend/social-v4.css,9,#6695ff,UI
+frontend/social-v4.css,9,#50bba4,UI
+frontend/social-v4.css,9,#4eb59724,UI
+frontend/social-v4.css,9,#da80ad,UI
+frontend/social-v4.css,9,#d779aa24,UI
+frontend/social-v4.css,9,#deb76e,UI
+frontend/social-v4.css,9,#dbaf5c24,UI
+frontend/social-v4.css,9,#a088e2,UI
+frontend/social-v4.css,9,#a481de24,UI
+frontend/social-v4.css,9,#63c4e1,UI
+frontend/social-v4.css,9,#65b8d624,UI
+frontend/social-v4.css,9,#6695ff,UI
+frontend/space-refresh.css,3,#24243e,UI
+frontend/space-refresh.css,3,#29334d,UI
+frontend/space-refresh.css,3,#f1eff8,UI
+frontend/space-refresh.css,3,#e0e3ef,UI
+frontend/space-refresh.css,3,#b6c0d5,UI
+frontend/space-refresh.css,4,"rgba(45,52,78,.82)",UI
+frontend/space-refresh.css,4,"rgba(35,41,63,.91)",UI
+frontend/space-refresh.css,4,"rgba(172,187,229,.12)",UI
+frontend/space-refresh.css,5,"rgba(198,206,237,.16)",UI
+frontend/space-refresh.css,5,#d5dff5,UI
+frontend/space-refresh.css,5,"rgba(42,50,76,.93)",UI
+frontend/space-refresh.css,6,#34415eb3,UI
+frontend/space-refresh.css,6,#34415eb3,UI
+frontend/space-refresh.css,6,#0d0e08,UI
+frontend/space-refresh.css,7,"rgba(138,165,255,.19)",UI
+frontend/space-refresh.css,7,"rgba(100,120,166,.16)",UI
+frontend/space-refresh.css,10,#e5e6ef,UI
+frontend/space-refresh.css,10,#e7edf3,UI
+frontend/space-refresh.css,10,#253454,UI
+frontend/space-refresh.css,10,#374967,UI
+frontend/space-refresh.css,10,#596784,UI
+frontend/space-refresh.css,11,"rgba(237,240,249,.8)",UI
+frontend/space-refresh.css,11,"rgba(231,235,247,.92)",UI
+frontend/space-refresh.css,11,"rgba(151,167,209,.14)",UI
+frontend/space-refresh.css,12,"rgba(91,111,154,.18)",UI
+frontend/space-refresh.css,12,#344e80,UI
+frontend/space-refresh.css,12,"rgba(234,239,249,.94)",UI
+frontend/space-refresh.css,13,#cbd5e54d,UI
+frontend/space-refresh.css,13,#cbd5e54d,UI
+frontend/space-refresh.css,13,#fbf5f1,UI
+frontend/space-refresh.css,14,"rgba(158,177,217,.14)",UI
+frontend/space-refresh.css,22,#17214d08,UI
+frontend/space-refresh.css,38,#4967c8bf,UI
+frontend/space-refresh.css,38,#575cafb3,UI
+frontend/space-refresh.css,40,#526dd8,UI
+frontend/space-refresh.css,40,#7471ce,UI
+frontend/space-refresh.css,40,#fff,UI
+frontend/space-refresh.css,41,#eef2ff,UI
+frontend/space-refresh.css,47,#374967,UI
+frontend/space-refresh.css,51,#151b4830,UI
+frontend/space-refresh.css,69,#bf87f0,UI
+frontend/space-refresh.css,73,#fff,UI
+frontend/space-refresh.css,151,#15204e10,UI
+frontend/space-refresh.css,160,#5879df,UI
+frontend/space-refresh.css,160,#fff,UI
+frontend/space-refresh.css,161,#238b79,UI
+frontend/space-refresh.css,162,#b84b82,UI
+frontend/space-refresh.css,163,#a97614,UI
+frontend/space-refresh.css,164,#7a61d0,UI
+frontend/space-refresh.css,165,#25829b,UI
+frontend/space-refresh.css,173,#7c8ee7,UI
+frontend/story-editor.css,2,#0c1014,UI
+frontend/story-editor.css,2,#fff,UI
+frontend/story-editor.css,2,#0008,UI
+frontend/story-editor.css,3,#070a13d9,UI
+frontend/story-editor.css,4,#0c1014,UI
+frontend/story-editor.css,4,#fff,UI
+frontend/story-editor.css,7,#ffffff12,UI
+frontend/story-editor.css,7,#fff,UI
+frontend/story-editor.css,8,#ffffff26,UI
+frontend/story-editor.css,8,#a790ee66,UI
+frontend/story-editor.css,8,#c3aeff,UI
+frontend/story-editor.css,9,#fff,UI
+frontend/story-editor.css,13,#433888,UI
+frontend/story-editor.css,13,#122b55,UI
+frontend/story-editor.css,15,#fff,UI
+frontend/story-editor.css,15,#ffffffb3,UI
+frontend/story-editor.css,17,#c6c8d1,UI
+frontend/story-editor.css,17,#b5b6c2,UI
+frontend/story-editor.css,18,#6b63d7,UI
+frontend/story-editor.css,18,#3d6cec,UI
+frontend/story-editor.css,18,#fff,UI
+frontend/story-editor.css,19,#ffd2b6,UI
+frontend/story-editor.css,21,#242630f5,UI
+frontend/story-editor.css,21,#ffffff16,UI
+frontend/story-editor.css,21,#0005,UI
+frontend/story-editor.css,22,#fff,UI
+frontend/story-editor.css,22,#e0e0ea,UI
+frontend/story-editor.css,22,#ffffff10,UI
+frontend/story-editor.css,22,#fff,UI
+frontend/story-editor.css,22,#ffffff25,UI
+frontend/story-editor.css,22,#aaa0ff,UI
+frontend/story-editor.css,22,#c0c0ce,UI
+frontend/story-editor.css,22,#f9f6ff,UI
+frontend/story-editor.css,22,#603b9b,UI
+frontend/story-editor.css,22,#ffffff12,UI
+frontend/story-editor.css,23,#0008,UI
+frontend/story-editor.css,23,#ffffff55,UI
+frontend/story-editor.css,23,#fff,UI
+frontend/story-editor.css,23,#0002,UI
+frontend/story-editor.css,23,#0c1014,UI
+frontend/story-editor.css,23,#c0bfcd,UI
+frontend/story-editor.css,23,#0006,UI
+frontend/story-editor.css,23,#fff,UI
+frontend/story-editor.css,23,#0007,UI
+frontend/story-editor.css,23,#fff,UI
+frontend/story-editor.css,24,#b385e6,UI
+frontend/storyEditor.js,9,#433888,content / canvas / data validation
+frontend/storyEditor.js,9,#122b55,content / canvas / data validation
+frontend/storyEditor.js,9,#d9709f,content / canvas / data validation
+frontend/storyEditor.js,9,#6f419d,content / canvas / data validation
+frontend/storyEditor.js,9,#146d84,content / canvas / data validation
+frontend/storyEditor.js,9,#19244c,content / canvas / data validation
+frontend/storyEditor.js,9,#bd704f,content / canvas / data validation
+frontend/storyEditor.js,9,#4a3157,content / canvas / data validation
+frontend/storyEditor.js,9,#242733,content / canvas / data validation
+frontend/storyEditor.js,9,#0c1014,content / canvas / data validation
+frontend/storyEditor.js,16,#ffffff,content / canvas / data validation
+frontend/storyEditor.js,25,#ffffff,content / canvas / data validation
+frontend/storyEditor.js,26,#ffffff,content / canvas / data validation
+frontend/storyEditor.js,27,#ffffff,content / canvas / data validation
+frontend/storyEditor.js,43,#ffffff,content / canvas / data validation
+frontend/storyEditor.js,43,#503487,content / canvas / data validation
+frontend/storyEditor.js,43,#0008,content / canvas / data validation
+frontend/style.css,2,#02040c,UI
+frontend/style.css,2,#050b1f,UI
+frontend/style.css,2,#1e40af,UI
+frontend/style.css,3,#3b82f6,UI
+frontend/style.css,3,"rgba(59,130,246,.14)",UI
+frontend/style.css,3,"rgba(59,130,246,.18)",UI
+frontend/style.css,4,#e8edf7,UI
+frontend/style.css,4,#93a4c3,UI
+frontend/style.css,4,#5b6a8c,UI
+frontend/style.css,5,#22c55e,UI
+frontend/style.css,5,#f59e0b,UI
+frontend/style.css,5,#ef4444,UI
+frontend/style.css,17,"rgba(59,130,246,.07)",UI
+frontend/style.css,20,"rgba(10,18,40,.55)",UI
+frontend/style.css,22,#2563eb,UI
+frontend/style.css,22,#fff,UI
+frontend/style.css,27,"rgba(34,197,94,.15)",UI
+frontend/style.css,28,"rgba(245,158,11,.15)",UI
+frontend/style.css,30,"rgba(239,68,68,.15)",UI
+frontend/style.css,32,#fff,UI
+frontend/style.css,40,"rgba(59,130,246,.6)",UI
+frontend/style.css,47,#fca5a5,UI
+frontend/style.css,50,"rgba(255,255,255,.06)",UI
+frontend/style.css,57,"rgba(5,10,25,.4)",UI
+frontend/style.css,60,"rgba(59,130,246,.55)",UI
+frontend/style.css,62,"rgba(59,130,246,.5)",UI
+frontend/style.css,62,"rgba(59,130,246,.85)",UI
+frontend/style.css,78,"rgba(2,4,12,.4)",UI
+frontend/style.css,82,#fff,UI
+frontend/style.css,88,"rgba(59,130,246,.16)",UI
+frontend/style.css,88,"rgba(10,18,40,.5)",UI
+frontend/style.css,105,"rgba(59,130,246,.06)",UI
+frontend/style.css,108,#fff,UI
+frontend/style.css,113,#03060f,UI
+frontend/style.css,115,#0e1f45,UI
+frontend/style.css,115,#081029,UI
+frontend/style.css,116,#fff,UI
+frontend/style.css,117,"rgba(0,0,0,.5)",UI
+frontend/style.css,119,"rgba(59,130,246,.15)",UI
+frontend/style.css,121,#fff,UI
+frontend/style.css,122,#ef4444,UI
+frontend/style.css,122,#ef4444,UI
+frontend/style.css,123,"rgba(239,68,68,.7)",UI
+frontend/style.css,123,"rgba(239,68,68,0)",UI
+frontend/style.css,124,#ef4444,UI
+frontend/style.css,125,"rgba(59,130,246,.08)",UI
+frontend/style.css,147,"rgba(255,255,255,.06)",UI
+frontend/style.css,156,"rgba(59,130,246,.75)",UI
+frontend/style.css,156,"rgba(0,0,0,.45)",UI
+frontend/style.css,166,"rgba(59,130,246,.12)",UI
+frontend/style.css,167,#fff,UI
+frontend/style.css,170,#fff,UI
+frontend/style.css,177,"rgba(255,255,255,.06)",UI
+frontend/style.css,193,"rgba(255,255,255,.1)",UI
+frontend/style.css,195,#fff,UI
+frontend/style.css,202,#fff,UI
+frontend/style.css,238,"rgba(0,0,0,.35)",UI
+frontend/style.css,240,"rgba(0,0,0,.5)",UI
+frontend/style.css,287,"rgba(10,18,40,.55)",UI
+frontend/style.css,287,"rgba(59,130,246,.22)",UI
+frontend/style.css,289,#0b1e43,UI
+frontend/style.css,289,"rgba(59,130,246,.45)",UI
+frontend/style.css,290,#93a4c3,UI
+frontend/style.css,291,#e8edf7,UI
+frontend/style.css,292,#5b6a8c,UI
+frontend/style.css,293,#93a4c3,UI
+frontend/style.css,294,#e8edf7,UI
+frontend/style.css,295,#788397,UI
+frontend/style.css,296,"rgba(255,255,255,.06)",UI
+frontend/style.css,298,#3b82f6,UI
+frontend/style.css,299,"rgba(5,11,31,.8)",UI
+frontend/style.css,301,#93c5fd,UI
+frontend/style.css,304,#243b69,UI
+frontend/style.css,304,#fff,UI
+frontend/style.css,306,#0b1734,UI
+frontend/workspace-refresh.css,1,#2834E7,UI
+frontend/workspace-refresh.css,1,#FBB1C3,UI
+frontend/workspace-refresh.css,3,#1d263e,UI
+frontend/workspace-refresh.css,3,#243251,UI
+frontend/workspace-refresh.css,3,"rgba(37,49,78,.9)",UI
+frontend/workspace-refresh.css,3,#263351,UI
+frontend/workspace-refresh.css,3,"rgba(26,35,56,.96)",UI
+frontend/workspace-refresh.css,3,"rgba(165,186,241,.09)",UI
+frontend/workspace-refresh.css,3,"rgba(184,202,244,.14)",UI
+frontend/workspace-refresh.css,3,#f2f5ff,UI
+frontend/workspace-refresh.css,3,#d0dbf2,UI
+frontend/workspace-refresh.css,3,#9fafd0,UI
+frontend/workspace-refresh.css,3,#718dff,UI
+frontend/workspace-refresh.css,3,#718dff24,UI
+frontend/workspace-refresh.css,3,#8ca9ef12,UI
+frontend/workspace-refresh.css,3,#c7d5ff,UI
+frontend/workspace-refresh.css,3,#2834e74d,UI
+frontend/workspace-refresh.css,3,#ac86c91a,UI
+frontend/workspace-refresh.css,3,#1c263b,UI
+frontend/workspace-refresh.css,3,#25334f,UI
+frontend/workspace-refresh.css,3,#303956,UI
+frontend/workspace-refresh.css,4,#eaf0fa,UI
+frontend/workspace-refresh.css,4,#e3eafb,UI
+frontend/workspace-refresh.css,4,"rgba(250,252,255,.86)",UI
+frontend/workspace-refresh.css,4,#f4f7fd,UI
+frontend/workspace-refresh.css,4,"rgba(244,248,255,.96)",UI
+frontend/workspace-refresh.css,4,#526ed10b,UI
+frontend/workspace-refresh.css,4,#365b9c20,UI
+frontend/workspace-refresh.css,4,#1d2b49,UI
+frontend/workspace-refresh.css,4,#415374,UI
+frontend/workspace-refresh.css,4,#607392,UI
+frontend/workspace-refresh.css,4,#405ee4,UI
+frontend/workspace-refresh.css,4,#405ee416,UI
+frontend/workspace-refresh.css,4,#7c96df13,UI
+frontend/workspace-refresh.css,4,#253f71,UI
+frontend/workspace-refresh.css,4,#6c8df633,UI
+frontend/workspace-refresh.css,4,#c5a8e221,UI
+frontend/workspace-refresh.css,4,#edf3fc,UI
+frontend/workspace-refresh.css,4,#e7edfc,UI
+frontend/workspace-refresh.css,4,#e4e8f8,UI
+frontend/workspace-refresh.css,5,#fff,UI
+frontend/workspace-refresh.css,12,#fff,UI
+frontend/workspace-refresh.css,12,#09132c30,UI
+frontend/workspace-refresh.css,14,#8c9aff35,UI
+frontend/workspace-refresh.css,14,#182549,UI
+frontend/workspace-refresh.css,14,#263b9a,UI
+frontend/workspace-refresh.css,14,#384bca,UI
+frontend/workspace-refresh.css,14,#9b8ad0,UI
+frontend/workspace-refresh.css,14,#ffffff12,UI
+frontend/workspace-refresh.css,14,#ffffff05,UI
+frontend/workspace-refresh.css,14,#ffffff03,UI
+frontend/workspace-refresh.css,14,#dbe5ff,UI
+frontend/workspace-refresh.css,14,#d6e1ff,UI
+frontend/workspace-refresh.css,14,#eef3ff,UI
+frontend/workspace-refresh.css,14,#213b86,UI
+frontend/workspace-refresh.css,14,#ffffff0d,UI
+frontend/workspace-refresh.css,14,#ffffff40,UI
+frontend/workspace-refresh.css,18,#07172b0a,UI
+frontend/workspace-refresh.css,18,#fff,UI
+frontend/workspace-refresh.css,19,#15223e,UI
+frontend/workspace-refresh.css,19,#2834b7,UI
+frontend/workspace-refresh.css,19,#7882d1,UI
+frontend/workspace-refresh.css,19,#c4a2d7,UI
+frontend/workspace-refresh.css,19,#d5dfff,UI
+frontend/workspace-refresh.css,19,#d3ddff,UI
+frontend/workspace-refresh.css,19,#ffffff38,UI
+frontend/workspace-refresh.css,19,#9eaeff20,UI
+frontend/workspace-refresh.css,19,#ffffff07,UI
+frontend/workspace-refresh.css,19,#060f4840,UI
+frontend/workspace-refresh.css,19,#ffffff13,UI
+frontend/workspace-refresh.css,19,#ffffff26,UI
+frontend/workspace-refresh.css,19,#f0f4ff,UI
+frontend/workspace-refresh.css,22,#07132f35,UI
+frontend/workspace-refresh.css,22,#07132f35,UI
+frontend/workspace-refresh.css,25,#fff,UI
+frontend/workspace-refresh.css,25,#7d97ef,UI
+frontend/workspace-refresh.css,25,#7d97ef25,UI
+frontend/workspace-refresh.css,25,#66bbad,UI
+frontend/workspace-refresh.css,25,#66bbad25,UI
+frontend/workspace-refresh.css,25,#cc93b5,UI
+frontend/workspace-refresh.css,25,#cc93b525,UI
+frontend/workspace-refresh.css,25,#d5b16a,UI
+frontend/workspace-refresh.css,25,#d5b16a25,UI
+frontend/workspace-refresh.css,25,#a695df,UI
+frontend/workspace-refresh.css,25,#a695df25,UI
+frontend/workspace-refresh.css,25,#7db9d0,UI
+frontend/workspace-refresh.css,25,#7db9d025,UI
+frontend/workspace-refresh.css,29,#66bbad,UI
+frontend/workspace-refresh.css,29,#66bbad25,UI
+frontend/workspace-refresh.css,29,#cc93b5,UI
+frontend/workspace-refresh.css,29,#cc93b525,UI
+frontend/workspace-refresh.css,29,#d5b16a,UI
+frontend/workspace-refresh.css,29,#d5b16a25,UI
+frontend/workspace-refresh.css,29,#a695df,UI
+frontend/workspace-refresh.css,29,#a695df25,UI
+frontend/workspace-refresh.css,29,#7db9d0,UI
+frontend/workspace-refresh.css,29,#7db9d025,UI
+frontend/social-complete.css,4,white,UI
+frontend/social-complete.css,4,white,UI
+frontend/social-v4.css,6,white,UI
+frontend/social-v4.css,6,white,UI
+frontend/social-v4.css,7,white,UI
+frontend/workspace-refresh.css,1,black,UI
+frontend/workspace-refresh.css,14,white,UI
+frontend/workspace-refresh.css,14,white,UI
+frontend/workspace-refresh.css,14,white,UI
+frontend/workspace-refresh.css,19,white,UI
+frontend/workspace-refresh.css,25,white,UI
+frontend/home.css,36,white,UI

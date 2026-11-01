@@ -25,6 +25,7 @@
 <meta name="twitter:image:alt" content="Favicon ADOLF KIMKIM — KimKim trên nền xanh">
 <link rel="icon" type="image/x-icon" href="favicon.ico?v=kimkim-blue-20261029">
 <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=kimkim-blue-20261029">
+<link rel="stylesheet" href="legacy-color-tokens.css?v=1">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="design-system.css">
 <link rel="stylesheet" href="auth-final.css">
@@ -41,10 +42,13 @@
 <script src="config.js?v=2"></script>
 <link rel="stylesheet" href="social-v4.css?v=3">
 <link rel="stylesheet" href="space-refresh.css?v=2">
-<link rel="stylesheet" href="workspace-refresh.css?v=3">
+<link rel="stylesheet" href="workspace-refresh.css?v=4">
 <link rel="stylesheet" href="story-editor.css?v=2">
 <link rel="stylesheet" href="social-complete.css?v=1">
 <link rel="stylesheet" href="chat-widget.css?v=1">
+<link rel="stylesheet" href="design-tokens.css?v=2">
+<link rel="stylesheet" href="hig-components.css?v=2">
+<link rel="stylesheet" href="hig-screens.css?v=2">
 </head>
 <body>
 
@@ -52,7 +56,7 @@
 <div class="pwa-actions"><button id="installApp" class="btn btn-ghost" data-i18n="installApp" hidden>Cài ứng dụng</button><button id="updateApp" class="btn btn-ghost" data-i18n="updateApp" hidden>Cập nhật</button></div>
 <div id="authScreen"><nav class="auth-language lang-switch" aria-label="Language"><button data-auth-lang="vi" onclick="setLang('vi')">VIE</button><button data-auth-lang="en" onclick="setLang('en')">ENG</button></nav><div class="card auth-card" id="authSignin">
   <div class="auth-wordmark">ADOLF KIMKIM</div>
-  <p class="auth-welcome">WELCOME TO<br>ADOLF KIMKIM</p>
+  <p class="auth-welcome" data-i18n="authWelcome">WELCOME TO<br>ADOLF KIMKIM</p>
     <h1 data-i18n="signinTitle">Đăng nhập</h1>
     <p class="sub" data-i18n="signinSub">Đăng nhập để tiếp tục không gian của bạn.</p>
     <button type="button" class="auth-google" onclick="signInWithGoogle()"><img class="google-mark" src="assets/icons/google-g.svg" alt="" width="20" height="20"> <span data-i18n="signinGoogle">Đăng nhập với Google</span></button>
@@ -66,7 +70,7 @@
     </div>
   </div>
 
-  <aside class="auth-visual kimkim-login-art" aria-label="KimKim AI"><div class="kimkim-login-intro"><span>ADOLF KIMKIM</span><h2 data-i18n="loginMeetKimKim">Gặp KimKim.</h2><p data-i18n="loginKimKimHelp">Trợ lý AI giúp bạn ghi lại, đọc hiểu và tóm tắt nội dung.</p></div><div class="kimkim-login-portrait"><div class="kimkim-login-halo"></div><img src="assets/kimkim4.png" alt="KimKim"></div><div class="kimkim-login-features"><span data-i18n="loginRecord">Ghi âm</span><span data-i18n="loginRead">Đọc tệp</span><span data-i18n="loginSummarize">Tóm tắt</span></div></aside>
+  <aside class="auth-visual login-studio"><div class="login-studio-kicker">ADOLF KIMKIM</div><h2>KimKim<br>AI Studio</h2><p data-i18n="studioLoginSub">Tập trung vào cuộc trò chuyện. Để KimKim lo phần ghi nhớ.</p><div class="login-studio-tools"><div><span data-hig-icon="mic"></span><div><h3 data-i18n="studioRecord">Ghi âm cùng KimKim</h3><p data-i18n="studioRecordSub">Lưu lại nội dung quan trọng của cuộc trò chuyện.</p></div></div><div><span data-hig-icon="files"></span><div><h3 data-i18n="studioRead">Đọc tệp thông minh</h3><p data-i18n="studioReadSub">Từ âm thanh, video đến PDF và tài liệu Word.</p></div></div><div><span data-hig-icon="sparkles"></span><div><h3 data-i18n="studioSummarize">Hiểu nhanh với AI</h3><p data-i18n="studioSummarizeSub">Tìm điểm chính, tóm tắt và trao đổi với KimKim.</p></div></div></div></aside>
   <div class="card auth-card hidden" id="authSignup">
      <img src="assets/kimkimBranding.png" alt="Adolf KimKim Logo" style="width:28px; height:28px; border-radius:50%; object-fit:cover; box-shadow:0 0 10px rgba(59,130,246,.6); -webkit-animation:breathe 3s ease-in-out infinite; animation:breathe 3s ease-in-out infinite;">
     <h1 data-i18n="signupTitle">Tạo tài khoản</h1>
@@ -126,13 +130,13 @@
 
     <!-- ===== HOME ===== -->
     <div class="view" id="view-home">
-      <header class="home-intro"><div class="home-welcome-content"><p id="homeGreeting">HI @user</p><h1 id="homeHeading">WELCOME TO<br>ADOLF KIMKIM</h1><p data-home-copy="sub">Để KimKim ghi lại, đọc hiểu và tóm tắt cho bạn.</p><div class="home-hero-actions"><button class="btn btn-primary" onclick="homeRecord()" data-home-copy="heroAction">Ghi âm cùng KimKim ↗</button><button class="btn btn-ghost" onclick="homeUpload()" data-home-copy="uploadAction">Chọn tệp để tải lên</button></div></div></header>
-      <div class="home-tools-title"><img src="assets/kimkimAI.png" alt="" width="34" height="42"><div><strong>KimKim AI Studio</strong><span data-home-copy="toolsSub">Biến nội dung thành điều hữu ích.</span></div><span class="home-tools-line"></span></div><div class="home-actions">
+      <header class="home-intro"><div class="home-welcome-content"><p id="homeGreeting">Xin chào bạn</p><h1 id="homeHeading">WELCOME TO<br>ADOLF KIMKIM</h1><p data-home-copy="sub">Để KimKim ghi lại, đọc hiểu và tóm tắt cho bạn.</p><div class="home-hero-actions"><button class="btn btn-primary" onclick="homeStudio()" data-home-copy="heroAction">KimKim AI Studio</button><button class="btn btn-ghost" onclick="homeSocial()" data-home-copy="socialAction">KimKim Social</button></div></div></header>
+      <section id="kimkimAIStudio" class="home-ai-studio" aria-labelledby="studioTitle" tabindex="-1"><div class="home-tools-title"><img src="assets/kimkimAI.png" alt="" width="34" height="42"><div><strong id="studioTitle">KimKim AI Studio</strong><span data-home-copy="toolsSub">Biến nội dung thành điều hữu ích.</span></div><span class="home-tools-line"></span></div><div class="home-actions">
         <article class="home-action primary"><span class="home-action-icon" data-home-icon="recording" aria-hidden="true"></span><h2 data-home-copy="record"></h2><p data-home-copy="recordSub"></p><button type="button" class="btn btn-primary" onclick="homeRecord()" data-home-copy="recordAction"></button></article>
         <article class="home-action "><span class="home-action-icon" data-home-icon="meetings" aria-hidden="true"></span><h2 data-home-copy="meet"></h2><p data-home-copy="meetSub"></p><button type="button" class="btn btn-ghost" onclick="homeMeet()" data-home-copy="meetAction"></button></article>
         <article class="home-action "><span class="home-action-icon" data-home-icon="uploads" aria-hidden="true"></span><h2 data-home-copy="upload"></h2><p data-home-copy="uploadSub"></p><button type="button" class="btn btn-ghost" onclick="homeUpload()" data-home-copy="uploadAction"></button></article>
       </div>
-      <section class="home-recent-section" aria-labelledby="homeRecentHeading"><div class="home-section-heading"><h2 id="homeRecentHeading" data-home-copy="recent">Tệp &amp; bản ghi gần đây</h2><button type="button" class="home-view-all" onclick="showView('meetings',document.querySelector('[data-view=meetings]'))" data-home-copy="all">Xem tất cả</button></div><div id="homeRecent" class="home-recent-list"></div></section>
+      </section><section class="home-recent-section" aria-labelledby="homeRecentHeading"><div class="home-section-heading"><h2 id="homeRecentHeading" data-home-copy="recent">Tệp &amp; bản ghi gần đây</h2><button type="button" class="home-view-all" onclick="showView('meetings',document.querySelector('[data-view=meetings]'))" data-home-copy="all">Xem tất cả</button></div><div id="homeRecent" class="home-recent-list"></div></section>
     </div>
 
     <!-- ===== MEETINGS ===== -->
@@ -384,7 +388,7 @@
 
     <!-- ===== SETTINGS ===== -->
     <div class="view hidden" id="view-settings">
-      <div class="view-title" data-i18n="navSettings">Cài đặt</div>
+      <div class="view-title" data-i18n="accountSettingsTitle">Cài đặt tài khoản</div><p class="view-sub" data-i18n="accountSettingsSub">Quản lý tài khoản đăng nhập, bảo mật và tùy chọn ứng dụng.</p><div class="account-settings-banner"></div><div class="account-settings-identity"><div id="settingsIdentityAvatar" class="avatar"></div><div><h2 id="settingsIdentityName"></h2><p id="settingsIdentityEmail"></p></div></div>
       <div class="settings-wrap">
         <div class="settings-tabs" role="tablist" aria-label="Settings">
           <button type="button" role="tab" aria-selected="true" aria-controls="settingsAccount" class="nav-item active" data-s="account" onclick="showSettings('account',this)"><span data-i18n="sAccount">Tài khoản</span></button>
@@ -542,24 +546,27 @@
 <script src="services/settingsService.js?v=3"></script>
 <script src="services/aiService.js?v=7"></script>
 <script src="services/translationService.js?v=3"></script>
+<script src="hig-ui.js?v=1"></script>
 <script src="layout.js"></script>
 <script src="ui-feedback.js"></script>
-<script src="app.js?v=18"></script>
-<script src="home.js?v=3"></script>
+<script src="app.js?v=19"></script>
+<script src="home.js?v=4"></script>
 <script src="notes-studio.js?v=3"></script>
 <script src="services/communityService.js?v=4"></script>
 <script src="communityCover.js?v=5"></script>
 <script src="services/chatMedia.js?v=1"></script>
-<script src="community.js?v=9"></script>
+<script src="community.js?v=hig9"></script>
 <script src="storyGeometry.js?v=1"></script>
-<script src="storyEditor.js?v=2"></script>
-<script src="postStudio.js?v=1"></script>
+<script src="storyEditor.js?v=hig2"></script>
+<script src="media-carousel.js?v=1"></script>
+<script src="postStudio.js?v=2"></script>
 <script src="socialStudio.js?v=6"></script>
 <script src="calendar.js?v=2"></script>
 <script src="appearance.js?v=1"></script>
 <script src="ux-completeness.js?v=1"></script>
 <script src="chat-widget.js?v=1"></script>
-<script src="shell-refinement.js?v=3"></script>
+<script src="account-social-settings.js?v=1"></script>
+<script src="shell-refinement.js?v=4"></script>
 <script src="pwa.js"></script>
 <script>
 // Recover only a failed app boot; a working app keeps the normal update prompt.

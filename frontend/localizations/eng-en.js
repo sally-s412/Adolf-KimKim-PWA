@@ -227,3 +227,7 @@ Object.assign(window.I18N.en,{"uiAddNote": "+ Add note", "uiNewNote": "New note"
 Object.assign(window.I18N.en,{"uiEmptyNoteTitle": "A space for your ideas", "uiEmptyNoteHelp": "Create a note or choose one from the list.", "uiSaving": "Saving..."});
 
 Object.assign(window.I18N.en,{loginMeetKimKim:"Meet KimKim.",loginKimKimHelp:"Your AI companion for recording, understanding and summarizing content.",loginRecord:"Record",loginRead:"Read files",loginSummarize:"Summarize"});
+
+Object.assign(window.I18N.en,{"studioLoginSub": "Focus on the conversation. Let KimKim remember the details.", "studioRecord": "Record with KimKim", "studioRecordSub": "Capture the important parts of every conversation.", "studioRead": "Read files intelligently", "studioReadSub": "From audio and video to PDF and Word documents.", "studioSummarize": "Get clarity with AI", "studioSummarizeSub": "Find key points, summarize and ask KimKim.", "accountSettingsTitle": "Account settings", "accountSettingsSub": "Manage sign-in, security and application preferences."});
+
+Object.assign(window.I18N.en,{authWelcome:"WELCOME TO<br>ADOLF KIMKIM"});

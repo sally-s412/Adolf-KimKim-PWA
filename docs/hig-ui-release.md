@@ -13,6 +13,8 @@
 
 Remaining literals are intentional foundations or content data: user cover presets, story background/drawing colors, note font colors, color validation and stored team metadata. Speaker colors moved into named theme tokens. Google brand SVG and raster/image assets retain original colors. Calendar event categories and user-selected conversation themes retain their meaning; action buttons use the common theme.
 
+For a repeatable read-only scan, run `python scripts/audit-ui-colors.py`. It writes `docs/ui-color-current.csv` and never modifies source styles or the historical inventory.
+
 ## Behavior and data separation
 
 - Home uses Auth Display name, with localized fallback; hero copy changes with VIE/ENG. AI Studio scroll honors reduced-motion preferences; Social opens the existing route. Recorder, Meet invite and file upload remain in AI Studio below the hero.
@@ -25,6 +27,6 @@ Remaining literals are intentional foundations or content data: user cover prese
 
 ## Validation
 
-Node regression tests cover Home, shell, Notes, Calendar, community permissions/read receipts/drafts, post comments/likes, carousel interaction and story reply retry. Browser checks use synthetic fixture data, including 390px responsive layouts. Real iOS/Android hardware gestures and a second signed-in production account remain a recommended release smoke test.
+41 Node regression tests passed. They cover Home, shell, Notes, Calendar, community permissions/read receipts/drafts, post comments/likes, carousel interaction and story reply retry. Browser checks use synthetic fixture data, including 390px responsive layouts. Real iOS/Android hardware gestures and a second signed-in production account remain a recommended release smoke test.
 
 PWA users with an older installed worker must apply the in-app Update action to activate the new cached shell. No Firebase rule changes or AI processing endpoint/model/prompt changes are part of this release.

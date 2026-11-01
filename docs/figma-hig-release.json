@@ -364,5 +364,88 @@
       "id": "262:28221",
       "name": "HIG RELEASE / Story viewer / Mobile / Dark / VI"
     }
-  ]
+  ],
+  "validation": {
+    "frames": [
+      {
+        "id": "261:27702",
+        "name": "HIG RELEASE / Home / 1440 / Dark / VI",
+        "w": 1440,
+        "h": 994,
+        "overflow": []
+      },
+      {
+        "id": "261:27851",
+        "name": "HIG RELEASE / Home / 1440 / Light / EN",
+        "w": 1440,
+        "h": 994,
+        "overflow": []
+      },
+      {
+        "id": "261:27996",
+        "name": "HIG RELEASE / Home / 390 / Dark / VI",
+        "w": 390,
+        "h": 1416,
+        "overflow": []
+      },
+      {
+        "id": "261:28071",
+        "name": "HIG RELEASE / Home / 390 / Light / EN",
+        "w": 390,
+        "h": 1372,
+        "overflow": []
+      },
+      {
+        "id": "261:28146",
+        "name": "HIG RELEASE / Login / 1440 / Dark / EN",
+        "w": 1440,
+        "h": 804,
+        "overflow": []
+      },
+      {
+        "id": "261:28190",
+        "name": "HIG RELEASE / Login / 1440 / Light / VI",
+        "w": 1440,
+        "h": 804,
+        "overflow": []
+      },
+      {
+        "id": "261:28232",
+        "name": "HIG RELEASE / Login / 390 / Light / VI",
+        "w": 390,
+        "h": 1097,
+        "overflow": []
+      },
+      {
+        "id": "262:27906",
+        "name": "HIG RELEASE / Account settings / Desktop / Light / VI",
+        "w": 1440,
+        "h": 1003,
+        "overflow": []
+      },
+      {
+        "id": "262:28032",
+        "name": "HIG RELEASE / Social Profile settings / Desktop / Dark / VI",
+        "w": 1440,
+        "h": 979,
+        "overflow": []
+      },
+      {
+        "id": "262:28165",
+        "name": "HIG RELEASE / Social Profile / Mobile / Light / VI",
+        "w": 390,
+        "h": 776,
+        "overflow": []
+      },
+      {
+        "id": "262:28221",
+        "name": "HIG RELEASE / Story viewer / Mobile / Dark / VI",
+        "w": 390,
+        "h": 844,
+        "overflow": []
+      }
+    ],
+    "icons": 37,
+    "testsPassed": 41
+  }
 }

@@ -35,7 +35,7 @@ Ngày: 01/11/2026. Phạm vi: Social đang dùng, không thay đổi mô hình/p
 8. Story hết hạn được ẩn trong UI; chưa có tác vụ tự xóa media Cloudinary sau 24h. Highlights được lưu theo từng story, chưa có album highlight nhiều story có tên riêng.
 
 ## Kiểm tra
-- 26 kiểm thử JS: hình học pinch/rotate/snap, 25 story/phân trang, trạng thái seen, tương tác ghi thật qua SDK mock, chống HTML injection, giữ draft/focus và hồi quy Messenger/PWA.
+- 27 kiểm thử JS: hình học pinch/rotate/snap, 25 story/phân trang, trạng thái seen, tương tác ghi thật qua SDK mock, chống HTML injection, giữ draft/focus và hồi quy Messenger/PWA.
 - 25 kiểm thử Rules qua Firestore Emulator, gồm friendship, block, giả UID, sửa caption, xóa comment và riêng tư seen/saved.
 - 5 kiểm thử API album: từ chối URL ngoài, giới hạn số ảnh, owner draft, chuẩn hóa ảnh, lưu album/poster riêng tư và chặn giao ảnh trước khi kiểm tra quyền.
 - UI mobile được kiểm tra trên dữ liệu giả; luồng thêm chữ/căn giữa đã xác nhận. Upload album tới Cloudinary thật và tương tác giữa hai tài khoản production chưa được kiểm tra. Cần publish Rules V6 để hoàn tất tương tác trên production.

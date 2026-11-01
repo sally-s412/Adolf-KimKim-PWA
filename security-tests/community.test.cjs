@@ -189,3 +189,22 @@ test('social posts and highlights are friends-only, drafts private, strangers an
  await b.s.block(A);await assertFails(b.db.doc(ref.path).get());
  await assertFails(env.unauthenticatedContext().firestore().doc(ref.path).get());
 });
+
+test('V6 post likes and comments enforce friendship, author identity, size and blocks',async()=>{
+ await seed();const {a,b}=await friends(),c=client(C),id='12345678901234567890',path=`communityProfiles/alice/posts/${id}`;
+ await admin(db=>db.doc(path).set({kind:'post',text:'Hello',published:true,mediaId:'',highlight:false,createdAt:firebase.firestore.Timestamp.now(),updatedAt:firebase.firestore.Timestamp.now()}));
+ await assertSucceeds(b.db.doc(path+'/likes/bob').set({uid:B,createdAt:stamp()}));
+ await assertFails(b.db.doc(path+'/likes/charlie').set({uid:C,createdAt:stamp()}));
+ await assertFails(c.db.doc(path+'/likes/charlie').set({uid:C,createdAt:stamp()}));
+ await assertSucceeds(b.db.doc(path+'/comments/12345678901234567890').set({uid:B,text:'Nice!',createdAt:stamp()}));
+ await assertFails(b.db.doc(path+'/comments/22345678901234567890').set({uid:A,text:'Impersonation',createdAt:stamp()}));
+ await assertFails(b.db.doc(path+'/comments/32345678901234567890').set({uid:B,text:'a'.repeat(1001),createdAt:stamp()}));
+ await assertFails(c.db.collection(path+'/comments').limit(50).get());
+ await assertSucceeds(a.db.doc(path).update({text:'Edited caption',updatedAt:stamp()}));
+ await assertFails(b.db.doc(path).update({text:'Edited by friend',updatedAt:stamp()}));
+ await assertSucceeds(a.db.doc(path+'/comments/12345678901234567890').delete());
+ await admin(db=>db.doc('communityBlocks/alice/targets/bob').set({createdAt:firebase.firestore.Timestamp.now()}));
+ await assertFails(b.db.doc(path+'/likes/bob').get());
+ await assertFails(b.db.collection(path+'/comments').limit(50).get());
+});
+test('V6 story seen state and saved posts remain private to their owner',async()=>{const a=client(A),b=client(B);await assertSucceeds(a.db.doc('users/alice/socialState/stories').set({seen:{'bob:story':Date.now()}}));await assertFails(b.db.doc('users/alice/socialState/stories').get());await assertSucceeds(a.db.doc('users/alice/savedPosts/bob_post').set({owner:B,postId:'post'}));await assertFails(b.db.doc('users/alice/savedPosts/bob_post').get());});

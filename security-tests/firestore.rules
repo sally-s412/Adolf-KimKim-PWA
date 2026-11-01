@@ -208,10 +208,38 @@ match /communityProfiles/{author}/posts/{post} {
   && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
   && request.resource.data.highlight == false && request.resource.data.published == false && request.resource.data.mediaId == '';
  allow update: if communitySigned() && request.auth.uid == author
-  && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['updatedAt','highlight','published','mediaId'])
+  && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text','updatedAt','highlight','published','mediaId'])
+  && request.resource.data.text is string && request.resource.data.text.size() <= 2000
   && request.resource.data.updatedAt == request.time && request.resource.data.highlight is bool && request.resource.data.published is bool
   && request.resource.data.mediaId in ['', 'kimkim/social/' + author + '/' + post];
  allow delete: if communitySigned() && request.auth.uid == author;
+}
+
+// V6: interactions inherit the parent post's friendship and block checks.
+function communityCanReadPost(author,post) {
+ let data = get(/databases/$(database)/documents/communityProfiles/$(author)/posts/$(post)).data;
+ return communitySigned() && data.kind == 'post' && data.published == true
+   && (request.auth.uid == author || communityFriendOf(author));
+}
+match /communityProfiles/{author}/posts/{post}/likes/{uid} {
+ allow get: if communityCanReadPost(author,post);
+ allow list: if communityCanReadPost(author,post) && request.query.limit <= 100;
+ allow create: if communityCanReadPost(author,post) && request.auth.uid == uid
+  && request.resource.data.keys().hasOnly(['uid','createdAt'])
+  && request.resource.data.uid == uid && request.resource.data.createdAt == request.time;
+ allow delete: if communityCanReadPost(author,post) && request.auth.uid == uid;
+ allow update: if false;
+}
+match /communityProfiles/{author}/posts/{post}/comments/{comment} {
+ allow get: if communityCanReadPost(author,post);
+ allow list: if communityCanReadPost(author,post) && request.query.limit <= 50;
+ allow create: if communityCanReadPost(author,post) && comment.matches('^[a-zA-Z0-9-]{20,80}$')
+  && request.resource.data.keys().hasOnly(['uid','text','createdAt'])
+  && request.resource.data.uid == request.auth.uid && request.resource.data.text is string
+  && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 1000
+  && request.resource.data.createdAt == request.time;
+ allow delete: if communityCanReadPost(author,post) && (resource.data.uid == request.auth.uid || request.auth.uid == author);
+ allow update: if false;
 }
 
 // END KimKim Community beta v1

@@ -113,6 +113,7 @@ function updateUserUI(user){
   const name=user.displayName || (user.email ? user.email.split('@')[0] : 'User');
   const initialsText=initials(name);
   applyAvatar(document.getElementById('sideAvatar'),user,initialsText);
+  if(window.KimKimShell) KimKimShell.updateAccount(user);
   applyAvatar(document.getElementById('profileAvatar'),user,initialsText);
   if(typeof renderHome==='function') renderHome();
   const sideName=document.getElementById('sideUserName');
@@ -701,6 +702,7 @@ function visibleMeetings(){
 
 /* ---- Notes ---- */
 function createNote(){
+  if(window.NotesStudio?.create) return NotesStudio.create();
   showView('notes',document.querySelector('[data-view=notes]'));
   document.getElementById('noteComposer').classList.remove('hidden');
   document.getElementById('newNoteTitle').focus();

@@ -41,7 +41,7 @@
 <script src="config.js?v=2"></script>
 <link rel="stylesheet" href="social-v4.css?v=3">
 <link rel="stylesheet" href="space-refresh.css?v=2">
-<link rel="stylesheet" href="workspace-refresh.css?v=1">
+<link rel="stylesheet" href="workspace-refresh.css?v=3">
 <link rel="stylesheet" href="story-editor.css?v=2">
 <link rel="stylesheet" href="social-complete.css?v=1">
 <link rel="stylesheet" href="chat-widget.css?v=1">
@@ -51,11 +51,11 @@
 <div id="connectionStatus" class="connection-status" role="status" hidden></div>
 <div class="pwa-actions"><button id="installApp" class="btn btn-ghost" data-i18n="installApp" hidden>Cài ứng dụng</button><button id="updateApp" class="btn btn-ghost" data-i18n="updateApp" hidden>Cập nhật</button></div>
 <div id="authScreen"><nav class="auth-language lang-switch" aria-label="Language"><button data-auth-lang="vi" onclick="setLang('vi')">VIE</button><button data-auth-lang="en" onclick="setLang('en')">ENG</button></nav><div class="card auth-card" id="authSignin">
-  <div class="auth-wordmark">ADOLF KIMKIM<span>YOUR EVERYDAY SPACE</span></div>
+  <div class="auth-wordmark">ADOLF KIMKIM</div>
   <p class="auth-welcome">WELCOME TO<br>ADOLF KIMKIM</p>
     <h1 data-i18n="signinTitle">Đăng nhập</h1>
     <p class="sub" data-i18n="signinSub">Đăng nhập để tiếp tục không gian của bạn.</p>
-    <button type="button" class="auth-google" onclick="signInWithGoogle()"> <span data-i18n="signinGoogle">Đăng nhập với Google</span></button>
+    <button type="button" class="auth-google" onclick="signInWithGoogle()"><img class="google-mark" src="assets/icons/google-g.svg" alt="" width="20" height="20"> <span data-i18n="signinGoogle">Đăng nhập với Google</span></button>
     <label for="signinEmail" data-i18n="emailLbl">Email</label><input id="signinEmail" type="email" autocomplete="email" placeholder="you@company.com">
     <label for="signinPassword" data-i18n="pwLbl">Mật khẩu</label><input id="signinPassword" type="password" autocomplete="current-password" placeholder="••••••••">
     <div id="authError" class="auth-error" role="alert"></div>
@@ -66,12 +66,12 @@
     </div>
   </div>
 
-  <aside class="auth-visual" aria-hidden="true"><div class="auth-visual-copy"><span>LESS CHAOS. MORE POSSIBILITIES.</span><h2>Một không gian.<br>Nhiều cảm hứng.</h2><p>Kết nối, sáng tạo và làm việc theo cách của bạn.</p></div><img src="assets/login/conversation.svg" alt=""><div class="auth-visual-foot">CONNECT · CREATE · CAPTURE</div></aside>
+  <aside class="auth-visual kimkim-login-art" aria-label="KimKim AI"><div class="kimkim-login-intro"><span>ADOLF KIMKIM</span><h2 data-i18n="loginMeetKimKim">Gặp KimKim.</h2><p data-i18n="loginKimKimHelp">Trợ lý AI giúp bạn ghi lại, đọc hiểu và tóm tắt nội dung.</p></div><div class="kimkim-login-portrait"><div class="kimkim-login-halo"></div><img src="assets/kimkim4.png" alt="KimKim"></div><div class="kimkim-login-features"><span data-i18n="loginRecord">Ghi âm</span><span data-i18n="loginRead">Đọc tệp</span><span data-i18n="loginSummarize">Tóm tắt</span></div></aside>
   <div class="card auth-card hidden" id="authSignup">
      <img src="assets/kimkimBranding.png" alt="Adolf KimKim Logo" style="width:28px; height:28px; border-radius:50%; object-fit:cover; box-shadow:0 0 10px rgba(59,130,246,.6); -webkit-animation:breathe 3s ease-in-out infinite; animation:breathe 3s ease-in-out infinite;">
     <h1 data-i18n="signupTitle">Tạo tài khoản</h1>
     <p class="sub" data-i18n="signupSub">Trải nghiệm khả năng ghi chú đẳng cấp của Adolf KimKim</p>
-    <button type="button" class="auth-google" onclick="signInWithGoogle()"><span data-i18n="signinGoogle">Đăng nhập với Google</span></button>
+    <button type="button" class="auth-google" onclick="signInWithGoogle()"><img class="google-mark" src="assets/icons/google-g.svg" alt="" width="20" height="20"><span data-i18n="signinGoogle">Đăng nhập với Google</span></button>
     <label for="signupName" data-i18n="nameLbl">Họ tên</label><input id="signupName" autocomplete="name" placeholder="Tên hiển thị của bạn">
     <label for="signupEmail" data-i18n="emailLbl">Email</label><input id="signupEmail" type="email" autocomplete="email" placeholder="you@company.com">
     <label for="signupPassword" data-i18n="pwLbl">Mật khẩu</label><input id="signupPassword" type="password" autocomplete="new-password" placeholder="••••••••">
@@ -126,7 +126,7 @@
 
     <!-- ===== HOME ===== -->
     <div class="view" id="view-home">
-      <header class="home-intro"><span class="home-eyebrow">YOUR SPACE, REIMAGINED</span><h1 id="homeHeading">Bạn muốn bắt đầu từ đâu?</h1><p data-home-copy="sub">Để KimKim ghi lại, đọc hiểu và tóm tắt cho bạn.</p><div class="home-hero-actions"><button class="btn btn-primary" onclick="homeUpload()" data-home-copy="heroAction">Bắt đầu cùng KimKim ↗</button><button class="btn btn-ghost" onclick="showView('social',document.querySelector('[data-view=social]'))" data-home-copy="explore">Khám phá Social →</button></div><span class="home-hero-index">01 / YOUR DAILY SPACE</span><div class="home-orbit" aria-hidden="true"><span>ideas.</span><span>connections.</span><span class="orbit-last">possibilities.</span></div></header>
+      <header class="home-intro"><div class="home-welcome-content"><p id="homeGreeting">HI @user</p><h1 id="homeHeading">WELCOME TO<br>ADOLF KIMKIM</h1><p data-home-copy="sub">Để KimKim ghi lại, đọc hiểu và tóm tắt cho bạn.</p><div class="home-hero-actions"><button class="btn btn-primary" onclick="homeRecord()" data-home-copy="heroAction">Ghi âm cùng KimKim ↗</button><button class="btn btn-ghost" onclick="homeUpload()" data-home-copy="uploadAction">Chọn tệp để tải lên</button></div></div></header>
       <div class="home-tools-title"><img src="assets/kimkimAI.png" alt="" width="34" height="42"><div><strong>KimKim AI Studio</strong><span data-home-copy="toolsSub">Biến nội dung thành điều hữu ích.</span></div><span class="home-tools-line"></span></div><div class="home-actions">
         <article class="home-action primary"><span class="home-action-icon" data-home-icon="recording" aria-hidden="true"></span><h2 data-home-copy="record"></h2><p data-home-copy="recordSub"></p><button type="button" class="btn btn-primary" onclick="homeRecord()" data-home-copy="recordAction"></button></article>
         <article class="home-action "><span class="home-action-icon" data-home-icon="meetings" aria-hidden="true"></span><h2 data-home-copy="meet"></h2><p data-home-copy="meetSub"></p><button type="button" class="btn btn-ghost" onclick="homeMeet()" data-home-copy="meetAction"></button></article>
@@ -279,10 +279,8 @@
     <!-- ===== NOTES ===== -->
     <div class="view hidden" id="view-notes">
       <div class="view-title" data-i18n="navNotes">Ghi chú</div>
-      <div class="view-sub" data-i18n="notesSub">Toàn bộ ghi chú được tạo tự động và thủ công</div>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
-        <button class="btn btn-primary" onclick="createNote()" data-i18n="uiAddNote">+ Thêm ghi chú</button>
-      </div>
+      
+      
       <form id="noteComposer" class="card note-composer hidden" onsubmit="submitNewNote(event)" aria-labelledby="noteComposerHeading">
         <h2 id="noteComposerHeading" data-i18n="uiNewNote">Ghi chú mới</h2>
         <div class="field"><label for="newNoteTitle" data-i18n="uiNoteTitle">Tiêu đề</label><input id="newNoteTitle" maxlength="160" required data-i18n-ph="uiNoteTitlePh" placeholder="Đặt tên cho ghi chú"></div>
@@ -292,13 +290,13 @@
       </form>
       <div class="notes-workspace">
         <div class="card" style="width:260px;flex-shrink:0;padding:10px;" id="notesSidebarList"></div>
-        <div class="card" style="flex:1;padding:20px;">
+        <div class="card notes-writing-pane" style="flex:1;padding:20px;">
           <div class="editor-toolbar">
             <button class="btn btn-ghost" id="noteTranslateBtn" onclick="toggleNoteTranslation()" data-i18n="translateBtn">🌐 Dịch sang tiếng Anh</button>
             <button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);" onclick="deleteNoteHandler()" data-i18n="deleteNoteBtn">🗑️ Xoá ghi chú</button>
           </div>
           <div id="noteEmptyState" class="note-empty"><h3 data-i18n="uiEmptyNoteTitle">Sẵn sàng ghi lại ý tưởng?</h3><p data-i18n="uiEmptyNoteHelp">Tạo ghi chú mới hoặc chọn một ghi chú ở bên trái.</p></div>
-          <div class="editor" contenteditable="true" style="font-size:14px;line-height:1.8;" onblur="saveCurrentNote()">
+          <div class="editor" contenteditable="false" style="font-size:14px;line-height:1.8;">
             <h1 style="margin:0 0 10px;font-size:19px;"></h1>
             <p style="color:var(--text-1);"></p>
           </div>
@@ -546,9 +544,9 @@
 <script src="services/translationService.js?v=3"></script>
 <script src="layout.js"></script>
 <script src="ui-feedback.js"></script>
-<script src="app.js?v=17"></script>
-<script src="home.js?v=2"></script>
-<script src="notes-studio.js?v=1"></script>
+<script src="app.js?v=18"></script>
+<script src="home.js?v=3"></script>
+<script src="notes-studio.js?v=3"></script>
 <script src="services/communityService.js?v=4"></script>
 <script src="communityCover.js?v=5"></script>
 <script src="services/chatMedia.js?v=1"></script>
@@ -561,6 +559,7 @@
 <script src="appearance.js?v=1"></script>
 <script src="ux-completeness.js?v=1"></script>
 <script src="chat-widget.js?v=1"></script>
+<script src="shell-refinement.js?v=3"></script>
 <script src="pwa.js"></script>
 <script>
 // Recover only a failed app boot; a working app keeps the normal update prompt.

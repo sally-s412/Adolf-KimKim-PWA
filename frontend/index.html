@@ -41,6 +41,7 @@
 <script src="config.js?v=2"></script>
 <link rel="stylesheet" href="social-v4.css?v=3">
 <link rel="stylesheet" href="space-refresh.css?v=2">
+<link rel="stylesheet" href="workspace-refresh.css?v=1">
 <link rel="stylesheet" href="story-editor.css?v=2">
 <link rel="stylesheet" href="social-complete.css?v=1">
 <link rel="stylesheet" href="chat-widget.css?v=1">
@@ -50,13 +51,10 @@
 <div id="connectionStatus" class="connection-status" role="status" hidden></div>
 <div class="pwa-actions"><button id="installApp" class="btn btn-ghost" data-i18n="installApp" hidden>Cài ứng dụng</button><button id="updateApp" class="btn btn-ghost" data-i18n="updateApp" hidden>Cập nhật</button></div>
 <div id="authScreen"><nav class="auth-language lang-switch" aria-label="Language"><button data-auth-lang="vi" onclick="setLang('vi')">VIE</button><button data-auth-lang="en" onclick="setLang('en')">ENG</button></nav><div class="card auth-card" id="authSignin">
-  <div class="auth-logo" aria-label="Adolf KimKim">
-    <img src="assets/kimkim4.png" alt="" width="48" height="48">
-    <span>ADOLF KIMKIM</span>
-    <img src="assets/kimkim4.png" alt="" width="48" height="48">
-  </div>
+  <div class="auth-wordmark">ADOLF KIMKIM<span>YOUR EVERYDAY SPACE</span></div>
+  <p class="auth-welcome">WELCOME TO<br>ADOLF KIMKIM</p>
     <h1 data-i18n="signinTitle">Đăng nhập</h1>
-    <p class="sub" data-i18n="signinSub">Thống trị thế giới cùng Adolf Kim Kim</p>
+    <p class="sub" data-i18n="signinSub">Đăng nhập để tiếp tục không gian của bạn.</p>
     <button type="button" class="auth-google" onclick="signInWithGoogle()"> <span data-i18n="signinGoogle">Đăng nhập với Google</span></button>
     <label for="signinEmail" data-i18n="emailLbl">Email</label><input id="signinEmail" type="email" autocomplete="email" placeholder="you@company.com">
     <label for="signinPassword" data-i18n="pwLbl">Mật khẩu</label><input id="signinPassword" type="password" autocomplete="current-password" placeholder="••••••••">
@@ -68,12 +66,13 @@
     </div>
   </div>
 
+  <aside class="auth-visual" aria-hidden="true"><div class="auth-visual-copy"><span>LESS CHAOS. MORE POSSIBILITIES.</span><h2>Một không gian.<br>Nhiều cảm hứng.</h2><p>Kết nối, sáng tạo và làm việc theo cách của bạn.</p></div><img src="assets/login/conversation.svg" alt=""><div class="auth-visual-foot">CONNECT · CREATE · CAPTURE</div></aside>
   <div class="card auth-card hidden" id="authSignup">
      <img src="assets/kimkimBranding.png" alt="Adolf KimKim Logo" style="width:28px; height:28px; border-radius:50%; object-fit:cover; box-shadow:0 0 10px rgba(59,130,246,.6); -webkit-animation:breathe 3s ease-in-out infinite; animation:breathe 3s ease-in-out infinite;">
     <h1 data-i18n="signupTitle">Tạo tài khoản</h1>
     <p class="sub" data-i18n="signupSub">Trải nghiệm khả năng ghi chú đẳng cấp của Adolf KimKim</p>
     <button type="button" class="auth-google" onclick="signInWithGoogle()"><span data-i18n="signinGoogle">Đăng nhập với Google</span></button>
-    <label for="signupName" data-i18n="nameLbl">Họ tên</label><input id="signupName" autocomplete="name" placeholder="Sally San San">
+    <label for="signupName" data-i18n="nameLbl">Họ tên</label><input id="signupName" autocomplete="name" placeholder="Tên hiển thị của bạn">
     <label for="signupEmail" data-i18n="emailLbl">Email</label><input id="signupEmail" type="email" autocomplete="email" placeholder="you@company.com">
     <label for="signupPassword" data-i18n="pwLbl">Mật khẩu</label><input id="signupPassword" type="password" autocomplete="new-password" placeholder="••••••••">
     <div id="signupError" class="auth-error" role="alert"></div>
@@ -110,7 +109,7 @@
     <div class="nav-item" data-view="profile" onclick="showView('profile',this)"><span class="ic">👤</span><span data-i18n="navProfile">Hồ sơ</span></div>
     <div class="side-user">
       <div id="sideAvatar" class="avatar" style="background:#3b82f6;background-size:cover;background-position:center;cursor:pointer;" onclick="showView('profile',document.querySelector('[data-view=profile]'))">SM</div>
-      <div style="flex:1;cursor:pointer;" onclick="showView('profile',document.querySelector('[data-view=profile]'))"><div id="sideUserName" class="name">Sally</div><div class="mail" style="opacity:.7">&nbsp;</div></div>
+      <div style="flex:1;cursor:pointer;" onclick="showView('profile',document.querySelector('[data-view=profile]'))"><div id="sideUserName" class="name">ADOLF KIMKIM</div><div class="mail" style="opacity:.7">&nbsp;</div></div>
       <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px;" onclick="event.stopPropagation();logout()" data-i18n="logoutLbl">Đăng xuất</button>
     </div>
   </aside>
@@ -127,8 +126,8 @@
 
     <!-- ===== HOME ===== -->
     <div class="view" id="view-home">
-      <header class="home-intro"><h1 id="homeHeading">Bạn muốn bắt đầu từ đâu?</h1><p data-home-copy="sub">Để KimKim ghi lại, đọc hiểu và tóm tắt cho bạn.</p></header>
-      <div class="home-actions">
+      <header class="home-intro"><span class="home-eyebrow">YOUR SPACE, REIMAGINED</span><h1 id="homeHeading">Bạn muốn bắt đầu từ đâu?</h1><p data-home-copy="sub">Để KimKim ghi lại, đọc hiểu và tóm tắt cho bạn.</p><div class="home-hero-actions"><button class="btn btn-primary" onclick="homeUpload()" data-home-copy="heroAction">Bắt đầu cùng KimKim ↗</button><button class="btn btn-ghost" onclick="showView('social',document.querySelector('[data-view=social]'))" data-home-copy="explore">Khám phá Social →</button></div><span class="home-hero-index">01 / YOUR DAILY SPACE</span><div class="home-orbit" aria-hidden="true"><span>ideas.</span><span>connections.</span><span class="orbit-last">possibilities.</span></div></header>
+      <div class="home-tools-title"><img src="assets/kimkimAI.png" alt="" width="34" height="42"><div><strong>KimKim AI Studio</strong><span data-home-copy="toolsSub">Biến nội dung thành điều hữu ích.</span></div><span class="home-tools-line"></span></div><div class="home-actions">
         <article class="home-action primary"><span class="home-action-icon" data-home-icon="recording" aria-hidden="true"></span><h2 data-home-copy="record"></h2><p data-home-copy="recordSub"></p><button type="button" class="btn btn-primary" onclick="homeRecord()" data-home-copy="recordAction"></button></article>
         <article class="home-action "><span class="home-action-icon" data-home-icon="meetings" aria-hidden="true"></span><h2 data-home-copy="meet"></h2><p data-home-copy="meetSub"></p><button type="button" class="btn btn-ghost" onclick="homeMeet()" data-home-copy="meetAction"></button></article>
         <article class="home-action "><span class="home-action-icon" data-home-icon="uploads" aria-hidden="true"></span><h2 data-home-copy="upload"></h2><p data-home-copy="uploadSub"></p><button type="button" class="btn btn-ghost" onclick="homeUpload()" data-home-copy="uploadAction"></button></article>
@@ -547,8 +546,9 @@
 <script src="services/translationService.js?v=3"></script>
 <script src="layout.js"></script>
 <script src="ui-feedback.js"></script>
-<script src="app.js?v=16"></script>
-<script src="home.js?v=1"></script>
+<script src="app.js?v=17"></script>
+<script src="home.js?v=2"></script>
+<script src="notes-studio.js?v=1"></script>
 <script src="services/communityService.js?v=4"></script>
 <script src="communityCover.js?v=5"></script>
 <script src="services/chatMedia.js?v=1"></script>

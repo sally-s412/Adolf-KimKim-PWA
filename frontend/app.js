@@ -175,7 +175,7 @@ function logout(){
   currentUser=null;
   if(firebaseReadyCheck()){AuthService.signOut();return;}
   document.getElementById('app').classList.remove('active');
-  document.getElementById('authScreen').style.display='flex';
+  document.getElementById('authScreen').style.display='';
   showAuth('signin');
 }
 function initAuth(){
@@ -185,7 +185,7 @@ function initAuth(){
       detachListeners();
       currentUser=null;
       document.getElementById('app').classList.remove('active');
-      document.getElementById('authScreen').style.display='flex';
+      document.getElementById('authScreen').style.display='';
       showAuth('signin');
     }
   });
@@ -756,6 +756,7 @@ async function toggleNoteTranslation(){
   }
 }
 function saveCurrentNote(){
+  if(window.NotesStudio) return NotesStudio.save();
   if(!currentNoteId) return;
   const editor=document.querySelector('#view-notes .editor');
   const h1=editor.querySelector('h1'); const p=editor.querySelector('p');
@@ -1022,6 +1023,8 @@ function renderAll(){
   if(typeof renderHome==='function') renderHome();
   // meetings table
   renderMeetingsTable();
+  if(window.NotesStudio) NotesStudio.render(notesArr,currentNoteId);
+  else {
   // notes sidebar + editor
   const sideEl=document.getElementById('notesSidebarList');
   if(sideEl) sideEl.innerHTML = notesArr.map(n=>`
@@ -1037,6 +1040,7 @@ function renderAll(){
     const h1=editor.querySelector('h1'); const p=editor.querySelector('p');
     if(curNote){ if(h1)h1.textContent=curNote.title||''; if(p)p.textContent=curNote.content||''; }
     else { if(h1)h1.textContent=''; if(p)p.textContent=''; }
+  }
   }
   // team table
   const teamEl=document.getElementById('teamTable');

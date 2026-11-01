@@ -215,6 +215,7 @@ function closeAddNewMenu(){
   if(m) m.classList.add('hidden');
 }
 function showView(v,el){
+  if(v==='rules'){v='home';el=document.querySelector('[data-view=home]');}
   closeMobileMenu();
   if (v !== 'meetingDetail') {
     if (isMeetingRecording) stopMeetingRecording();

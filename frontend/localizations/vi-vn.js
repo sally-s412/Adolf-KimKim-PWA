@@ -9,7 +9,7 @@ window.I18N.vi = {
   inviteKimkimMeet: 'Mời KimKim vào Google Meet',
   kimkimMeetingTitlePh: 'Tiêu đề cuộc họp (tuỳ chọn)',
   signinTitle: "Đăng nhập",
-  signinSub: "Thống trị thế giới cùng Adolf KimKim",
+  signinSub: "Đăng nhập để tiếp tục không gian của bạn.",
   signinGoogle: "Đăng nhập với Google",
   emailLbl: "Email",
   pwLbl: "Mật khẩu",

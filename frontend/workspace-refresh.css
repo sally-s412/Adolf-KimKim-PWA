@@ -26,3 +26,4 @@ html #authScreen #authSignin h1{text-align:left!important;font-size:18px!importa
 html .notes-workspace .editor{white-space:normal}html .notes-workspace .editor h1{margin:0 0 24px!important}html .notes-workspace .editor p{margin:0;white-space:pre-wrap}
 html #view-home .home-action.primary{background:var(--surface);border-color:var(--border)}
 html #notesSidebarList{display:block!important}.notes-list{display:block}.notes-search{display:block;min-width:0;width:100%;box-sizing:border-box}.notes-list-caption{display:block}
+html #authScreen label{color:var(--text-1)!important}html #authScreen .sub,html #authScreen .auth-tabs{color:var(--text-2)!important}

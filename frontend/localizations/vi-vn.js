@@ -246,3 +246,6 @@ Object.assign(window.I18N.vi,{"filesFormat": "Loại tệp", "filesAllFormats": 
 
 Object.assign(window.I18N.vi, {filesNoMatches:"Không có nội dung khớp bộ lọc."});
 
+
+
+Object.assign(window.I18N.vi,{"studioSummarize": "Nhờ KimKim tóm tắt", "detailSummaryDocument": "Nhờ KimKim tóm tắt", "detailSummaryMeeting": "Nhờ KimKim tóm tắt", "studioEdit": "Sửa", "studioDelete": "Xoá", "studioMindmap": "Sơ đồ tư duy", "studioSend": "Gửi", "studioMeetLink": "Link Google Meet (tuỳ chọn)", "studioResultSaved": "Đã lưu tóm tắt", "studioChatEmpty": "Bạn muốn tìm hiểu điều gì?", "mdChatPh": "Hỏi KimKim…", "studioScoped": "Nội dung này", "detailNoResult": "Chưa có kết quả."});

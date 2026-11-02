@@ -650,14 +650,19 @@ function extractActionItems(summary) {
     .filter(l => l && !l.toLowerCase().includes('none explicitly stated') && !l.startsWith('#'));
 }
 
+function renderStudioMeta(node,m){
+  const info=meetingFileInfo(m);
+  const labels=[info.format==='unknown'?t('filesUnknown'):info.format.toUpperCase(),t(meetingSourceKey[info.kind])];
+  node.innerHTML=labels.map(label=>'<span class="studio-meta-chip">'+escapeHtml(label)+'</span>').join('')+((typeof m.summary==='string'&&m.summary.trim())?'<span class="studio-result-chip">'+escapeHtml(t('studioResultSaved'))+'</span>':'');
+}
 function updateMeetingDetailLocale(){
   const m=currentMeetingObj;
   const meta=document.getElementById('mdSourceMeta');
-  if(meta&&m){const info=meetingFileInfo(m);meta.textContent=[info.format==='unknown'?t('filesUnknown'):info.format.toUpperCase(),t(meetingSourceKey[info.kind])].join(' · ');}
+  if(meta&&m) renderStudioMeta(meta,m);
   const contentTab=document.getElementById('mdTabTranscriptBtn');
   if(contentTab) contentTab.textContent=t(m?.document?'detailContentTab':'detailTranscriptTab');
   const button=document.getElementById('btnQuickSummarize');
-  if(button&&!analysisInFlight.has('summary:'+currentMeetingId)) button.textContent=t(m?.document?'detailSummaryDocument':'detailSummaryMeeting');
+  if(button&&!analysisInFlight.has('summary:'+currentMeetingId)) button.textContent=t('studioSummarize');
   if(m){
     if(!m.participants?.length){const n=document.getElementById('mdParticipants');if(n)n.textContent=t('noParticipants');}
     if(!m.keyPoints?.length){const n=document.getElementById('mdKeyPoints');if(n)n.textContent=t('detailNoResult');}
@@ -672,11 +677,9 @@ function renderMeetingDetail(){
   document.querySelector('#view-meetingDetail .video-controls')?.classList.toggle('hidden', !isMeetingRecording);
   document.getElementById('mdParticipants')?.closest('.card')?.classList.toggle('hidden', isDocument);
   const contentTab = document.getElementById('mdTabTranscriptBtn');
-  if (contentTab) contentTab.textContent = isDocument ? (lang === 'vi' ? 'Nội dung tài liệu' : 'Document content') : 'Transcript';
+  if(contentTab) contentTab.textContent=t(isDocument?'detailContentTab':'detailTranscriptTab');
   const summaryButton = document.getElementById('btnQuickSummarize');
-  if (summaryButton) summaryButton.textContent = isDocument
-    ? (lang === 'vi' ? 'Tóm tắt tài liệu với AI' : 'Summarize document with AI')
-    : (lang === 'vi' ? '⚡ Tóm tắt cuộc họp với AI' : '⚡ Summarize meeting with AI');
+  if(summaryButton&&!analysisInFlight.has('summary:'+currentMeetingId)) summaryButton.textContent=t('studioSummarize');
   const titleEl = document.querySelector('#view-meetingDetail .view-title');
   if (titleEl) titleEl.textContent = m ? m.title : '';
   const subEl = document.querySelector('#view-meetingDetail .view-sub');
@@ -694,12 +697,12 @@ function renderMeetingDetail(){
   const kpEl=document.getElementById('mdKeyPoints');
   if(kpEl){
     const kp=(m && m.keyPoints) || [];
-    kpEl.innerHTML = kp.length ? kp.map(k=>`<span class="tag">${escapeHtml(k)}</span>`).join('') :
-      `<div style="color:var(--text-2);font-size:12px;">${(lang==='vi'?'Chưa có kết quả.':'No result yet.')}</div>`;
+    kpEl.innerHTML = kp.length ? '<ul class="studio-keypoints">'+kp.map(k=>`<li>${escapeHtml(k)}</li>`).join('')+'</ul>' :
+      `<div style="color:var(--text-2);font-size:12px;">${t('detailNoResult')}</div>`;
   }
   const sumEl=document.getElementById('mdSummary');
   if(sumEl) {
-    sumEl.innerHTML = (m && m.summary) ? formatMarkdownToHtml(m.summary) : (lang==='vi'?'Chưa có kết quả.':'No result yet.');
+    sumEl.innerHTML = (m && m.summary) ? formatMarkdownToHtml(m.summary) : t('detailNoResult');
   }
   const aiEl=document.getElementById('mdActionItems');
   if(aiEl){
@@ -708,7 +711,7 @@ function renderMeetingDetail(){
       items = extractActionItems(m.summary);
     }
     aiEl.innerHTML = items.length ? '<ul style="margin:0;padding-left:18px;">'+items.map(i=>`<li style="font-size:13px;">${escapeHtml(i)}</li>`).join('')+'</ul>' :
-      `<div style="color:var(--text-2);font-size:12px;">${(lang==='vi'?'Chưa có kết quả.':'No result yet.')}</div>`;
+      `<div style="color:var(--text-2);font-size:12px;">${t('detailNoResult')}</div>`;
   }
   const notesInput=document.getElementById('mdNotesInput');
   if(notesInput) notesInput.value = (m && m.notes) || '';
@@ -717,7 +720,7 @@ function renderMeetingDetail(){
   renderTranscriptAndStats();
   const source=meetingFileInfo(m||{});
   const meta=document.getElementById('mdSourceMeta');
-  if(meta) meta.textContent=[source.format==='unknown'?t('filesUnknown'):source.format.toUpperCase(),t(meetingSourceKey[source.kind])].join(' · ');
+  if(meta) renderStudioMeta(meta,m||{});
   updateMeetingDetailLocale();
 }
 function saveMeetingNotes(){
@@ -1866,5 +1869,6 @@ for (const [id, action] of [['signinPassword',signInWithEmail],['signupPassword'
     if(event.key==='Enter'&&!event.isComposing){event.preventDefault();action();}
   });
 }
+
 
 

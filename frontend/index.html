@@ -52,7 +52,7 @@
 <link rel="stylesheet" href="design-tokens.css?v=rose-dusk-3">
 <link rel="stylesheet" href="hig-components.css?v=rose-dusk-3">
 <link rel="stylesheet" href="hig-screens.css?v=files-flow-1">
-<link rel="stylesheet" href="studio-workspace.css?v=studio-3">
+<link rel="stylesheet" href="studio-workspace.css?v=studio-4">
 </head>
 <body>
 
@@ -180,8 +180,8 @@
       <div class="page-heading">
         <button class="btn btn-ghost" onclick="showView('meetings',document.querySelector('[data-view=meetings]'))"><svg class="akk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg><span data-i18n="detailBack">Quay lại</span></button>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-ghost" onclick="editMeeting(currentMeetingId)" data-i18n="editMeeting">✏️ Sửa</button>
-          <button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);" onclick="deleteMeetingHandler(currentMeetingId)" data-i18n="deleteMeeting">🗑️ Xoá</button>
+          <button class="btn btn-ghost" onclick="editMeeting(currentMeetingId)" data-i18n="studioEdit">Sửa</button>
+          <button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);" onclick="deleteMeetingHandler(currentMeetingId)" data-i18n="studioDelete">Xoá</button>
         </div>
       </div>
       <div class="view-title"></div>
@@ -195,8 +195,8 @@
             <button class="btn btn-ghost" id="mdMeetBotStopBtn" style="padding:3px 10px;font-size:11px;border-color:var(--red);color:var(--red);" onclick="stopActiveMeetBot()" data-i18n="detailStopSummary">Kết thúc và tóm tắt</button>
           </div>
         </div>
-      <div id="mdSourceMeta" class="studio-source-meta"></div>
       <div class="studio-toolbar">
+        <div id="mdSourceMeta" class="studio-source-meta"></div>
         <div class="video-controls">
           <button class="btn btn-ghost" id="btnMicToggle" onclick="toggleMeetingMic()" data-i18n-title="detailMicTitle" data-i18n-aria="detailMicTitle" data-i18n="studioLive">Phiên âm trực tiếp</button>
           <button class="btn btn-ghost" id="btnEndMeeting" onclick="endMeetingAndSummarize()" data-i18n-title="detailEndTitle" data-i18n-aria="detailEndTitle" data-i18n="detailStopSummary">Kết thúc và tóm tắt</button>
@@ -215,18 +215,16 @@
           </div>
           <div id="mdSummaryPane" role="tabpanel" aria-labelledby="mdTabSummaryBtn">
 <div class="card keypoints">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-              <div class="view-sub" style="margin:0" data-i18n="summaryLbl">Tóm tắt</div>
-            </div>
+            <h3 class="studio-section-heading" data-i18n="summaryLbl">Tóm tắt</h3>
             <div id="mdSummary" style="font-size:13px;color:var(--text-1);"></div>
           </div><div class="card keypoints">
-            <div class="view-sub" style="margin-bottom:8px" data-i18n="keyPoints">Điểm chính</div>
+            <h3 class="studio-section-heading" data-i18n="keyPoints">Điểm chính</h3>
             <div id="mdKeyPoints"></div>
           </div><div class="card keypoints">
-            <div class="view-sub" style="margin-bottom:8px" data-i18n="actionItemsLbl">Việc cần làm</div>
+            <h3 class="studio-section-heading" data-i18n="actionItemsLbl">Việc cần làm</h3>
             <div id="mdActionItems"></div>
           </div><div class="card keypoints">
-            <div class="view-sub" style="margin-bottom:8px" data-i18n="participants">Người tham gia</div>
+            <h3 class="studio-section-heading" data-i18n="participants">Người tham gia</h3>
             <div id="mdParticipants"></div>
           </div>
           </div>
@@ -239,7 +237,7 @@
             <div class="view-sub" style="margin-bottom:8px" data-i18n="tabGenerate">Tạo nội dung</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
               <button class="btn btn-ghost" style="font-size:12px;" onclick="requestGenerationHandler('slides')" data-i18n="detailPowerPoint">Xuất PowerPoint</button>
-              <button class="btn btn-ghost" style="font-size:12px;" onclick="requestGenerationHandler('mindmap')" data-i18n="genMindmap">🧠 Tạo Sơ đồ tư duy</button>
+              <button class="btn btn-ghost" style="font-size:12px;" onclick="requestGenerationHandler('mindmap')" data-i18n="studioMindmap">Sơ đồ tư duy</button>
               <button class="btn btn-ghost" style="font-size:12px;" onclick="requestGenerationHandler('image')" data-i18n="detailSummaryImage">Xuất ảnh tóm tắt</button>
             </div>
             <div id="mdGenerationJobs" style="font-size:12px;color:var(--text-2);"></div>
@@ -248,11 +246,10 @@
         <aside class="studio-chat" id="mdChatColumn" aria-labelledby="studioChatHeading">
           <div class="studio-chat-heading"><div><span class="studio-kicker">KIMKIM AI</span><h2 id="studioChatHeading" data-i18n="studioAsk">Hỏi KimKim</h2></div><span class="studio-context" data-i18n="studioScoped">Theo nội dung này</span></div>
 <div class="card" id="mdChatPane" style="flex:1;padding:12px;display:flex;flex-direction:column;min-height:0;">
-            <div style="font-size:11px;color:var(--text-2);margin-bottom:6px;" data-i18n="scopedChatNote">Chatbot chỉ trả lời trong phạm vi bản ghi và file đã tải lên của cuộc họp này.</div>
             <div id="mdChatEmpty" class="studio-chat-empty" data-i18n="studioChatEmpty">Hỏi KimKim để tìm ý chính, quyết định hoặc thông tin trong nội dung này.</div><div id="mdChatBody" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
             <div style="display:flex;gap:6px;margin-top:8px;">
               <input id="mdChatInput" data-i18n-ph="mdChatPh" placeholder="Hỏi về cuộc họp này..." style="flex:1;" onkeydown="if(event.key==='Enter')sendMeetingChatMsg()">
-              <button class="btn btn-primary" onclick="sendMeetingChatMsg()" data-i18n-aria="detailSendQuestion">➤</button>
+              <button class="btn btn-primary" onclick="sendMeetingChatMsg()" data-i18n-aria="detailSendQuestion" data-i18n="studioSend">Gửi</button>
             </div>
           </div>
         </aside>
@@ -271,7 +268,7 @@
           <div class="field" style="flex:1"><label data-i18n="cmTimeLbl">Giờ</label><input id="cmTime" type="time" style="width:100%"></div>
         </div>
         <div class="field"><label data-i18n="cmParticipantsLbl">Người tham gia (email, cách nhau bởi dấu phẩy)</label><input id="cmParticipants" style="width:100%" placeholder="a@x.com, b@x.com"></div>
-        <div class="field"><label>Link Google Meet (tuỳ chọn)</label><input id="cmMeetUrl" style="width:100%" placeholder="https://meet.google.com/xxx-xxxx-xxx"></div>
+        <div class="field"><label data-i18n="studioMeetLink">Link Google Meet (tuỳ chọn)</label><input id="cmMeetUrl" style="width:100%" placeholder="https://meet.google.com/xxx-xxxx-xxx"></div>
         <div class="field"><label data-i18n="cmDescLbl">Mô tả</label><textarea id="cmDescription" style="width:100%;min-height:70px;"></textarea></div>
         <div class="toggle-row" style="margin:8px 0;">
           <span data-i18n="inviteKimkimLbl">Mời Adolf KimKim vào lịch</span>
@@ -542,8 +539,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="localizations/vi-vn.js?v=studio-1"></script>
-<script src="localizations/eng-en.js?v=studio-1"></script>
+<script src="localizations/vi-vn.js?v=studio-4"></script>
+<script src="localizations/eng-en.js?v=studio-4"></script>
 <script src="services/firebaseClient.js?v=3"></script>
 <script src="services/profileMedia.js?v=1"></script>
 <script src="imageCropper.js?v=1"></script>
@@ -560,7 +557,7 @@
 <script src="hig-ui.js?v=1"></script>
 <script src="layout.js"></script>
 <script src="ui-feedback.js"></script>
-<script src="app.js?v=studio-3"></script>
+<script src="app.js?v=studio-4"></script>
 <script src="home.js?v=4"></script>
 <script src="notes-studio.js?v=3"></script>
 <script src="services/communityService.js?v=4"></script>
@@ -602,6 +599,7 @@ if(typeof signInWithEmail !== 'function' && 'serviceWorker' in navigator){
 </dialog>
 </body>
 </html>
+
 
 
 

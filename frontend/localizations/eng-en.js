@@ -246,3 +246,6 @@ Object.assign(window.I18N.en,{"filesFormat": "File type", "filesAllFormats": "Al
 
 Object.assign(window.I18N.en, {filesNoMatches:"No content matches these filters."});
 
+
+
+Object.assign(window.I18N.en,{"studioSummarize": "Ask KimKim to summarize", "detailSummaryDocument": "Ask KimKim to summarize", "detailSummaryMeeting": "Ask KimKim to summarize", "studioEdit": "Edit", "studioDelete": "Delete", "studioMindmap": "Mind map", "studioSend": "Send", "studioMeetLink": "Google Meet link (optional)", "studioResultSaved": "Summary saved", "studioChatEmpty": "What would you like to know?", "mdChatPh": "Ask KimKim…", "studioScoped": "This content", "detailNoResult": "No result yet."});

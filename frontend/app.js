@@ -1494,7 +1494,11 @@ function renderTranscript() {
 }
 
 /* ---------------- Google Meet Bot Integration ---------------- */
-let activeMeetBot = null; // { jobId, meetingId, title, pollTimer }
+let activeMeetBot = null; // Keep the old job until its result is durably saved.
+let pendingMeetBot = null, meetBotJoining = false, meetBotSwitchTimer = null;
+const meetBotText = (vi,en) => lang==='en'?en:vi;
+function clearMeetBotPending(){pendingMeetBot=null;clearTimeout(meetBotSwitchTimer);meetBotSwitchTimer=null;}
+function sameMeetBotUser(bot){return !bot.uid || bot.uid===firebase.auth().currentUser?.uid;}
 
 async function startMeetBotFromRecording() {
   const urlInput = document.getElementById('recMeetUrl');
@@ -1510,99 +1514,88 @@ async function startMeetBotFromRecording() {
 }
 
 async function startMeetBotJob(meetUrl, title, existingMeetingId) {
-  if (activeMeetBot && activeMeetBot.pollTimer) {
-    notify('Hiện đang có một Bot đang chạy. Vui lòng dừng phiên hiện tại trước.');
+  let url;
+  try{url=new URL(/^https:\/\//.test(meetUrl)?meetUrl:'https://'+meetUrl);if(url.protocol!=='https:'||url.hostname!=='meet.google.com'||!/^\/[a-z]{3}-[a-z]{4}-[a-z]{3}\/?$/.test(url.pathname))throw Error();meetUrl=url.origin+url.pathname.replace(/\/$/,'');}
+  catch{notify(meetBotText('Link Google Meet không hợp lệ.','Invalid Google Meet link.'));return;}
+  if(meetBotJoining||pendingMeetBot){notify(meetBotText('Đang chuyển phiên. Vui lòng chờ lưu xong cuộc họp cũ.','Switching meetings. Wait for the previous meeting to be saved.'));return;}
+  if(activeMeetBot&&!sameMeetBotUser(activeMeetBot)){clearInterval(activeMeetBot.pollTimer);activeMeetBot=null;clearMeetBotPending();}
+  if(activeMeetBot){
+    if(activeMeetBot.meetUrl===meetUrl&&!activeMeetBot.saveError){notify(meetBotText('KimKim đang ở cuộc họp này.','KimKim is already in this meeting.'));return;}
+    const old=activeMeetBot;pendingMeetBot={meetUrl,title,existingMeetingId};
+    meetBotSwitchTimer=setTimeout(()=>{if(activeMeetBot===old&&pendingMeetBot){clearMeetBotPending();notify(meetBotText('Phiên cũ chưa xử lý xong. Đã hủy yêu cầu chuyển; vẫn tiếp tục theo dõi phiên cũ.','Previous meeting is still processing. Switch canceled; monitoring continues.'));updateMeetBotUI({active:true,status:'processing',message:meetBotText('Đang chờ kết quả phiên cũ. Bạn có thể gửi yêu cầu chuyển lại.','Waiting for the previous result. You may request a switch again.')});}},10*60*1000);
+    updateMeetBotUI({active:true,status:'switching',message:meetBotText('Đang dừng và lưu phiên cũ trước khi vào link mới…','Stopping and saving the previous meeting before joining the new link…')});
+    if(old.result){pollMeetBotStatus(old.jobId);return;}
+    if(!old.stopRequested&&!['transcribing','summarizing','processing','recorded','done'].includes(old.status))await stopActiveMeetBot();
+    else pollMeetBotStatus(old.jobId);
     return;
   }
-
-  updateMeetBotUI({ active: true, status: 'joining', message: '🚀 Đang khởi động Bot vào Google Meet...', elapsed_sec: 0, participants: [] });
-
-  try {
-    const res = await apiFetch(`${getApiUrl()}/api/meet-bot/join`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ meet_url: meetUrl, title: title || '' })
-    });
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(errText || `HTTP ${res.status}`);
-    }
-    const data = await res.json();
-    const jobId = data.job_id;
-
-    activeMeetBot = {
-      jobId,
-      meetingId: existingMeetingId || null,
-      title: title || '',
-      meetUrl,
-      pollTimer: setInterval(() => pollMeetBotStatus(jobId), 2000)
-    };
-    pollMeetBotStatus(jobId);
-  } catch (err) {
-    console.error('Failed to start Meet Bot:', err);
-    updateMeetBotUI({ active: false, status: 'error', message: '❌ Không thể khởi động Bot: ' + err.message });
-    notify('Không thể khởi động KimKim Meeting: ' + err.message);
-  }
+  meetBotJoining=true;
+  const uid=firebase.auth().currentUser?.uid;
+  updateMeetBotUI({active:true,status:'joining',message:meetBotText('Đang mời KimKim vào Google Meet…','Inviting KimKim to Google Meet…')});
+  try{
+    const res=await apiFetch(getApiUrl()+'/api/meet-bot/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({meet_url:meetUrl,title:title||''})});
+    const data=await res.json();if(!data.job_id)throw Error(meetBotText('API chưa trả mã phiên họp.','No meeting session ID returned.'));
+    if(uid!==firebase.auth().currentUser?.uid)return;
+    const bot={jobId:data.job_id,uid,meetingId:existingMeetingId||null,title:title||'',meetUrl,pollTimer:null,polling:false,stopRequested:false,pollFailures:0};
+    activeMeetBot=bot;bot.pollTimer=setInterval(()=>pollMeetBotStatus(bot.jobId),2000);
+    // Unlock before polling; the active job now prevents a second join.
+    meetBotJoining=false;pollMeetBotStatus(bot.jobId);
+  }catch(err){if(uid===firebase.auth().currentUser?.uid){const msg=safeServiceMessage(err.message);updateMeetBotUI({active:false,status:'error',message:meetBotText('Không thể mời KimKim: ','Could not invite KimKim: ')+msg});notify(msg);}}
+  finally{meetBotJoining=false;const start=document.getElementById('recMeetStartBtn');if(start)start.disabled=!!pendingMeetBot||!!activeMeetBot?.saving;}
 }
 
 async function stopActiveMeetBot() {
-  if (!activeMeetBot || !activeMeetBot.jobId) return;
-  const stopBtn1 = document.getElementById('recMeetStopBtn');
-  const stopBtn2 = document.getElementById('mdMeetBotStopBtn');
-  if (stopBtn1) { stopBtn1.disabled = true; stopBtn1.textContent = '⏳ Đang dừng & xử lý...'; }
-  if (stopBtn2) { stopBtn2.disabled = true; stopBtn2.textContent = '⏳ Đang dừng & xử lý...'; }
-
-  try {
-    await apiFetch(`${getApiUrl()}/api/meet-bot/stop/${activeMeetBot.jobId}`, { method: 'POST' });
-  } catch (err) {
-    console.warn('Stop Meet Bot warning:', err);
+  const bot=activeMeetBot;if(!bot||bot.stopRequested||bot.saving)return false;
+  bot.stopRequested=true;
+  updateMeetBotUI({active:true,status:'stopping',message:meetBotText('Đang dừng phiên và chờ phiên âm/tóm tắt…','Stopping and waiting for transcription/summary…')});
+  try{
+    await apiFetch(getApiUrl()+'/api/meet-bot/stop/'+bot.jobId,{method:'POST'});
+    if(activeMeetBot===bot)pollMeetBotStatus(bot.jobId);
+    return true;
+  }catch(err){
+    if(activeMeetBot===bot){bot.stopRequested=false;clearMeetBotPending();const msg=meetBotText('Chưa dừng được phiên cũ; chưa mở phiên mới. Bạn có thể thử dừng lại. ','Could not stop the previous meeting; no new meeting started. Retry stopping. ')+safeServiceMessage(err.message);updateMeetBotUI({active:true,status:'recording',message:msg});notify(msg);}
+    return false;
   }
 }
 
 async function pollMeetBotStatus(jobId) {
-  if (!activeMeetBot || activeMeetBot.jobId !== jobId) return;
-  try {
-    const res = await apiFetch(`${getApiUrl()}/api/meet-bot/status/${jobId}`);
-    if (!res.ok) return;
-    const data = await res.json();
-
-    updateMeetBotUI({
-      active: data.status !== 'done' && data.status !== 'error' && data.status !== 'stopped',
-      status: data.status,
-      message: data.message,
-      elapsed_sec: data.elapsed_sec || 0,
-      participants: data.participants || []
-    });
-
-    // Live-update participants on the Meeting Detail view if open
-    if (activeMeetBot.meetingId && currentMeetingId === activeMeetBot.meetingId && data.participants?.length) {
-      if (currentMeetingObj) {
-        const merged = Array.from(new Set([...(currentMeetingObj.participants || []), ...data.participants]));
-        currentMeetingObj.participants = merged;
-        const partEl = document.getElementById('mdParticipants');
-        if (partEl) {
-          partEl.innerHTML = merged.map(p => `<span class="tag">${escapeHtml(p)}</span>`).join('');
-        }
-      }
+  const bot=activeMeetBot;if(!bot||bot.jobId!==jobId||bot.polling)return;
+  if(!sameMeetBotUser(bot)){clearInterval(bot.pollTimer);clearMeetBotPending();activeMeetBot=null;return;}
+  bot.polling=true;
+  try{
+    let data;
+    if(bot.result)data={status:'done',result:bot.result};
+    else{const res=await apiFetch(getApiUrl()+'/api/meet-bot/status/'+jobId);data=await res.json();}
+    if(activeMeetBot!==bot||!sameMeetBotUser(bot))return;
+    bot.pollFailures=0;bot.status=data.status;
+    const terminal=['done','error','stopped'].includes(data.status);
+    updateMeetBotUI({active:!terminal,status:pendingMeetBot?'switching':data.status,
+      message:pendingMeetBot?meetBotText('Đang xử lý và lưu phiên cũ; link mới đang chờ. ','Processing and saving previous meeting; new link is queued. ')+(data.message||''):data.message,
+      elapsed_sec:data.elapsed_sec||0,participants:data.participants||[]});
+    if(bot.meetingId&&currentMeetingId===bot.meetingId&&currentMeetingObj&&data.participants?.length){
+      const merged=Array.from(new Set([...(currentMeetingObj.participants||[]),...data.participants]));currentMeetingObj.participants=merged;
+      const part=document.getElementById('mdParticipants');if(part)part.innerHTML=merged.map(p=>'<span class="tag">'+escapeHtml(p)+'</span>').join('');
     }
-
-    if (data.status === 'error' || data.status === 'stopped') {
-      clearInterval(activeMeetBot.pollTimer);
-      const errMsg = data.message || 'Bot đã dừng.';
-      activeMeetBot = null;
-      notify(errMsg);
-      return;
+    if(terminal&&data.result){
+      bot.result=data.result;bot.saving=true;
+      updateMeetBotUI({active:true,status:'saving',message:meetBotText('Đang lưu kết quả phiên cũ…','Saving the previous meeting…')});
+      try{await finalizeMeetBotResult(bot,data.result);}
+      catch(err){bot.saveError=true;bot.saving=false;clearInterval(bot.pollTimer);clearMeetBotPending();const msg=meetBotText('Chưa lưu được phiên cũ nên chưa mở phiên mới. Gửi lại link để thử lưu lại. ','Previous meeting could not be saved; no new meeting started. Submit the link again to retry saving. ')+safeServiceMessage(err.message);updateMeetBotUI({active:false,status:'error',message:msg});notify(msg);return;}
+      if(activeMeetBot!==bot||!sameMeetBotUser(bot))return;
+      clearInterval(bot.pollTimer);activeMeetBot=null;
+      const next=pendingMeetBot;clearMeetBotPending();
+      if(next)await startMeetBotJob(next.meetUrl,next.title,next.existingMeetingId);
+      else updateMeetBotUI({active:false,status:'done',message:meetBotText('Đã lưu biên bản cuộc họp.','Meeting saved.')});
+    }else if(terminal){
+      clearInterval(bot.pollTimer);activeMeetBot=null;const switching=!!pendingMeetBot;clearMeetBotPending();
+      const msg=safeServiceMessage(data.message)||meetBotText('Phiên cũ kết thúc nhưng chưa có kết quả để lưu.','Previous meeting ended without a result to save.');
+      updateMeetBotUI({active:false,status:'error',message:msg});notify(msg+(switching?meetBotText(' Đã hủy chuyển phiên; chưa mở bot mới.',' Switch canceled; no new bot started.'):''));
     }
-
-    if (data.status === 'done' && data.result) {
-      const finishedBot = activeMeetBot;
-      clearInterval(finishedBot.pollTimer);
-      activeMeetBot = null;
-      await finalizeMeetBotResult(finishedBot, data.result);
+  }catch(err){
+    if(activeMeetBot===bot){bot.pollFailures++;
+      if(bot.pollFailures>=3){clearMeetBotPending();const msg=meetBotText('Mất kết nối kiểm tra phiên cũ. Chưa mở phiên mới; vẫn đang thử kết nối lại. ','Previous meeting status unavailable. No new meeting started; reconnecting. ')+safeServiceMessage(err.message);updateMeetBotUI({active:true,status:'processing',message:msg});if(bot.pollFailures===3)notify(msg);}
     }
-  } catch (err) {
-    console.warn('Poll Meet Bot status error:', err);
-  }
+  }finally{bot.polling=false;}
 }
 
 function updateMeetBotUI({ active, status, message, elapsed_sec = 0, participants = [] }) {
@@ -1615,8 +1608,8 @@ function updateMeetBotUI({ active, status, message, elapsed_sec = 0, participant
   const statusEl = document.getElementById('recMeetStatus');
   const partEl = document.getElementById('recMeetParticipants');
 
-  const canStop = active && (status === 'joining' || status === 'waiting_admission' || status === 'recording');
-  if (startBtn) startBtn.style.display = active ? 'none' : 'inline-flex';
+  const canStop = active && !pendingMeetBot && !activeMeetBot?.stopRequested && (status === 'joining' || status === 'waiting_admission' || status === 'recording');
+  if (startBtn) { startBtn.style.display='inline-flex'; startBtn.disabled=meetBotJoining||!!pendingMeetBot||!!activeMeetBot?.saving; startBtn.textContent=activeMeetBot?meetBotText('Chuyển sang cuộc họp mới','Switch to another meeting'):meetBotText('Mời KimKim vào Google Meet','Invite KimKim to Google Meet'); }
   if (stopBtn) {
     stopBtn.style.display = active ? 'inline-flex' : 'none';
     stopBtn.disabled = !canStop;
@@ -1695,10 +1688,10 @@ async function finalizeMeetBotResult(botInfo, result) {
       meetingId = await MeetingService.createMeeting(meetingPayload);
     }
   } catch (err) {
-    console.warn('Firestore save warning for Meet Bot:', err);
-    if (!meetingId) meetingId = 'm_' + Date.now();
+    throw err; // Never switch to another bot before the previous meeting is saved.
   }
 
+  botInfo.meetingId = meetingId;
   meetingPayload.id = meetingId;
   const idx = meetings.findIndex(m => m.id === meetingId);
   if (idx >= 0) meetings[idx] = { ...meetings[idx], ...meetingPayload };

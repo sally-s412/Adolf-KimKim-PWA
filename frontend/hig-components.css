@@ -21,11 +21,7 @@ html .sidebar .nav-item.active .ic{color:var(--accent)!important}
 html .sidebar .nav-item:hover{background:var(--button-gray)!important}
 
 
-/* Approved Rose Dusk shared control treatments. */
-.btn-primary,.akk-button[data-variant="filled"]{background:var(--gradient-primary)!important;color:var(--color-on-primary)!important;box-shadow:var(--primary-shadow)}
-.card{border-color:var(--card-border)}
-
-html [data-variant=filled],html .btn-primary{box-shadow:var(--primary-shadow)}
-
+/* Elevation follows control intent, not whichever legacy class happens to match. */
+html :is(button,a).btn:is(.btn-primary,[data-variant=filled]){box-shadow:var(--primary-shadow)}
+html [data-variant=gray],html [data-variant=tinted],html [data-variant=plain],html [data-variant=destructive],html .btn-ghost{box-shadow:none}
 html #authScreen .btn-primary{background:var(--gradient-primary)!important;color:var(--color-on-primary)!important}
-html [data-variant=filled],html .btn-primary{box-shadow:var(--primary-shadow)!important}

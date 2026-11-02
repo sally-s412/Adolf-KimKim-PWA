@@ -121,7 +121,7 @@ html:not([data-theme="light"]) #view-calendar .calendar-column-date small,
 html:not([data-theme="light"]) #view-calendar .calendar-time-axis>span,
 html:not([data-theme="light"]) #view-calendar .calendar-all-label,
 html:not([data-theme="light"]) #view-calendar .calendar-timeline-corner{color:var(--text-0)}
-html:not([data-theme="light"]) #view-calendar .calendar-column-date.is-selected{background:rgba(118,155,255,.18)}
+html:not([data-theme="light"]) #view-calendar .calendar-column-date.is-selected{background:var(--accent-soft)}
 html:not([data-theme="light"]) #view-calendar .calendar-agenda-event{border-color:var(--calendar-dark-grid)}
 html:not([data-theme="light"]) #view-calendar .calendar-now-line,
 html:not([data-theme="light"]) #view-calendar .calendar-now-line:before{background:var(--calendar-dark-event-edge)}
@@ -132,3 +132,12 @@ html .home-intro{background:var(--gradient-hero);color:var(--ht);box-shadow:var(
 html .home-hero-actions .btn{background:var(--gradient-primary)!important;color:var(--color-on-primary)!important}
 html .home-hero-actions .btn-ghost{background:var(--hero-secondary-bg)!important;color:var(--hero-secondary-ink)!important;border-color:transparent!important;box-shadow:none}
 .login-studio{background:var(--gradient-hero);color:var(--ht);--text-0:var(--ht);--text-1:var(--ht);box-shadow:var(--hero-shadow)}
+
+/* Persistent surfaces do not emit light. Hero and primary CTA have deliberate elevation. */
+html #view-home .home-action{border-color:var(--card-border);box-shadow:var(--shadow-card);backdrop-filter:none}
+html #view-home .home-action .btn{background:var(--button-gray)!important;color:var(--text-0)!important;box-shadow:none;border-color:var(--border)}
+html #view-home .home-recent-item{background:var(--surface);border-color:var(--card-border);box-shadow:var(--shadow-card)}
+html .card,html[data-theme=light] .card{border-color:var(--card-border);box-shadow:var(--shadow-card)}
+html .home-intro::after{display:none}
+html .calendar-controls .btn-primary,html .calendar-agenda-heading>.btn-primary{background:var(--gradient-primary)!important;color:var(--color-on-primary)!important}
+.calendar-column-date.is-today strong{background:var(--color-primary);color:var(--color-on-primary)}

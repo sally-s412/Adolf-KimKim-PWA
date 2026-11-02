@@ -1,7 +1,7 @@
 /* BrandKit Color / Gradients 3 (201:6395):var(--compat-color-89) -> var(--compat-color-126) -> var(--compat-color-127).
    Web surfaces use blue slate for readable content; pink stays at gradient edges. */
-:root{--bg-0:var(--compat-color-128);--bg-1:var(--compat-color-129);--surface:var(--compat-color-130);--panel:var(--compat-color-131);--chrome:var(--compat-color-132);--field:var(--compat-color-133);--border:var(--compat-color-134);--text-0:var(--compat-color-135);--text-1:var(--compat-color-136);--text-2:var(--compat-color-137);--accent:var(--compat-color-138);--accent-soft:var(--compat-color-139);--muted-surface:var(--compat-color-140);--brand:var(--compat-color-141);--blue:var(--accent);--canvas:radial-gradient(ellipse at 85% 5%,var(--compat-color-142),transparent 58%),radial-gradient(ellipse at 100% 55%,var(--compat-color-143),transparent 50%),linear-gradient(125deg,var(--compat-color-144),var(--compat-color-145) 62%,var(--compat-color-146));--social-primary:var(--accent);--card:var(--surface);color-scheme:dark}
-:root[data-theme=light]{--bg-0:var(--compat-color-147);--bg-1:var(--compat-color-148);--surface:var(--compat-color-149);--panel:var(--compat-color-150);--chrome:var(--compat-color-151);--field:var(--compat-color-152);--border:var(--compat-color-153);--text-0:var(--compat-color-154);--text-1:var(--compat-color-155);--text-2:var(--compat-color-156);--accent:var(--compat-color-157);--accent-soft:var(--compat-color-158);--muted-surface:var(--compat-color-159);--brand:var(--compat-color-160);--canvas:radial-gradient(ellipse at 85% 5%,var(--compat-color-161),transparent 60%),radial-gradient(ellipse at 100% 65%,var(--compat-color-162),transparent 45%),linear-gradient(125deg,var(--compat-color-163),var(--compat-color-164) 60%,var(--compat-color-165));color-scheme:light}
+
+
 html .btn-primary,html[data-theme=light] .btn-primary{background:var(--accent);color:var(--compat-color-27);border-color:transparent}html .btn-ghost{background:var(--field);color:var(--text-1);border-color:var(--border)}html .filters button.active,html .trans-tabs button.active{background:var(--accent-soft);border-color:var(--accent);color:var(--text-0)}
 /* Option 2: identity in the rail; a quiet header for search, bell and account. */
 html #app.active{grid-template-columns:236px minmax(0,1fr);grid-template-rows:72px minmax(0,1fr)}
@@ -31,3 +31,4 @@ html .notes-workspace .editor-toolbar{flex-direction:row!important;flex-wrap:now
 
 .shell-account-popover .shell-account-logout{display:block;width:100%;margin:0;background:transparent;border:0;border-top:1px solid var(--border);border-radius:0;text-align:left;padding:12px 3px!important;font-size:12px!important;color:var(--text-1)}
 @media(min-width:761px) and (max-width:1100px){html .sidebar>.nav-item>span:not(.ic){display:initial}html .side-user>div:not(.avatar){display:block}.side-user .name{max-width:128px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+

@@ -1,58 +1,45 @@
-/* Light mode: ice-blue ambient canvas and translucent blue glass. */
-:root[data-theme="light"]{
-  --bg-0:var(--compat-color-324);--bg-1:var(--compat-color-325);--navy-glow:var(--compat-color-326);
-  --accent:var(--compat-color-327);--accent-soft:var(--compat-color-328);
-  --border:var(--compat-color-329);
-  --text-0:var(--compat-color-330);--text-1:var(--compat-color-331);--text-2:var(--compat-color-332);
-  --surface:var(--compat-color-333);--chrome:var(--compat-color-334);
-  --card:var(--surface);--field:var(--compat-color-335);--brand:var(--compat-color-336);
-  --green:var(--compat-color-337);--amber:var(--compat-color-338);--red:var(--compat-color-339);
-  --canvas:
-    radial-gradient(ellipse 80% 75% at 92% 12%,var(--compat-color-340),transparent 70%),
-    radial-gradient(ellipse 70% 65% at 12% 85%,var(--compat-color-341),transparent 72%),
-    radial-gradient(ellipse 60% 55% at 48% 48%,var(--compat-color-342),transparent 75%),
-    linear-gradient(145deg,var(--compat-color-325) 0%,var(--compat-color-343) 48%,var(--compat-color-344) 100%);
-}
-html[data-theme="light"]{background:var(--compat-color-324);}
+/* Light variants use the shared Rose Dusk semantic tokens. */
+
+html[data-theme="light"]{background:var(--bg-0);}
 html[data-theme="light"] body,
 html[data-theme="light"] body:has(#authScreen:not([style*="display: none"])){
   background:var(--canvas);background-attachment:fixed;
 }
 [data-theme="light"] :is(.card,.table-wrap,.dropzone){
-  background:linear-gradient(135deg,var(--compat-color-345),var(--compat-color-346));
+  background:var(--surface);
   border-color:var(--border);
-  box-shadow:inset 0 1px 0 var(--compat-color-347),0 8px 28px var(--compat-color-348);
+  box-shadow:var(--shadow-card);
   -webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);
 }
 [data-theme="light"] .hero-card{
-  background:linear-gradient(115deg,var(--compat-color-349),var(--compat-color-350));
+  background:var(--gradient-hero);
 }
 [data-theme="light"] :is(.app-header,.sidebar){
   background:var(--chrome);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);
 }
-[data-theme="light"] .app-header{box-shadow:0 1px 12px var(--compat-color-351);}
+[data-theme="light"] .app-header{box-shadow:none;}
 [data-theme="light"] #chatPanel{
-  background:var(--compat-color-352);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);
-  box-shadow:inset 0 1px 0 var(--compat-color-347),0 16px 48px var(--compat-color-353);
+  background:var(--panel);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);
+  box-shadow:var(--shadow-float);
 }
-[data-theme="light"] .bubble.agent{background:var(--compat-color-354);}
+[data-theme="light"] .bubble.agent{background:var(--field);}
 [data-theme="light"] .bubble.user{color:var(--compat-color-27);}
 [data-theme="light"] .btn-danger{color:var(--red);background:var(--compat-color-355);border-color:var(--compat-color-356);}
 [data-theme="light"] :is(.field-error,.auth-error){color:var(--red);}
 [data-theme="light"] .confirm-dialog::backdrop{background:var(--compat-color-357);}
 [data-theme="light"] #authScreen .auth-card{
-  background:linear-gradient(135deg,var(--compat-color-358),var(--compat-color-359));
+  background:var(--surface);
   border-color:var(--border);
-  box-shadow:inset 0 1px 0 var(--compat-color-360),0 20px 64px var(--compat-color-361);
+  box-shadow:var(--shadow-card);
 }
 [data-theme="light"] #authScreen .auth-logo span{color:var(--brand);}
 [data-theme="light"] #authScreen .auth-card h1{color:var(--text-0);}
 [data-theme="light"] #authScreen .auth-card :is(p.sub,label,.auth-tabs){color:var(--text-1);}
 [data-theme="light"] #authScreen .auth-card input{
-  background:var(--compat-color-362);border-color:var(--border);color:var(--text-0);
+  background:var(--field);border-color:var(--border);color:var(--text-0);
 }
 [data-theme="light"] #authScreen .auth-card input::placeholder{color:var(--text-2);}
 [data-theme="light"] #authScreen .auth-google{
-  background:var(--compat-color-363);border-color:var(--border);color:var(--text-0);
+  background:var(--field);border-color:var(--border);color:var(--text-0);
 }
-[data-theme="light"] #authScreen .auth-tabs a{color:var(--compat-color-364);}
+[data-theme="light"] #authScreen .auth-tabs a{color:var(--accent);}

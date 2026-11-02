@@ -47,7 +47,7 @@
   --hero-shadow:none;--primary-shadow:none;--card-border:var(--bd);
   --color-danger:#B72D4E;--color-success:#28735D;--color-warning:#8E6829;--shadow-float:0 18px 60px rgba(87,31,66,.13);
 }
-:root{
+:root,:root[data-theme="dark"],:root[data-theme="light"]{
  --color-white:#fff;--color-clear:transparent;
  --bg-0:var(--bg);
  --bg-1:var(--sb);
@@ -86,6 +86,7 @@
  --calendar-dark-surface:var(--card);
  --calendar-dark-heading:var(--inp);
  --button-tinted:color-mix(in srgb,var(--sec) 22%,transparent);
+ --shadow-card:none;
  --radius-control:12px;--radius-card:22px;--radius-sheet:26px;
  --gradient-hero:linear-gradient(115deg,var(--c1) 0%,var(--c2) 62%,var(--c3) 135%);
  --gradient-primary:linear-gradient(135deg,var(--b1),var(--b2));

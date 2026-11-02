@@ -885,7 +885,7 @@ async function handleFileSelected(fileOrInput){
     row.textContent = '✅ ' + file.name + ' — Đã xử lý và tạo cuộc họp thành công';
   }catch(err){
     console.error("Upload error:", err);
-    row.textContent = '❌ ' + file.name + ': ' + err.message;
+    row.textContent = '❌ ' + file.name + ': ' + safeServiceMessage(err.message);
   }
 }
 
@@ -955,7 +955,7 @@ async function transcribeAudioBlob(blob, onProgress) {
 
   const result = await resp.json();
   if (result.status === "error") {
-    throw new Error(result.message || "Lỗi phiên âm");
+    throw new Error(safeServiceMessage(result.message, lang==='vi'?'Dịch vụ phiên âm chưa xử lý được tệp. Vui lòng thử lại sau.':'Audio transcription failed. Please try again later.'));
   }
 
   const rawSegments = result.segments || [];
@@ -1056,9 +1056,9 @@ function renderAll(){
   const upEl=document.getElementById('uploadList');
   if(upEl) upEl.innerHTML = uploadsArr.map(u=>`
     <div class="upload-row"><div style="font-size:18px;">${u.status==='error'?'⚠️':'🎬'}</div>
-      <div style="flex:1;"><div style="font-size:13px;">${u.name}</div>
+      <div style="flex:1;"><div style="font-size:13px;">${escapeHtml(u.name)}</div>
         <div class="prog"><i style="width:${u.progressPct||0}%;${u.status==='error'?'background:var(--red)':''}"></i></div>
-        ${u.status==='error' ? `<div style="font-size:11px;color:var(--red);">${u.errorMessage||I18N[lang].uploadFailed}</div>` : ''}</div>
+        ${u.status==='error' ? `<div style="font-size:11px;color:var(--red);">${escapeHtml(safeServiceMessage(u.errorMessage, I18N[lang].uploadFailed))}</div>` : ''}</div>
       <div style="font-size:12px;color:var(--text-2)">${u.status==='done'?I18N[lang].uploadDone:(u.status==='error'?I18N[lang].uploadFailed:(u.progressPct||0)+'%')}</div></div>`).join('')
     || `<div style="color:var(--text-2);font-size:13px;padding:8px;">${I18N[lang].noUploads}</div>`;
   renderTranscriptAndStats();
@@ -1267,9 +1267,15 @@ function getApiUrl() {
   return (storedEndpoint('api_url') || getDefaultApiUrl()).replace(/\/$/, '');
 }
 // Firebase credentials are sent only to the configured backend, never persisted.
+function safeServiceMessage(value, fallback) {
+  const text=typeof value==='string'?value:'';
+  if (/<!doctype|<html|<head|<body|<script|Gipformer STT error|Traceback|trycloudflare/i.test(text) || text.length>600)
+    return fallback || (lang==='vi'?'Dịch vụ AI đang gián đoạn. Vui lòng thử lại sau.':'The AI service is temporarily unavailable. Please try again later.');
+  return text || fallback || '';
+}
 function apiErrorMessage(status, detail, path) {
   if (['/api/transcribe', '/transcribe'].includes(path.replace(/\/$/, ''))) {
-    if ([502, 503].includes(status)) {
+    if ([500, 502, 503].includes(status)) {
       return lang === 'vi'
         ? 'Chưa kết nối được dịch vụ chuyển giọng nói thành văn bản. Vui lòng thử lại khi server AI hoạt động trở lại.'
         : 'The speech-to-text service is unavailable. Please try again when the AI service is back online.';
@@ -1280,8 +1286,8 @@ function apiErrorMessage(status, detail, path) {
         : 'Audio processing timed out. Please try again later.';
     }
   }
-  if (typeof detail === 'string' && detail) return detail;
-  if (detail && typeof detail.message === 'string') return detail.message;
+  if (typeof detail === 'string' && detail) return safeServiceMessage(detail);
+  if (detail && typeof detail.message === 'string') return safeServiceMessage(detail.message);
   return lang === 'vi' ? `Yêu cầu không thành công (mã ${status}).` : `Request failed (${status}).`;
 }
 
@@ -1600,6 +1606,8 @@ async function pollMeetBotStatus(jobId) {
 }
 
 function updateMeetBotUI({ active, status, message, elapsed_sec = 0, participants = [] }) {
+  message = safeServiceMessage(message);
+  participants = participants.filter(p => typeof p==='string' && !['Backgrounds and effects','Hình nền và hiệu ứng'].includes(p.trim()));
   // 1. Recording view card
   const startBtn = document.getElementById('recMeetStartBtn');
   const stopBtn = document.getElementById('recMeetStopBtn');

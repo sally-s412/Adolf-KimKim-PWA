@@ -5,6 +5,8 @@ import os
 import httpx
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
+from routes.speech_errors import speech_error_message
+
 logger = logging.getLogger("routes.transcription")
 
 router = APIRouter(tags=["transcription"])
@@ -25,14 +27,27 @@ async def transcribe_audio_endpoint(file: UploadFile = File(...)):
             files = {"file": (filename, content, content_type)}
             resp = await client.post(SPEECH_SERVICE_URL, files=files)
             if resp.status_code != 200:
-                raise HTTPException(status_code=resp.status_code, detail=resp.text)
-            return resp.json()
+                logger.warning('Speech upstream returned HTTP %s', resp.status_code)
+                raise HTTPException(status_code=resp.status_code, detail=speech_error_message(resp.status_code))
+            try:
+                result = resp.json()
+            except ValueError:
+                raise HTTPException(502, speech_error_message(502))
+            if not isinstance(result, dict):
+                raise HTTPException(502, speech_error_message(502))
+            if result.get('status') == 'error':
+                raise HTTPException(502, speech_error_message(502))
+            return result
+    except HTTPException:
+        raise
+    except httpx.TimeoutException:
+        raise HTTPException(504, speech_error_message(504))
     except httpx.ConnectError:
-        logger.error(f"Gipformer speech container unreachable at {SPEECH_SERVICE_URL}")
+        logger.error('Speech upstream connection failed')
         raise HTTPException(
             status_code=503,
-            detail="Speech service is unavailable. Please ensure the Gipformer container is running on port 2609."
+            detail=speech_error_message(503)
         )
     except Exception as e:
-        logger.error(f"Transcription proxy error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Transcription proxy failed (%s)", type(e).__name__)
+        raise HTTPException(status_code=500, detail=speech_error_message(500))

@@ -141,3 +141,5 @@ html .card,html[data-theme=light] .card{border-color:var(--card-border);box-shad
 html .home-intro::after{display:none}
 html .calendar-controls .btn-primary,html .calendar-agenda-heading>.btn-primary{background:var(--gradient-primary)!important;color:var(--color-on-primary)!important}
 .calendar-column-date.is-today strong{background:var(--color-primary);color:var(--color-on-primary)}
+
+html .calendar-day.today .calendar-day-label{background:var(--color-primary);color:var(--color-on-primary)}

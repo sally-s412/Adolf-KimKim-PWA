@@ -16,9 +16,9 @@ test('Google requests use same-account ephemeral OAuth token and paginate withou
  assert.equal(popup,1);assert.equal(scope,'https://www.googleapis.com/auth/calendar.events');
  assert.equal(requests[0].options.headers.Authorization,'Bearer test-only-token');
  assert(requests[0].url.includes('singleEvents=true'));assert.equal(calls.length,0);
- assert(w.document.querySelector('[title="Google Calendar · Google event"]'));
+ assert(w.document.querySelector('[title^="Google event ·"]'));
  assert(!w.localStorage.getItem('test-only-token'));w.KimKimCalendar.disconnectGoogle();
- assert(!w.document.querySelector('[title="Google Calendar · Google event"]'));dom.window.close();
+ assert(!w.document.querySelector('[title^="Google event ·"]'));dom.window.close();
 });
 test('Google 403 is displayed as configuration error, and expired session can reconnect',async()=>{
  const {w,dom}=setup();w.firebase.auth=()=>({currentUser:{uid:'alice',providerData:[{providerId:'google.com'}],reauthenticateWithPopup:async()=>({credential:{accessToken:'test'}})}});
@@ -36,3 +36,6 @@ test('Google create writes event to Google and never duplicates into Firestore',
  const request=requests.find(r=>r.options.method==='POST');assert(request);assert.equal(JSON.parse(request.options.body).summary,'Google sync');assert(request.url.includes('conferenceDataVersion=1'));assert.equal(calls.length,0);w.KimKimCalendar.disconnectGoogle();dom.window.close();
 });
 
+
+test('minute-based calendar layout separates overlaps and excludes all-day events',()=>{const {w,dom}=setup();const date=new Date('2026-11-02T00:00:00'),e=(id,start,end,allDay=false)=>({id,start:new Date('2026-11-02T'+start),end:new Date('2026-11-02T'+end),allDay});const rows=w.KimKimCalendar.dayLayout([e('a','09:30:00','10:30:00'),e('b','10:00:00','11:00:00'),e('c','12:15:00','12:45:00'),e('day','00:00:00','23:59:00',true)],date);assert.equal(rows.length,3);assert.equal(rows[0].start,570);assert.equal(rows[0].end-rows[0].start,60);assert.equal(rows[0].lanes,2);assert.notEqual(rows[0].lane,rows[1].lane);assert.equal(rows[2].lanes,1);dom.window.close();});
+test('week renders sticky day headings and 24 hourly slots per day',()=>{const {w,dom}=setup();w.showView('calendar');w.document.querySelector('[data-calendar-mode=week]').click();assert.equal(w.document.querySelectorAll('.calendar-column-date').length,7);assert.equal(w.document.querySelectorAll('.calendar-time-slot').length,168);assert(w.document.querySelector('.calendar-all-day'));assert.equal(w.document.querySelector('.calendar-timeline').scrollTop,512);dom.window.close();});

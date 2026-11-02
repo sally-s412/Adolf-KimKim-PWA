@@ -18,6 +18,8 @@ function files(dir) {
 }
 const all = files(source).filter(path => !path.endsWith('/sw.js'));
 const digest = createHash('sha256');
+// Include cache policy changes in the shell revision, not only frontend files.
+digest.update('akk-shell-v2-refresh-assets');
 for (const path of all.sort()) digest.update(relative(source, path)).update(readFileSync(path));
 const version = digest.digest('hex').slice(0, 12);
 const precache = all.map(path => relative(source, path).replaceAll('\\', '/')).filter(path =>
@@ -31,7 +33,7 @@ const ASSETS = ${JSON.stringify(precache)};
 const BASE = new URL('./', self.location.href);
 const allowed = new Set(ASSETS.map(path => new URL(path, BASE).pathname));
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS.map(path => new URL(path, BASE).href))));
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS.map(path => new Request(new URL(path, BASE).href, {cache: 'reload'})))));
 });
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
@@ -70,3 +72,4 @@ rmSync('dist', {recursive: true, force: true});
 mkdirSync('dist');
 cpSync(source, 'dist', {recursive: true});
 console.log(`Built ${all.length + 1} files; PWA shell ${version}; ${precache.length} offline assets.`);
+

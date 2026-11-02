@@ -1,0 +1,14 @@
+# Long transcript processing
+- Keep the existing Groq URL, model, API key, summary prompt and Q&A prompt.
+- Split formatted transcript on UTF-8 character boundaries into bounded sections. Summarize all sections, then recursively summarize their summaries. No first-N truncation of the source transcript.
+- On provider 413, reduce section size and retry with bounded recursion. A non-compressing response returns all generated sections instead of looping.
+- For long-input overview/decision/action queries, use the whole-meeting hierarchical summary. For specific questions, retrieve matching text sections using accent-normalized lexical scoring. Retrieval is heuristic, not embedding-based semantic search; questions with no lexical match fall back to the whole-meeting summary.
+- Local single-worker sliding token window conservatively estimates usage, updates reservations from provider usage, serializes calls, and retries 429 with a bounded delay. The existing global chatbot uses the same external organization but is not managed by this limiter; provider limits can still be reached and are reported honestly.
+- Estimates are not the model's exact tokenizer. Provider 413 handling remains a safety net. No quota/plan/billing upgrade.
+- Add owner-authenticated background /api/analysis-jobs POST and GET/{id}. Existing synchronous /api/summarize and /api/chat remain for compatibility; Meet processing uses the same improved functions.
+- At most two active analysis jobs per user, 20 globally, and 100 retained job records. Completed jobs expire after one hour. Running jobs/results are in memory and do not survive a backend restart; the stored Firestore transcript remains, allowing retry. This is not a durable queue.
+- Frontend polls progress, shows quota waits, blocks duplicate same-meeting submissions and scopes result persistence to the originating meeting. Summary database errors are no longer presented as success.
+- Long analysis may take minutes due to the existing free-tier quota. Input guard is 500,000 text characters per analysis; questions max 2,000 characters.
+- Summary panels show no-result state rather than claiming background processing when there is no job.
+- Fix unquoted self-closing SVG circle attributes in Notes.
+- Validation: 14 Python tests + 5 frontend tests with mocked model/Firestore/auth responses. No actual user audio or production key is used by tests.

@@ -492,6 +492,28 @@ function showMeetingTab(which){
   document.getElementById('mdTranscriptPane').classList.toggle('hidden', which!=='transcript');
   document.getElementById('mdChatPane').classList.toggle('hidden', which!=='chat');
 }
+const analysisInFlight = new Set();
+async function runTranscriptAnalysis(kind, transcript, message, onProgress) {
+  const uid=firebase.auth().currentUser?.uid;
+  const response=await apiFetch(getApiUrl()+'/api/analysis-jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind,transcript,...(message?{message}:{})})});
+  const started=await response.json();
+  if(!/^[a-f0-9]{32}$/.test(started.job_id||''))throw Error('Invalid analysis job.');
+  const labels={queued:['Đang chờ lượt AI…','Waiting for AI…'],preparing:['Đang chuẩn bị nội dung…','Preparing content…'],summarizing:['Đang tóm tắt từng phần','Summarizing sections'],merging:['Đang tổng hợp kết quả…','Combining summaries…'],selecting_context:['Đang tìm nội dung liên quan…','Finding relevant content…'],answering:['KimKim đang trả lời…','KimKim is answering…'],rate_wait:['Đang chờ hạn mức AI để tiếp tục…','Waiting for AI quota to continue…']};
+  const deadline=Date.now()+30*60*1000;
+  while(Date.now()<deadline){
+    if(firebase.auth().currentUser?.uid!==uid)throw Error(lang==='vi'?'Tài khoản đã thay đổi.':'Account changed.');
+    const res=await apiFetch(getApiUrl()+'/api/analysis-jobs/'+started.job_id);
+    const job=await res.json();
+    if(firebase.auth().currentUser?.uid!==uid)throw Error(lang==='vi'?'Tài khoản đã thay đổi.':'Account changed.');
+    if(job.status==='done')return job.result;
+    if(job.status==='error')throw Error(job.message||(lang==='vi'?'Không xử lý được nội dung.':'Analysis failed.'));
+    const p=job.progress||{},label=labels[p.phase]||labels.queued;
+    onProgress?.(label[lang==='en'?1:0]+(p.total?' ('+p.done+'/'+p.total+')':''));
+    await new Promise(resolve=>setTimeout(resolve,2000));
+  }
+  throw Error(lang==='vi'?'Nội dung cần thêm thời gian xử lý. Vui lòng thử lại; transcript vẫn được lưu.':'Analysis needs more time. Please retry; your transcript remains saved.');
+}
+
 async function sendMeetingChatMsg(){
   const input = document.getElementById('mdChatInput');
   const text = input ? input.value.trim() : '';
@@ -499,6 +521,9 @@ async function sendMeetingChatMsg(){
   const body = document.getElementById('mdChatBody');
   if (!body) return;
 
+  const sourceId=currentMeetingId, sourceObj=currentMeetingObj || meetings.find(m=>m.id===sourceId) || {id:sourceId};
+  const lock='chat:'+sourceId;if(analysisInFlight.has(lock)){notify(lang==='vi'?'KimKim đang xử lý câu hỏi trước.':'KimKim is processing the previous question.');return;}analysisInFlight.add(lock);
+  const transcript=segments.map(s=>({...s}));
   // Render user bubble immediately
   body.insertAdjacentHTML('beforeend', `<div class="bubble user">${escapeHtml(text)}</div>`);
   input.value = '';
@@ -508,27 +533,18 @@ async function sendMeetingChatMsg(){
   body.insertAdjacentHTML('beforeend', `<div class="bubble agent" id="${thinkingId}" style="opacity:0.7;font-style:italic;">⏳ Adolf KimKim đang suy nghĩ...</div>`);
   body.scrollTop = body.scrollHeight;
 
-  // Initialize chatHistory array on currentMeetingObj
-  if (!currentMeetingObj) {
-    currentMeetingObj = meetings.find(m => m.id === currentMeetingId) || { id: currentMeetingId };
+  if (!Array.isArray(sourceObj.chatHistory)) {
+    sourceObj.chatHistory = [];
   }
-  if (!Array.isArray(currentMeetingObj.chatHistory)) {
-    currentMeetingObj.chatHistory = [];
-  }
-  currentMeetingObj.chatHistory.push({ role: 'user', text });
+  sourceObj.chatHistory.push({ role: 'user', text });
 
   // Persist user message to Firestore subcollection in background
   if (AiService.addMeetingChatMessage) {
-    AiService.addMeetingChatMessage(currentMeetingId, 'user', text).catch(e => console.warn("addMeetingChatMessage user error:", e));
+    AiService.addMeetingChatMessage(sourceId, 'user', text).catch(e => console.warn("addMeetingChatMessage user error:", e));
   }
 
   try {
-    const res = await apiFetch(`${getApiUrl()}/api/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, transcript: segments })
-    });
-    const data = await res.json();
+    const data = await runTranscriptAnalysis('chat',transcript,text,msg=>{const thinking=document.getElementById(thinkingId);if(thinking)thinking.textContent=msg;});
     const reply = data.status === 'ok' ? data.reply : (data.message || 'Xin lỗi, không có phản hồi.');
 
     // Remove thinking indicator
@@ -540,24 +556,24 @@ async function sendMeetingChatMsg(){
     body.scrollTop = body.scrollHeight;
 
     // Update local chatHistory
-    currentMeetingObj.chatHistory.push({ role: 'agent', text: reply });
+    sourceObj.chatHistory.push({ role: 'agent', text: reply });
 
     // Persist agent message to Firestore subcollection
     if (AiService.addMeetingChatMessage) {
-      AiService.addMeetingChatMessage(currentMeetingId, 'agent', reply).catch(e => console.warn("addMeetingChatMessage agent error:", e));
+      AiService.addMeetingChatMessage(sourceId, 'agent', reply).catch(e => console.warn("addMeetingChatMessage agent error:", e));
     }
 
     // Persist full chatHistory to meeting document in Firestore
-    MeetingService.updateMeeting(currentMeetingId, {
-      chatHistory: currentMeetingObj.chatHistory
+    MeetingService.updateMeeting(sourceId, {
+      chatHistory: sourceObj.chatHistory
     }).catch(e => console.warn("MeetingService.updateMeeting chatHistory error:", e));
 
   } catch (err) {
     const thinkingEl = document.getElementById(thinkingId);
     if (thinkingEl) thinkingEl.remove();
-    body.insertAdjacentHTML('beforeend', `<div class="bubble agent" style="color:var(--red);">Lỗi kết nối tới AI backend (${err.message}).</div>`);
+    body.insertAdjacentHTML('beforeend', `<div class="bubble agent" style="color:var(--red);">${escapeHtml(safeServiceMessage(err.message))}</div>`);
     body.scrollTop = body.scrollHeight;
-  }
+  } finally {analysisInFlight.delete(lock);}
 }
 async function requestGenerationHandler(kind){
   if(!currentMeetingId) return;
@@ -658,11 +674,11 @@ function renderMeetingDetail(){
   if(kpEl){
     const kp=(m && m.keyPoints) || [];
     kpEl.innerHTML = kp.length ? kp.map(k=>`<span class="tag">${escapeHtml(k)}</span>`).join('') :
-      `<div style="color:var(--text-2);font-size:12px;">${I18N[lang].aiProcessing}</div>`;
+      `<div style="color:var(--text-2);font-size:12px;">${(lang==='vi'?'Chưa có kết quả.':'No result yet.')}</div>`;
   }
   const sumEl=document.getElementById('mdSummary');
   if(sumEl) {
-    sumEl.innerHTML = (m && m.summary) ? formatMarkdownToHtml(m.summary) : I18N[lang].aiProcessing;
+    sumEl.innerHTML = (m && m.summary) ? formatMarkdownToHtml(m.summary) : (lang==='vi'?'Chưa có kết quả.':'No result yet.');
   }
   const aiEl=document.getElementById('mdActionItems');
   if(aiEl){
@@ -671,7 +687,7 @@ function renderMeetingDetail(){
       items = extractActionItems(m.summary);
     }
     aiEl.innerHTML = items.length ? '<ul style="margin:0;padding-left:18px;">'+items.map(i=>`<li style="font-size:13px;">${escapeHtml(i)}</li>`).join('')+'</ul>' :
-      `<div style="color:var(--text-2);font-size:12px;">${I18N[lang].aiProcessing}</div>`;
+      `<div style="color:var(--text-2);font-size:12px;">${(lang==='vi'?'Chưa có kết quả.':'No result yet.')}</div>`;
   }
   const notesInput=document.getElementById('mdNotesInput');
   if(notesInput) notesInput.value = (m && m.notes) || '';
@@ -1720,101 +1736,27 @@ async function endMeetingAndSummarize() {
 }
 
 async function generateSummaryFromCurrentTranscript() {
-  if (!segments || segments.length === 0) {
-    notify("Chưa có nội dung cuộc họp nào để tóm tắt.");
-    return;
-  }
-
-  const badge = document.getElementById('summaryStatusBadge');
-  const btn = document.getElementById('btnQuickSummarize');
-  if (badge) badge.classList.remove('hidden');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang tóm tắt cuộc họp...'; }
-
-  try {
-    const apiUrl = getApiUrl();
-    const res = await apiFetch(`${apiUrl}/api/summarize`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ transcript: segments })
-    });
-    const data = await res.json();
-
-    if (data.status === 'ok') {
-      currentSummaryData = data;
-      const finalTitle = data.title || currentMeetingObj?.title || 'Cuộc họp mới';
-      const finalDur = recordingSeconds ? fmt(recordingSeconds) : (currentMeetingObj?.dur && currentMeetingObj.dur !== '00:00' ? currentMeetingObj.dur : '00:30');
-      const actionItems = extractActionItems(data.summary);
-
-      const meetingUpdates = {
-        title: finalTitle,
-        transcript: segments,
-        summary: data.summary,
-        keyPoints: data.key_points || [],
-        actionItems: actionItems,
-        status: 'done',
-        dur: finalDur
-      };
-
-      // 1. Persist to Firestore via MeetingService
-      if (currentMeetingId) {
-        try {
-          await MeetingService.updateMeeting(currentMeetingId, meetingUpdates);
-        } catch (mErr) {
-          console.error("MeetingService.updateMeeting error:", mErr);
-        }
-        if (currentMeetingObj) {
-          Object.assign(currentMeetingObj, meetingUpdates);
-        }
-      } else {
-        const now = new Date();
-        try {
-          currentMeetingId = await MeetingService.createMeeting({
-            ...meetingUpdates,
-            date: now.toISOString().slice(0, 10),
-            time: now.toTimeString().slice(0, 5),
-            participants: []
-          });
-          currentMeetingObj = { id: currentMeetingId, ...meetingUpdates };
-        } catch (cErr) {
-          console.error("MeetingService.createMeeting error:", cErr);
-        }
-      }
-
-      // Sync local meetings array cache
-      if (currentMeetingId) {
-        const existingIdx = meetings.findIndex(m => m.id === currentMeetingId);
-        if (existingIdx >= 0) {
-          meetings[existingIdx] = { ...meetings[existingIdx], ...meetingUpdates };
-        } else if (currentMeetingObj) {
-          meetings.unshift(currentMeetingObj);
-        }
-      }
-
-      // 2. Persist to NoteService
-      try {
-        const noteId = await NoteService.createNote(finalTitle);
-        if (noteId) {
-          await NoteService.updateNote(noteId, { title: finalTitle, content: data.summary });
-        }
-      } catch (noteErr) {
-        console.warn("Could not save note in NoteService:", noteErr);
-      }
-
-      // 3. Update DOM / render views
-      renderMeetingDetail();
-      renderAll();
-
-      notify(`Tóm tắt thành công: "${finalTitle}"!\nKết quả đã được cập nhật vào cuộc họp và mục Ghi chú.`);
-    } else {
-      notify("Lỗi khi tóm tắt: " + (data.message || "Unknown error"));
-    }
-  } catch (err) {
-    console.error("Summarization error:", err);
-    notify("Không thể kết nối đến AI backend (" + getApiUrl() + "). Vui lòng đảm bảo server đang chạy.");
-  } finally {
-    if (badge) badge.classList.add('hidden');
-    if (btn) { btn.disabled = false; btn.textContent = '⚡ Tóm tắt cuộc họp với AI'; }
-  }
+  if(!segments?.length){notify(lang==='vi'?'Chưa có nội dung để tóm tắt.':'No transcript to summarize.');return;}
+  const sourceId=currentMeetingId,sourceObj=currentMeetingObj,transcript=segments.map(s=>({...s})),uid=firebase.auth().currentUser?.uid;
+  const lock='summary:'+sourceId;if(analysisInFlight.has(lock))return;analysisInFlight.add(lock);
+  const badge=document.getElementById('summaryStatusBadge'),btn=document.getElementById('btnQuickSummarize');
+  badge?.classList.remove('hidden');if(btn)btn.disabled=true;
+  try{
+    const data=await runTranscriptAnalysis('summary',transcript,'',msg=>{if(btn)btn.textContent=msg;});
+    if(firebase.auth().currentUser?.uid!==uid)return;
+    const title=data.title||sourceObj?.title||'Meeting';
+    const updates={title,transcript,summary:data.summary,keyPoints:data.key_points||[],actionItems:extractActionItems(data.summary),status:'done',dur:sourceObj?.dur||'00:30'};
+    let id=sourceId;
+    if(id)await MeetingService.updateMeeting(id,updates);
+    else{id=await MeetingService.createMeeting({...updates,date:new Date().toISOString().slice(0,10),time:new Date().toTimeString().slice(0,5),participants:[]});}
+    if(!id)throw Error(lang==='vi'?'Chưa lưu được kết quả. Hãy thử lại.':'Result was not saved. Please retry.');
+    const idx=meetings.findIndex(m=>m.id===id);if(idx>=0)Object.assign(meetings[idx],updates);else meetings.unshift({id,...updates});
+    if(currentMeetingId===sourceId){currentMeetingId=id;currentMeetingObj={...(sourceObj||{}),id,...updates};currentSummaryData=data;renderMeetingDetail();}
+    let noteSaved=false;
+    try{const noteId=await NoteService.createNote(title);if(noteId){await NoteService.updateNote(noteId,{title,content:data.summary});noteSaved=true;}}catch(e){console.warn('Summary note save failed');}
+    renderAll();notify(lang==='vi'?'Đã lưu tóm tắt cuộc họp.'+(noteSaved?' Đã tạo ghi chú.':''):'Meeting summary saved.'+(noteSaved?' Note created.':''));
+  }catch(err){notify(safeServiceMessage(err.message));}
+  finally{analysisInFlight.delete(lock);badge?.classList.add('hidden');if(btn){btn.disabled=false;btn.textContent=lang==='vi'?'Tóm tắt cuộc họp với AI':'Summarize with AI';}}
 }
 
 /* ---------------- Trans Tab Switching & Q&A Chat ---------------- */

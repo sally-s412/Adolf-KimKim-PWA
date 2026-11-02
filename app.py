@@ -25,6 +25,7 @@ from routes.chat_media import router as chat_media_router
 from routes.social_media import router as social_media_router
 from routes.story_bundle import router as story_bundle_router
 from routes.post_bundle import router as post_bundle_router
+from routes.analysis_jobs import router as analysis_jobs_router
 from routes.google_calendar import router as google_calendar_router
 
 logging.basicConfig(
@@ -64,6 +65,7 @@ app.include_router(chat_media_router)
 app.include_router(social_media_router)
 app.include_router(story_bundle_router)
 app.include_router(post_bundle_router)
+app.include_router(analysis_jobs_router)
 app.include_router(google_calendar_router)
 
 

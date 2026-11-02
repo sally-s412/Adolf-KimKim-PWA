@@ -26,7 +26,10 @@ function setLang(l){
   document.getElementById('btnEn').classList.toggle('active',l==='en');
   document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n; if(I18N[l][k]) el.innerHTML=I18N[l][k];});
   document.querySelectorAll('[data-i18n-ph]').forEach(el=>{const k=el.dataset.i18nPh; if(I18N[l][k]) el.placeholder=I18N[l][k];});
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>el.title=t(el.dataset.i18nTitle));
+  document.querySelectorAll('[data-i18n-aria]').forEach(el=>el.setAttribute('aria-label',t(el.dataset.i18nAria)));
   renderAll();
+  updateMeetingDetailLocale();
   if(currentUser) updateUserUI(currentUser);
   if(typeof RecordingRefreshLang==='function') RecordingRefreshLang();
   document.dispatchEvent(new Event('akk:languagechange'));
@@ -434,7 +437,7 @@ function openMeeting(id){
   currentSummaryData=null;
   segments = (currentMeetingObj && currentMeetingObj.transcript && currentMeetingObj.transcript.length) ? [...currentMeetingObj.transcript] : [];
   const jobsEl=document.getElementById('mdGenerationJobs');
-  if (jobsEl) jobsEl.textContent = '';
+  if (jobsEl) {jobsEl.textContent = '';delete jobsEl.dataset.i18n;}
   meetingSummaryTranslated=false;
   showView('meetingDetail');
   showMeetingTab('transcript');
@@ -530,7 +533,7 @@ async function sendMeetingChatMsg(){
 
   // Temporary thinking indicator
   const thinkingId = 'thinking_' + Date.now();
-  body.insertAdjacentHTML('beforeend', `<div class="bubble agent" id="${thinkingId}" style="opacity:0.7;font-style:italic;">⏳ Adolf KimKim đang suy nghĩ...</div>`);
+  body.insertAdjacentHTML('beforeend', `<div class="bubble agent" id="${thinkingId}" style="opacity:0.7;font-style:italic;">${escapeHtml(t('detailThinking'))}</div>`);
   body.scrollTop = body.scrollHeight;
 
   if (!Array.isArray(sourceObj.chatHistory)) {
@@ -545,7 +548,7 @@ async function sendMeetingChatMsg(){
 
   try {
     const data = await runTranscriptAnalysis('chat',transcript,text,msg=>{const thinking=document.getElementById(thinkingId);if(thinking)thinking.textContent=msg;});
-    const reply = data.status === 'ok' ? data.reply : (data.message || 'Xin lỗi, không có phản hồi.');
+    const reply = data.status === 'ok' ? data.reply : (data.message || t('detailNoReply'));
 
     // Remove thinking indicator
     const thinkingEl = document.getElementById(thinkingId);
@@ -585,57 +588,50 @@ async function requestGenerationHandler(kind){
   const jobsEl=document.getElementById('mdGenerationJobs');
 
   if(kind==='mindmap'){
-    if(jobsEl) jobsEl.textContent='⏳ Đang tạo sơ đồ tư duy...';
+    if(!(segments.length?segments:m?.transcript||[]).some(s=>s.text?.trim())){notify(t('detailTranscriptNeeded'));return;}
+    if(jobsEl){jobsEl.dataset.i18n='detailMindmapWorking';jobsEl.textContent=t('detailMindmapWorking');}
     try{
       const res=await apiFetch(`${getApiUrl()}/api/mindmap/preview`,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({transcript:(segments.length?segments:(m&&m.transcript)||[])})});
       const html=await res.text();
-      const win=window.open('','_blank'); win.document.write(html); win.document.close();
-      if(jobsEl) jobsEl.textContent='✅ Sơ đồ tư duy đã mở trong tab mới.';
-    }catch(err){ if(jobsEl) jobsEl.textContent='❌ Lỗi: '+err.message; }
+      const win=window.open('','_blank'); if(!win) throw new Error(t('detailPopupBlocked')); win.document.write(html); win.document.close();
+      if(jobsEl){jobsEl.dataset.i18n='detailMindmapReady';jobsEl.textContent=t('detailMindmapReady');}
+    }catch(err){ if(jobsEl){delete jobsEl.dataset.i18n;jobsEl.textContent=t('detailError')+safeServiceMessage(err.message);} }
 
   }else if(kind==='slides'){
-    if(!summary){ notify('Vui lòng tóm tắt cuộc họp trước.'); return; }
-    if(jobsEl) jobsEl.textContent='⏳ Đang tạo PowerPoint...';
+    if(!summary){ notify(t('detailSummaryNeeded')); return; }
+    if(jobsEl){jobsEl.dataset.i18n='detailSlidesWorking';jobsEl.textContent=t('detailSlidesWorking');}
     try{
       const res=await apiFetch(`${getApiUrl()}/api/powerpoint`,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({title,key_points:keyPoints,summary})});
+      if(!res.headers.get('content-type')?.includes(kind==='slides'?'application/vnd.openxmlformats-officedocument.presentationml.presentation':'image/png')) throw new Error(t('detailInvalidExport'));
       const blob=await res.blob();
       const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:title.slice(0,40)+'.pptx'});
       a.click(); URL.revokeObjectURL(a.href);
-      if(jobsEl) jobsEl.textContent='✅ PowerPoint đã tải xuống.';
-    }catch(err){ if(jobsEl) jobsEl.textContent='❌ Lỗi: '+err.message; }
+      if(jobsEl){jobsEl.dataset.i18n='detailSlidesReady';jobsEl.textContent=t('detailSlidesReady');}
+    }catch(err){ if(jobsEl){delete jobsEl.dataset.i18n;jobsEl.textContent=t('detailError')+safeServiceMessage(err.message);} }
 
   }else if(kind==='image'){
-    if(!summary){ notify('Vui lòng tóm tắt cuộc họp trước.'); return; }
-    if(jobsEl) jobsEl.textContent='⏳ Đang tạo hình ảnh...';
+    if(!summary){ notify(t('detailSummaryNeeded')); return; }
+    if(jobsEl){jobsEl.dataset.i18n='detailImageWorking';jobsEl.textContent=t('detailImageWorking');}
     try{
       const res=await apiFetch(`${getApiUrl()}/api/visualization`,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({title,key_points:keyPoints,summary})});
+      if(!res.headers.get('content-type')?.includes(kind==='slides'?'application/vnd.openxmlformats-officedocument.presentationml.presentation':'image/png')) throw new Error(t('detailInvalidExport'));
       const blob=await res.blob();
       const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:title.slice(0,40)+'.png'});
       a.click(); URL.revokeObjectURL(a.href);
-      if(jobsEl) jobsEl.textContent='✅ Hình ảnh đã tải xuống.';
-    }catch(err){ if(jobsEl) jobsEl.textContent='❌ Lỗi: '+err.message; }
+      if(jobsEl){jobsEl.dataset.i18n='detailImageReady';jobsEl.textContent=t('detailImageReady');}
+    }catch(err){ if(jobsEl){delete jobsEl.dataset.i18n;jobsEl.textContent=t('detailError')+safeServiceMessage(err.message);} }
   }
 }
 let meetingSummaryTranslated=false;
 async function toggleMeetingSummaryTranslation(){
-  const el=document.getElementById('mdSummary');
-  const btn=document.getElementById('mdTranslateBtn');
-  const m=currentMeetingObj;
-  if(!el||!m) return;
-  if(!meetingSummaryTranslated){
-    btn.textContent=t('translating');
-    el.textContent = await TranslationService.translateText(m.summary || I18N[lang].aiProcessing, 'en');
-    btn.textContent=t('translateBtnBack');
-    meetingSummaryTranslated=true;
-  } else {
-    el.textContent = m.summary ? m.summary : I18N[lang].aiProcessing;
-    btn.textContent=t('translateBtn');
-    meetingSummaryTranslated=false;
-  }
+  // The current TranslationService is a passthrough, not a translation backend.
+  // Do not mark an untranslated summary as successfully translated.
+  notify(t('detailTranslationUnavailable'));
 }
+
 function extractActionItems(summary) {
   if (!summary) return [];
   const match = summary.match(/## Action Items\s*\n([\s\S]*?)(?:\n##|$)/i);
@@ -643,6 +639,20 @@ function extractActionItems(summary) {
   return match[1].split('\n')
     .map(l => l.replace(/^[\d+.\-*]\s*/, '').trim())
     .filter(l => l && !l.toLowerCase().includes('none explicitly stated') && !l.startsWith('#'));
+}
+
+function updateMeetingDetailLocale(){
+  const m=currentMeetingObj;
+  const contentTab=document.getElementById('mdTabTranscriptBtn');
+  if(contentTab) contentTab.textContent=t(m?.document?'detailContentTab':'detailTranscriptTab');
+  const button=document.getElementById('btnQuickSummarize');
+  if(button&&!analysisInFlight.has('summary:'+currentMeetingId)) button.textContent=t(m?.document?'detailSummaryDocument':'detailSummaryMeeting');
+  if(m){
+    if(!m.participants?.length){const n=document.getElementById('mdParticipants');if(n)n.textContent=t('noParticipants');}
+    if(!m.keyPoints?.length){const n=document.getElementById('mdKeyPoints');if(n)n.textContent=t('detailNoResult');}
+    if(!m.summary){const n=document.getElementById('mdSummary');if(n)n.textContent=t('detailNoResult');}
+    if(!(m.actionItems?.length||extractActionItems(m.summary).length)){const n=document.getElementById('mdActionItems');if(n)n.textContent=t('detailNoResult');}
+  }
 }
 
 function renderMeetingDetail(){
@@ -694,6 +704,7 @@ function renderMeetingDetail(){
   const barEl=document.getElementById('mdMeetBotBar');
   if(barEl) barEl.classList.toggle('hidden', !(activeMeetBot && (!activeMeetBot.meetingId || activeMeetBot.meetingId===currentMeetingId)));
   renderTranscriptAndStats();
+  updateMeetingDetailLocale();
 }
 function saveMeetingNotes(){
   if(!currentMeetingId) return;
@@ -1097,11 +1108,11 @@ function renderTranscriptAndStats(){
     if (livePartialText) {
       html += `
         <div class="seg partial">
-          <div class="meta"><span class="live-dot"></span><b>${escapeHtml(mapSpeakerName(livePartialSpeaker))} (đang nói...)</b></div>
+          <div class="meta"><span class="live-dot"></span><b>${escapeHtml(mapSpeakerName(livePartialSpeaker))} (${escapeHtml(t('detailSpeaking'))})</b></div>
           <p style="color:var(--text-0);font-style:italic;">${escapeHtml(livePartialText)}</p>
         </div>`;
     }
-    segEl.innerHTML = html || `<div style="color:var(--text-2);font-size:13px;">${I18N[lang].aiProcessing}</div>`;
+    segEl.innerHTML = html || `<div style="color:var(--text-2);font-size:13px;">${isMeetingRecording ? I18N[lang].aiProcessing : t('detailNoTranscript')}</div>`;
     segEl.scrollTop = segEl.scrollHeight;
   }
   const totals={}; segments.forEach(s=>totals[s.speaker]=(totals[s.speaker]||0)+1);
@@ -1110,7 +1121,7 @@ function renderTranscriptAndStats(){
   if(statEl) statEl.innerHTML = Object.entries(totals).map(([name,c])=>{
     const sp = segments.find(s=>s.speaker===name);
     return `<div class="sp-row"><span style="width:110px;max-width:40%;flex-shrink:0;overflow-wrap:anywhere">${escapeHtml(name)}</span><div class="sp-bar"><i style="width:${(c/max)*100}%;background:${sp ? sp.color : 'var(--color-primary)'}"></i></div></div>`;
-  }).join('') || (statEl ? `<div style="color:var(--text-2);font-size:12px;">${I18N[lang].aiProcessing}</div>` : '');
+  }).join('') || (statEl ? `<div style="color:var(--text-2);font-size:12px;">${t('detailNoSpeakerData')}</div>` : '');
 }
 function fmt(s){const m=Math.floor(s/60),sec=s%60;return `${m}:${sec.toString().padStart(2,'0')}`;}
 function highlightSeg(el){document.querySelectorAll('.seg').forEach(s=>s.style.background='');el.style.background='var(--accent-soft)';}
@@ -1185,7 +1196,7 @@ async function sendChat(){
 
   // 3. Thinking indicator
   const thinkingId = 'global_thinking_' + Date.now();
-  body.insertAdjacentHTML('beforeend', `<div class="bubble agent" id="${thinkingId}" style="opacity:0.7;font-style:italic;">⏳ Adolf KimKim đang suy nghĩ...</div>`);
+  body.insertAdjacentHTML('beforeend', `<div class="bubble agent" id="${thinkingId}" style="opacity:0.7;font-style:italic;">${escapeHtml(t('detailThinking'))}</div>`);
   body.scrollTop = body.scrollHeight;
 
   // 4. Persist user message to Firestore asynchronously
@@ -1199,7 +1210,7 @@ async function sendChat(){
       body: JSON.stringify({ message: text, history: historyPayload })
     });
     const data = await res.json();
-    const reply = data.status === 'ok' ? data.reply : (data.message || 'Xin lỗi, không có phản hồi.');
+    const reply = data.status === 'ok' ? data.reply : (data.message || t('detailNoReply'));
 
     // Remove thinking indicator
     const thinkingEl = document.getElementById(thinkingId);
@@ -1629,7 +1640,7 @@ function updateMeetBotUI({ active, status, message, elapsed_sec = 0, participant
   if (stopBtn) {
     stopBtn.style.display = active ? 'inline-flex' : 'none';
     stopBtn.disabled = !canStop;
-    stopBtn.textContent = canStop ? '⏹ Kết thúc & Tóm tắt AI' : '⏳ Đang phiên âm & tóm tắt...';
+    stopBtn.textContent = t(canStop ? 'detailStopSummary' : 'detailTranscribing');
   }
   if (timerEl) {
     timerEl.style.display = (active && (status === 'recording' || elapsed_sec > 0)) ? 'block' : 'none';
@@ -1653,7 +1664,7 @@ function updateMeetBotUI({ active, status, message, elapsed_sec = 0, participant
     }
     if (barStopBtn) {
       barStopBtn.disabled = !canStop;
-      barStopBtn.textContent = canStop ? '⏹ Kết thúc & Tóm tắt' : '⏳ Đang xử lý AI...';
+      barStopBtn.textContent = t(canStop ? 'detailStopSummary' : 'detailProcessing');
     }
   }
 }
@@ -1756,7 +1767,7 @@ async function generateSummaryFromCurrentTranscript() {
     try{const noteId=await NoteService.createNote(title);if(noteId){await NoteService.updateNote(noteId,{title,content:data.summary});noteSaved=true;}}catch(e){console.warn('Summary note save failed');}
     renderAll();notify(lang==='vi'?'Đã lưu tóm tắt cuộc họp.'+(noteSaved?' Đã tạo ghi chú.':''):'Meeting summary saved.'+(noteSaved?' Note created.':''));
   }catch(err){notify(safeServiceMessage(err.message));}
-  finally{analysisInFlight.delete(lock);badge?.classList.add('hidden');if(btn){btn.disabled=false;btn.textContent=lang==='vi'?'Tóm tắt cuộc họp với AI':'Summarize with AI';}}
+  finally{analysisInFlight.delete(lock);badge?.classList.add('hidden');if(btn){btn.disabled=false;updateMeetingDetailLocale();}}
 }
 
 /* ---------------- Trans Tab Switching & Q&A Chat ---------------- */

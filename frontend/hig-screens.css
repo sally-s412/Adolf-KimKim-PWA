@@ -100,3 +100,28 @@ html #view-calendar .calendar-day .calendar-event span{white-space:normal;displa
 html #view-calendar .calendar-navigation [data-calendar-mode]{min-width:52px}
 @media(max-width:1100px){html #view-calendar .calendar-workspace{grid-template-columns:minmax(0,1fr)}html #view-calendar .calendar-agenda{max-height:none}html #view-calendar .calendar-timeline{height:65dvh}}
 @media(max-width:700px){html #view-calendar .calendar-navigation>.btn-primary{position:static;margin-left:auto}html #view-calendar .calendar-toolbar>div:first-child{padding-right:0}html #view-calendar .calendar-navigation{width:100%}html #view-calendar .calendar-connection{width:auto}html #view-calendar .calendar-connection .community-help{flex-basis:100%}html #view-calendar .calendar-timeline{height:62dvh;min-height:360px}html #view-calendar .calendar-day .calendar-event{font-size:10px;padding:3px;line-height:13px;min-height:22px}html #view-calendar .calendar-agenda{padding:16px}.calendar-timeline-head,.calendar-all-day,.calendar-timeline-body{grid-template-columns:48px repeat(var(--calendar-days),minmax(0,1fr))}}
+
+/* Calendar dark theme: readable event surfaces independent of the page gradient. */
+:root{--calendar-dark-event-fill:#b8ccff;--calendar-dark-event-ink:#142442;--calendar-dark-event-edge:#769bff;--calendar-dark-grid:rgba(212,226,255,.23);--calendar-dark-surface:#24344f;--calendar-dark-heading:#2e4262}
+html:not([data-theme="light"]) #view-calendar .calendar-timeline,
+html:not([data-theme="light"]) #view-calendar .calendar-month,
+html:not([data-theme="light"]) #view-calendar .calendar-agenda{background:var(--calendar-dark-surface);border-color:var(--calendar-dark-grid)}
+html:not([data-theme="light"]) #view-calendar .calendar-timeline-sticky,
+html:not([data-theme="light"]) #view-calendar .calendar-timeline-corner,
+html:not([data-theme="light"]) #view-calendar .calendar-all-label,
+html:not([data-theme="light"]) #view-calendar .calendar-time-axis{background:var(--calendar-dark-heading)}
+html:not([data-theme="light"]) #view-calendar .calendar-time-column{background:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,rgba(212,226,255,.09) 31px,rgba(212,226,255,.09) 32px,transparent 32px,transparent 63px,var(--calendar-dark-grid) 63px,var(--calendar-dark-grid) 64px);border-color:var(--calendar-dark-grid)}
+html:not([data-theme="light"]) #view-calendar .calendar-time-column.is-today{background-color:rgba(118,155,255,.07)}
+html:not([data-theme="light"]) #view-calendar .calendar-timed-event,
+html:not([data-theme="light"]) #view-calendar .calendar-all-cell .calendar-event,
+html:not([data-theme="light"]) #view-calendar .calendar-day .calendar-event{background:var(--calendar-dark-event-fill);color:var(--calendar-dark-event-ink);border-left:3px solid var(--calendar-dark-event-edge);box-shadow:0 1px 3px rgba(0,0,0,.2)}
+html:not([data-theme="light"]) #view-calendar .calendar-timed-event small{color:var(--calendar-dark-event-ink);font-weight:500}
+html:not([data-theme="light"]) #view-calendar .calendar-timed-event span{font-weight:650}
+html:not([data-theme="light"]) #view-calendar .calendar-column-date small,
+html:not([data-theme="light"]) #view-calendar .calendar-time-axis>span,
+html:not([data-theme="light"]) #view-calendar .calendar-all-label,
+html:not([data-theme="light"]) #view-calendar .calendar-timeline-corner{color:var(--text-0)}
+html:not([data-theme="light"]) #view-calendar .calendar-column-date.is-selected{background:rgba(118,155,255,.18)}
+html:not([data-theme="light"]) #view-calendar .calendar-agenda-event{border-color:var(--calendar-dark-grid)}
+html:not([data-theme="light"]) #view-calendar .calendar-now-line,
+html:not([data-theme="light"]) #view-calendar .calendar-now-line:before{background:var(--calendar-dark-event-edge)}

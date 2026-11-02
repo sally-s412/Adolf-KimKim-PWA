@@ -503,6 +503,7 @@ function showMeetingTab(which){
     document.getElementById(name==='summary'?'mdSummaryPane':'mdTranscriptPane')?.classList.toggle('hidden',!selected);
   }
   document.getElementById('meetingDetailBody')?.classList.toggle('studio-chat-open',chat);
+  if(chat && window.matchMedia?.('(max-width:900px)')?.matches){requestAnimationFrame(()=>document.getElementById('mdChatColumn')?.scrollIntoView({block:'start',behavior:'smooth'}));}
   for(const [id,selected] of [['mdMobileContentBtn',!chat],['mdTabChatBtn',chat]]){
     const button=document.getElementById(id);button?.classList.toggle('active',selected);button?.setAttribute('aria-selected',String(selected));
   }

@@ -57,7 +57,7 @@ def consume_quota(uid):
 @app.middleware("http")
 async def beta_auth(request: Request, call_next):
     path = request.url.path
-    if request.method == "OPTIONS" or not (path.startswith("/api/") or path == "/transcribe"):
+    if (request.method == "GET" and path == "/api/google-calendar/callback") or request.method == "OPTIONS" or not (path.startswith("/api/") or path == "/transcribe"):
         return await call_next(request)
     header = request.headers.get("authorization", "")
     if not header.startswith("Bearer "):

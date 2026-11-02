@@ -7,27 +7,66 @@
  const colors=['royal','mint','rose','amber','purple','cyan'];let me=null,events=[],off=null,focus=new Date(),selected=day(new Date()),mode='month',error='',generation=0,booted=false,googleEvents=[],googleToken='',googleOwner='',googleEpoch=0,googleBusy=false,googleError='',googleTimer=null;
  const col=()=>FirebaseClient.db.collection('users').doc(me.uid).collection('calendarEvents');
 
- // OAuth access tokens stay in memory and are never saved in Firestore/localStorage.
- function disconnectGoogle(){googleEpoch++;googleToken='';googleOwner='';googleEvents=[];googleError='';googleBusy=false;clearInterval(googleTimer);googleTimer=null;render();}
- function googleMessage(err){const code=err?.code||'';if(code==='auth/user-mismatch')return t('Chọn đúng tài khoản Google đang đăng nhập KimKim.','Choose the Google account signed into KimKim.');if(code==='auth/popup-closed-by-user')return t('Bạn đã đóng cửa sổ cấp quyền.','Permission window closed.');return err.message||t('Không kết nối được Google Calendar.','Could not connect Google Calendar.');}
- async function googleRequest(path='',options={}){
-  const owner=me?.uid,epoch=googleEpoch,token=googleToken;if(!token||googleOwner!==owner)throw Error(t('Kết nối lại Google Calendar để tiếp tục.','Reconnect Google Calendar to continue.'));
-  const response=await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events'+path,{...options,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json',...(options.headers||{})}});
-  if(owner!==me?.uid||epoch!==googleEpoch)throw Error(t('Phiên kết nối đã thay đổi.','Connection session changed.'));
-  if(response.status===401){disconnectGoogle();googleError=t('Phiên Google đã hết hạn. Bấm Kết nối để cấp lại quyền.','Google session expired. Connect again to renew access.');render();throw Error(googleError);}
-  if(!response.ok){let data={};try{data=await response.json();}catch{}const reason=data.error?.errors?.[0]?.reason;if(response.status===403)throw Error(t('Google từ chối truy cập. Quản trị viên cần bật Google Calendar API và cấp scope calendar.events trong Google Cloud OAuth.','Google denied access. Enable Google Calendar API and the calendar.events scope in Google Cloud OAuth.'));throw Error(t('Google Calendar lỗi ','Google Calendar error ')+response.status+(reason?' ('+reason+')':''));}
-  return response.status===204?null:response.json();
+ // Backend owns OAuth tokens; the browser holds only connection status.
+ let googleEmail='';
+ function clearGoogle(){googleEpoch++;googleToken='';googleOwner='';googleEmail='';googleEvents=[];googleError='';googleBusy=false;clearInterval(googleTimer);googleTimer=null;render();}
+ function googleMessage(err){return err.message||t('Không kết nối được Google Calendar.','Could not connect Google Calendar.');}
+ function calendarBase(){const value=typeof getApiUrl==='function'?getApiUrl():(g.AKK_CONFIG?.apiBaseUrl||location.origin);return value.replace(/\/$/,'')+'/api/google-calendar';}
+ async function backendCalendar(path,options={}){
+  const owner=me?.uid,epoch=googleEpoch,user=firebase.auth().currentUser;
+  if(!user||user.uid!==owner)throw Error(t('Vui lòng đăng nhập lại.','Please sign in again.'));
+  const idToken=await user.getIdToken();
+  if(owner!==me?.uid||epoch!==googleEpoch)throw Error(t('Tài khoản đã thay đổi.','Account changed.'));
+  const response=await fetch(calendarBase()+path,{...options,headers:{Authorization:'Bearer '+idToken,'Content-Type':'application/json',...(options.headers||{})}});
+  if(owner!==me?.uid||epoch!==googleEpoch)throw Error(t('Tài khoản đã thay đổi.','Account changed.'));
+  let data=null;try{data=await response.json();}catch{}
+  if(!response.ok){
+   const detail=data?.detail,code=typeof detail==='string'?detail:detail?.code;
+   const messages={
+    'calendar/configuration':t('Backend Calendar chưa đủ cấu hình. Kiểm tra 5 biến GOOGLE_CALENDAR trên Render và khóa mã hóa tối thiểu 32 ký tự.','Calendar backend needs configuration. Check the five GOOGLE_CALENDAR variables and an encryption key of at least 32 characters.'),
+    'calendar/storage-unavailable':t('Chưa lưu được kết nối Calendar. Kiểm tra quyền Firestore của tài khoản.','Calendar connection storage unavailable. Check Firestore permissions.'),
+    'calendar/reconnect-required':t('Google yêu cầu cấp quyền lại. Bấm Kết nối Google Calendar.','Google requires authorization again. Connect Google Calendar.'),
+    'calendar/permission-required':t('Bạn chưa cấp quyền Calendar. Kết nối lại và cho phép truy cập lịch.','Calendar permission was not granted. Reconnect and allow Calendar access.'),
+    'calendar/event-changed':t('Sự kiện đã thay đổi trên Google. Làm mới trước khi sửa tiếp.','Event changed on Google. Refresh before editing.'),
+    'calendar/google-permission-or-api':t('Google từ chối truy cập lịch. Kiểm tra Calendar API và quyền đã cấp.','Google denied Calendar access. Check the Calendar API and granted permissions.'),
+    'calendar/invalid-state-or-key':t('Phiên kết nối hoặc khóa mã hóa không hợp lệ. Kết nối lại; nếu vẫn lỗi, kiểm tra khóa trên backend.','Invalid connection session or encryption key. Reconnect; if it persists, check the backend key.'),
+    'calendar/expired-state':t('Cửa sổ cấp quyền hết hạn. Hãy kết nối lại.','Authorization window expired. Connect again.')
+   };
+   if(code==='calendar/reconnect-required'){googleToken='';googleEvents=[];clearInterval(googleTimer);googleTimer=null;}
+   throw Error(messages[code]||t('Calendar chưa thực hiện được yêu cầu. Mã lỗi: ','Calendar request failed. Status: ')+response.status);
+  }return data;
+ }
+ async function disconnectGoogle(){if(!me)return;googleBusy=true;render();try{await backendCalendar('/connection',{method:'DELETE'});clearGoogle();}catch(err){googleError=googleMessage(err);}finally{googleBusy=false;render();}}
+ async function googleRequest(path='',options={}){return backendCalendar('/events'+path,options);}
+ function googlePolling(){clearInterval(googleTimer);googleTimer=setInterval(()=>{if(document.visibilityState==='visible'&&googleToken&&!googleBusy)syncGoogle();},60000);}
+ async function restoreGoogle(){
+  if(!me)return;const owner=me.uid,epoch=googleEpoch;googleBusy=true;render();
+  try{const data=await backendCalendar('/status');if(owner!==me?.uid||epoch!==googleEpoch)return;
+   if(data.connected){googleToken='backend';googleOwner=owner;googleEmail=data.email||'';await syncGoogle();googlePolling();}
+   else if(data.reconnect)googleError=t('Google yêu cầu kết nối lại Calendar.','Google requires reconnecting Calendar.');
+  }catch(err){if(owner===me?.uid&&epoch===googleEpoch)googleError=googleMessage(err);}finally{if(owner===me?.uid&&epoch===googleEpoch){googleBusy=false;render();}}
  }
  async function connectGoogle(){
-  if(googleBusy||!me)return;const owner=me.uid,epoch=googleEpoch;googleBusy=true;googleError='';render();
-  try{const user=firebase.auth().currentUser;if(!user||user.uid!==owner)throw Error(t('Vui lòng đăng nhập lại.','Please sign in again.'));
-   if(!user.providerData?.some(p=>p.providerId==='google.com'))throw Error(t('Tính năng này cần tài khoản KimKim đăng nhập bằng Google.','Use a Google sign-in account to connect Calendar.'));
-   const provider=new firebase.auth.GoogleAuthProvider();provider.addScope('https://www.googleapis.com/auth/calendar.events');provider.setCustomParameters({login_hint:user.email,prompt:'consent'});
-   const result=await user.reauthenticateWithPopup(provider);if(owner!==me?.uid||epoch!==googleEpoch)return;
-   if(!result.credential?.accessToken)throw Error(t('Google chưa cấp quyền Calendar.','Google did not grant Calendar access.'));
-   googleToken=result.credential.accessToken;googleOwner=owner;await syncGoogle();
-   if(!googleToken)return;clearInterval(googleTimer);googleTimer=setInterval(()=>{if(document.visibilityState==='visible'&&googleToken)syncGoogle();},60000);
-  }catch(err){if(owner===me?.uid&&epoch===googleEpoch)googleError=googleMessage(err);}finally{if(owner===me?.uid&&epoch===googleEpoch){googleBusy=false;render();}}
+  if(googleBusy||!me)return;
+  const popup=window.open('about:blank','kimkim-calendar-connect','popup,width=520,height=720');
+  if(!popup){googleError=t('Trình duyệt chặn cửa sổ. Cho phép popup rồi kết nối lại.','Popup blocked. Allow popups and connect again.');render();return;}
+  const owner=me.uid,epoch=googleEpoch;googleBusy=true;googleError='';render();
+  try{
+   const started=await backendCalendar('/start',{method:'POST'});if(owner!==me?.uid||epoch!==googleEpoch){popup.close();return;}
+   const url=new URL(started.url);if(url.origin!=='https://accounts.google.com')throw Error(t('URL kết nối không hợp lệ.','Invalid connection URL.'));
+   const expectedOrigin=new URL(calendarBase(),location.href).origin;
+   const auth=await new Promise((resolve,reject)=>{
+    let finished=false;
+    const cleanup=()=>{finished=true;clearInterval(poll);clearTimeout(timeout);window.removeEventListener('message',listener);};
+    const listener=event=>{if(event.origin!==expectedOrigin||event.source!==popup||event.data?.type!=='kimkim-calendar-oauth'||event.data.state!==started.state)return;cleanup();event.data.error?reject(Error(t('Bạn chưa cho phép kết nối Calendar.','Calendar authorization was not granted.'))):resolve(event.data);};
+    const poll=setInterval(()=>{if(finished)return;if(owner!==me?.uid||epoch!==googleEpoch||popup.closed){cleanup();reject(Error(t('Đã đóng cửa sổ kết nối.','Connection window closed.')));}},700);
+    const timeout=setTimeout(()=>{cleanup();reject(Error(t('Cửa sổ kết nối hết hạn.','Connection window expired.')));},600000);
+    window.addEventListener('message',listener);popup.location.href=started.url;
+   });
+   if(owner!==me?.uid||epoch!==googleEpoch)return;
+   const data=await backendCalendar('/exchange',{method:'POST',body:JSON.stringify({code:auth.code,state:auth.state})});
+   googleToken='backend';googleOwner=owner;googleEmail=data.email||'';await syncGoogle();googlePolling();
+  }catch(err){if(owner===me?.uid&&epoch===googleEpoch)googleError=googleMessage(err);}finally{try{popup.close();}catch{}if(owner===me?.uid&&epoch===googleEpoch){googleBusy=false;render();}}
  }
  async function syncGoogle(){
   if(!googleToken||googleOwner!==me?.uid)return;const owner=me.uid,epoch=googleEpoch,month=focus.getMonth(),year=focus.getFullYear();
@@ -106,7 +145,7 @@
  function render(){const root=document.getElementById('view-calendar');if(!root||root.classList.contains('hidden'))return;const oldTop=root.querySelector('.calendar-timeline')?.scrollTop;root.replaceChildren();if(!me){root.append(el('p','community-help',t('Vui lòng đăng nhập để dùng lịch.','Please sign in to use Calendar.')));return;}
   const toolbar=el('div','calendar-toolbar'),heading=el('div');heading.append(el('p','social-kicker','KIMKIM CALENDAR'),el('h1','view-title',focus.toLocaleDateString(en()?'en-GB':'vi-VN',{month:'long',year:'numeric'})));toolbar.append(heading);const controls=el('div','calendar-controls calendar-navigation');controls.append(button(t('Hôm nay','Today'),()=>{focus=new Date();selected=day(focus);render();if(googleToken)syncGoogle();}),button('‹',()=>move(-1)),button('›',()=>move(1)));for(const [key,vi,eng]of [['month','Tháng','Month'],['week','Tuần','Week'],['day','Ngày','Day']]){const b=button(t(vi,eng),()=>{mode=key;if(key==='day')focus=new Date(selected+'T12:00:00');render();});b.dataset.calendarMode=key;b.setAttribute('aria-pressed',String(mode===key));controls.append(b);}controls.append(button('+ '+t('Tạo','Create'),()=>editor(),'btn btn-primary'));toolbar.append(controls);root.append(toolbar);
   const connection=el('div','calendar-controls calendar-connection');connection.setAttribute('aria-label','Google Calendar');
-  connection.append(el('span','community-help',googleToken?t('Đã kết nối Google Calendar · lịch chính','Google Calendar connected · primary calendar'):t('Kết nối lịch Google của bạn','Connect your Google calendar')));
+  connection.append(el('span','community-help',googleToken?(t('Google Calendar · ','Google Calendar · ')+(googleEmail||t('Lịch chính','Primary calendar'))):t('Kết nối lịch Google của bạn','Connect your Google calendar')));
   const connect=button(googleBusy?t('Đang đồng bộ…','Syncing…'):googleToken?t('Làm mới Google','Refresh Google'):t('Kết nối Google Calendar','Connect Google Calendar'),()=>googleToken?syncGoogle():connectGoogle());connect.disabled=googleBusy;connection.append(connect);
   if(googleToken)connection.append(button(t('Ngắt kết nối','Disconnect'),disconnectGoogle));
   root.append(connection);if(googleError){const msg=el('p','field-error',googleError);msg.setAttribute('role','alert');root.append(msg);}
@@ -117,7 +156,7 @@
   agenda(workspace);
  }
  function move(n){if(mode==='month')focus=new Date(focus.getFullYear(),focus.getMonth()+n,1);else focus=new Date(focus.getFullYear(),focus.getMonth(),focus.getDate()+n*(mode==='week'?7:1));selected=day(focus);render();if(googleToken)syncGoogle();}
- function reset(user){if(me?.uid!==user?.uid)disconnectGoogle();generation++;off?.();off=null;me=user;events=[];error='';document.querySelectorAll('.calendar-editor').forEach(d=>d.close());render();if(!user||!FirebaseClient.db)return;const key=generation;off=col().orderBy('start','desc').limit(200).onSnapshot(s=>{if(key!==generation)return;events=s.docs.map(d=>({id:d.id,...d.data(),start:d.data().start?.toDate?.(),end:d.data().end?.toDate?.()})).filter(e=>e.start&&e.end);render();},()=>{if(key===generation){error=t('Chưa tải được lịch. Kiểm tra kết nối và quyền dữ liệu.','Could not load Calendar. Check connection and data permissions.');render();}});}
+ function reset(user){if(me?.uid!==user?.uid)clearGoogle();generation++;off?.();off=null;me=user;events=[];error='';document.querySelectorAll('.calendar-editor').forEach(d=>d.close());render();if(user)restoreGoogle();if(!user||!FirebaseClient.db)return;const key=generation;off=col().orderBy('start','desc').limit(200).onSnapshot(s=>{if(key!==generation)return;events=s.docs.map(d=>({id:d.id,...d.data(),start:d.data().start?.toDate?.(),end:d.data().end?.toDate?.()})).filter(e=>e.start&&e.end);render();},()=>{if(key===generation){error=t('Chưa tải được lịch. Kiểm tra kết nối và quyền dữ liệu.','Could not load Calendar. Check connection and data permissions.');render();}});}
  function boot(){if(booted)return;booted=true;const root=el('div','view hidden community-view calendar-view');root.id='view-calendar';document.getElementById('view-home').parentElement.append(root);const nav=el('a','nav-item');nav.href='#calendar';nav.onclick=e=>{e.preventDefault();showView('calendar',nav);render();};nav.dataset.view='calendar';const icon=el('span','ic');const iconImage=el('img');iconImage.src='assets/sally/calendar.svg';iconImage.width=24;iconImage.height=24;iconImage.alt='';icon.append(iconImage);nav.append(icon,el('span','calendar-nav-label',t('Lịch','Calendar')));document.querySelector('.sidebar [data-view=recording]')?.before(nav);document.addEventListener('akk:viewchange',render);document.addEventListener('akk:languagechange',()=>{nav.querySelector('.calendar-nav-label').textContent=t('Lịch','Calendar');render();});const rec=document.getElementById('recMeetUrl');if(rec){const schedule=button(t('Lên lịch cuộc họp','Schedule a meeting'),()=>{const begin=new Date();begin.setMinutes(0,0,0);begin.setHours(begin.getHours()+1);editor({id:null,title:document.getElementById('recMeetTitle')?.value||'',meetUrl:rec.value,start:begin,end:new Date(+begin+3600000)});},'btn btn-ghost calendar-meet-launcher');rec.closest('.card')?.append(schedule);}AuthService.onAuthChange(reset);}
- g.KimKimCalendar={ics,normalizeMeet,editor,meeting,connectGoogle,syncGoogle,disconnectGoogle,dayLayout};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+ g.KimKimCalendar={ics,normalizeMeet,editor,meeting,connectGoogle,syncGoogle,disconnectGoogle,restoreGoogle,dayLayout};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })(window);

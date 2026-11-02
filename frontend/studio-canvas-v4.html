@@ -1,0 +1,112 @@
+<!doctype html><html data-theme="dark" lang="vi"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Studio Canvas · KimKim</title><link rel="stylesheet" href="design-tokens.css"><link rel="stylesheet" href="studio-workspace.css?v=studio-4"><style>*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.6 Inter,Arial,sans-serif;--text-0:var(--tx);--text-1:var(--tx);--text-2:var(--mu);--border:var(--bd);--surface:var(--card);--field:var(--inp)}.preview-banner{display:flex;justify-content:space-between;gap:12px;padding:12px 24px;background:var(--sb);border-bottom:1px solid var(--bd);font-size:11px;color:var(--mu)}button,input,textarea{font:inherit;background:var(--inp);color:var(--tx);border:1px solid var(--bd);border-radius:9px;padding:9px 12px}button{cursor:pointer}.btn-primary{background:var(--b1);color:var(--bt)}button:disabled{cursor:default;opacity:.65}.hidden{display:none!important}.page-heading{display:flex;justify-content:space-between}.akk-icon{width:16px;height:16px;vertical-align:middle}.tag{display:inline-block}.view-title{font-weight:700}.view-sub{color:var(--mu)}textarea{width:100%}input{width:100%}#mdMeetBotBar{display:none!important} .preview-banner{align-items:center}.preview-controls{display:flex;gap:6px}.preview-controls button{font-size:11px;white-space:nowrap}.preview-controls [aria-pressed=true]{border-color:var(--ac);color:var(--ac)}@media(max-width:600px){.preview-banner{padding:10px 16px;flex-wrap:wrap;gap:8px}}</style><div class="preview-banner"><span id="previewNotice"></span><div class="preview-controls"><button data-preview-lang="vi" onclick="previewLocale('vi')">VIE</button><button data-preview-lang="en" onclick="previewLocale('en')">ENG</button><button id="previewTheme" onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'"></button></div></div>    <div class="view" id="view-meetingDetail">
+      <div class="page-heading">
+        <button class="btn btn-ghost" disabled><svg class="akk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg><span data-i18n="detailBack">Quay lại</span></button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" disabled data-i18n="studioEdit">Sửa</button>
+          <button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);" disabled data-i18n="studioDelete">Xoá</button>
+        </div>
+      </div>
+      <div class="view-title"></div>
+      <div class="view-sub"></div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+          <span id="recordingStatusBadge" class="badge red hidden"><span class="live-dot"></span><span data-i18n="detailRecording">ĐANG GHI ÂM</span></span>
+          <span id="summaryStatusBadge" class="badge amber hidden" data-i18n="detailSummarizing">Đang tóm tắt với AI…</span>
+          <div id="mdMeetBotBar" class="hidden" style="display:flex;align-items:center;gap:10px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.4);padding:6px 12px;border-radius:8px;font-size:12px;">
+            <span class="live-dot"></span>
+            <span id="mdMeetBotStatusText" data-i18n="detailBotConnecting">KimKim đang kết nối vào Google Meet…</span>
+            <button class="btn btn-ghost" id="mdMeetBotStopBtn" style="padding:3px 10px;font-size:11px;border-color:var(--red);color:var(--red);" disabled data-i18n="detailStopSummary">Kết thúc và tóm tắt</button>
+          </div>
+        </div>
+      <div class="studio-toolbar">
+        <div id="mdSourceMeta" class="studio-source-meta"></div>
+        <div class="video-controls">
+          <button class="btn btn-ghost" id="btnMicToggle" disabled data-i18n-title="detailMicTitle" data-i18n-aria="detailMicTitle" data-i18n="studioLive">Phiên âm trực tiếp</button>
+          <button class="btn btn-ghost" id="btnEndMeeting" disabled data-i18n-title="detailEndTitle" data-i18n-aria="detailEndTitle" data-i18n="detailStopSummary">Kết thúc và tóm tắt</button>
+        </div>
+        <button class="btn btn-primary" id="btnQuickSummarize" disabled disabled></button>
+      </div>
+      <div class="studio-mobile-nav" role="tablist" data-i18n-aria="studioWorkspace">
+        <button class="active" id="mdMobileContentBtn" onclick="showMeetingTab('summary')" role="tab" aria-selected="true" data-i18n="studioContent">Nội dung</button>
+        <button id="mdTabChatBtn" onclick="showMeetingTab('chat')" role="tab" aria-selected="false" data-i18n="studioAsk">Hỏi KimKim</button>
+      </div>
+      <div id="meetingDetailBody" class="studio-grid">
+        <section class="studio-document" id="mdContentColumn">
+          <div class="studio-tabs" role="tablist" data-i18n-aria="studioContent">
+            <button class="active" id="mdTabSummaryBtn" onclick="showMeetingTab('summary')" role="tab" aria-selected="true" aria-controls="mdSummaryPane" data-i18n="summaryLbl">Tóm tắt</button>
+            <button id="mdTabTranscriptBtn" onclick="showMeetingTab('transcript')" role="tab" aria-selected="false" aria-controls="mdTranscriptPane" data-i18n="detailTranscriptTab">Bản chép lời</button>
+          </div>
+          <div id="mdSummaryPane" role="tabpanel" aria-labelledby="mdTabSummaryBtn">
+<div class="card keypoints">
+            <h3 class="studio-section-heading" data-i18n="summaryLbl">Tóm tắt</h3>
+            <div id="mdSummary" style="font-size:13px;color:var(--text-1);"></div>
+          </div><div class="card keypoints">
+            <h3 class="studio-section-heading" data-i18n="keyPoints">Điểm chính</h3>
+            <div id="mdKeyPoints"></div>
+          </div><div class="card keypoints">
+            <h3 class="studio-section-heading" data-i18n="actionItemsLbl">Việc cần làm</h3>
+            <div id="mdActionItems"></div>
+          </div><div class="card keypoints">
+            <h3 class="studio-section-heading" data-i18n="participants">Người tham gia</h3>
+            <div id="mdParticipants"></div>
+          </div>
+          </div>
+          <div id="mdTranscriptPane" class="hidden" role="tabpanel" aria-labelledby="mdTabTranscriptBtn"><div class="trans-list" id="segList"></div></div>
+          <details class="studio-notes"><summary data-i18n="mdNotesLbl">Ghi chú</summary><div class="card keypoints">
+            <div class="view-sub" style="margin-bottom:8px" data-i18n="mdNotesLbl">Ghi chú cuộc họp</div>
+            <textarea id="mdNotesInput" data-i18n-ph="detailNotesPlaceholder" placeholder="Thêm ghi chú của bạn…" style="width:100%;min-height:70px;resize:vertical;" onblur="saveMeetingNotes()"></textarea>
+          </div></details>
+          <details class="studio-exports"><summary data-i18n="tabGenerate">Tạo nội dung</summary><div class="card keypoints">
+            <div class="view-sub" style="margin-bottom:8px" data-i18n="tabGenerate">Tạo nội dung</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+              <button class="btn btn-ghost" style="font-size:12px;" disabled data-i18n="detailPowerPoint">Xuất PowerPoint</button>
+              <button class="btn btn-ghost" style="font-size:12px;" disabled data-i18n="studioMindmap">Sơ đồ tư duy</button>
+              <button class="btn btn-ghost" style="font-size:12px;" disabled data-i18n="detailSummaryImage">Xuất ảnh tóm tắt</button>
+            </div>
+            <div id="mdGenerationJobs" style="font-size:12px;color:var(--text-2);"></div>
+          </div></details>
+        </section>
+        <aside class="studio-chat" id="mdChatColumn" aria-labelledby="studioChatHeading">
+          <div class="studio-chat-heading"><div><span class="studio-kicker">KIMKIM AI</span><h2 id="studioChatHeading" data-i18n="studioAsk">Hỏi KimKim</h2></div><span class="studio-context" data-i18n="studioScoped">Theo nội dung này</span></div>
+<div class="card" id="mdChatPane" style="flex:1;padding:12px;display:flex;flex-direction:column;min-height:0;">
+            <div id="mdChatEmpty" class="studio-chat-empty" data-i18n="studioChatEmpty">Hỏi KimKim để tìm ý chính, quyết định hoặc thông tin trong nội dung này.</div><div id="mdChatBody" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+            <div style="display:flex;gap:6px;margin-top:8px;">
+              <input id="mdChatInput" disabled data-i18n-ph="mdChatPh" placeholder="Hỏi về cuộc họp này..." style="flex:1;" onkeydown="if(event.key==='Enter')sendMeetingChatMsg()">
+              <button class="btn btn-primary" disabled data-i18n-aria="detailSendQuestion" data-i18n="studioSend">Gửi</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+      <div id="speakerStats" class="hidden" aria-hidden="true"></div>
+    </div>
+
+<script src="localizations/vi-vn.js?v=studio-4"></script><script src="localizations/eng-en.js?v=studio-4"></script><script>let studioContentTab='summary';
+function showMeetingTab(which){
+  const chat=which==='chat';
+  if(!chat) studioContentTab=which==='transcript'?'transcript':'summary';
+  for(const name of ['summary','transcript']){
+    const selected=studioContentTab===name;
+    const button=document.getElementById(name==='summary'?'mdTabSummaryBtn':'mdTabTranscriptBtn');
+    button?.classList.toggle('active',selected);
+    button?.setAttribute('aria-selected',String(selected));
+    document.getElementById(name==='summary'?'mdSummaryPane':'mdTranscriptPane')?.classList.toggle('hidden',!selected);
+  }
+  document.getElementById('meetingDetailBody')?.classList.toggle('studio-chat-open',chat);
+  if(chat && window.matchMedia?.('(max-width:900px)')?.matches){requestAnimationFrame(()=>document.getElementById('mdChatColumn')?.scrollIntoView({block:'start',behavior:'smooth'}));}
+  for(const [id,selected] of [['mdMobileContentBtn',!chat],['mdTabChatBtn',chat]]){
+    const button=document.getElementById(id);button?.classList.toggle('active',selected);button?.setAttribute('aria-selected',String(selected));
+  }
+}
+
+
+let previewLang='vi';
+function previewLocale(next){previewLang=next;const d=window.I18N[next];document.documentElement.lang=next;document.querySelectorAll('[data-i18n]').forEach(el=>{if(d[el.dataset.i18n])el.textContent=d[el.dataset.i18n]});document.querySelectorAll('[data-i18n-ph]').forEach(el=>{if(d[el.dataset.i18nPh])el.placeholder=d[el.dataset.i18nPh]});document.querySelectorAll('[data-i18n-aria]').forEach(el=>{if(d[el.dataset.i18nAria])el.setAttribute('aria-label',d[el.dataset.i18nAria])});document.querySelectorAll('[data-i18n-title]').forEach(el=>{if(d[el.dataset.i18nTitle])el.title=d[el.dataset.i18nTitle]});
+document.querySelector('#view-meetingDetail>.view-title').textContent=next==='vi'?'Họp sản phẩm hằng tuần':'Product weekly';document.querySelector('#view-meetingDetail>.view-sub').textContent='03/11/2026 · 09:00 · 34:29';mdSourceMeta.innerHTML='<span class="studio-meta-chip">WEBM</span><span class="studio-meta-chip">KimKim Meeting</span><span class="studio-result-chip">'+d.studioResultSaved+'</span>';btnQuickSummarize.textContent=d.studioSummarize;
+mdSummary.innerHTML=next==='vi'?'<p>Nhóm đã rà soát tiến độ phát hành, thống nhất các ưu tiên và xác định những việc còn phụ thuộc.</p><p>Tuần này tập trung hoàn tất kiểm thử chất lượng và chuẩn bị tài liệu phát hành.</p>':'<p>The team reviewed release progress, agreed on priorities and identified remaining dependencies.</p><p>This week: complete quality checks and prepare release materials.</p>';
+mdKeyPoints.innerHTML='<ul class="studio-keypoints">'+(next==='vi'?['Các tính năng chính đã sẵn sàng để rà soát.','Kế hoạch chuyển dữ liệu cần được xác nhận.']:['Core features are ready for review.','The data migration plan needs confirmation.']).map(s=>'<li>'+s+'</li>').join('')+'</ul>';
+mdActionItems.innerHTML='<ul>'+(next==='vi'?['Xác nhận kế hoạch chuyển dữ liệu với đội kỹ thuật.','Chuẩn bị ghi chú phát hành và hoàn tất QA.']:['Confirm the migration plan with engineering.','Prepare release notes and complete QA.']).map(s=>'<li>'+s+'</li>').join('')+'</ul>';
+mdParticipants.innerHTML='<span class="tag">'+(next==='vi'?'Người nói 01':'Speaker 01')+'</span><span class="tag">'+(next==='vi'?'Người nói 02':'Speaker 02')+'</span>';
+segList.innerHTML='<div class="seg"><div class="meta">'+(next==='vi'?'Người nói 01':'Speaker 01')+' · 00:00</div><p>'+(next==='vi'?'Mình cùng rà soát các ưu tiên phát hành và những việc còn phụ thuộc.':'Let’s review release priorities and remaining dependencies.')+'</p></div><div class="seg"><div class="meta">'+(next==='vi'?'Người nói 02':'Speaker 02')+' · 00:24</div><p>'+(next==='vi'?'Các tính năng chính đã sẵn sàng. Mình cần xác nhận kế hoạch chuyển dữ liệu.':'Core features are ready. We need to confirm the migration plan.')+'</p></div>';
+document.getElementById('previewNotice').textContent=next==='vi'?'XEM THỬ GIAO DIỆN · DỮ LIỆU MẪU':'LAYOUT PREVIEW · SAMPLE DATA';document.getElementById('previewTheme').textContent=next==='vi'?'Sáng / Tối':'Light / Dark';document.querySelectorAll('[data-preview-lang]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.previewLang===next)));}
+document.querySelector('.video-controls').classList.add('hidden');previewLocale('vi');showMeetingTab('summary');
+if(new URLSearchParams(location.search).has('mobile')){document.body.innerHTML='<iframe title="Mobile Studio Canvas" src="studio-canvas-v4.html?frame=studio-4" style="width:390px;height:844px;border:1px solid var(--bd);border-radius:18px;display:block;margin:20px auto;background:var(--bg)"></iframe>';}
+</script></html>

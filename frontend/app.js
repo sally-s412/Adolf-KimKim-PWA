@@ -651,6 +651,8 @@ function extractActionItems(summary) {
 
 function updateMeetingDetailLocale(){
   const m=currentMeetingObj;
+  const meta=document.getElementById('mdSourceMeta');
+  if(meta&&m){const info=meetingFileInfo(m);meta.textContent=[info.format==='unknown'?t('filesUnknown'):info.format.toUpperCase(),t(meetingSourceKey[info.kind])].join(' · ');}
   const contentTab=document.getElementById('mdTabTranscriptBtn');
   if(contentTab) contentTab.textContent=t(m?.document?'detailContentTab':'detailTranscriptTab');
   const button=document.getElementById('btnQuickSummarize');

@@ -26,3 +26,6 @@ html .sidebar .nav-item:hover{background:var(--button-gray)!important}
 .card{border-color:var(--card-border)}
 
 html [data-variant=filled],html .btn-primary{box-shadow:var(--primary-shadow)}
+
+html #authScreen .btn-primary{background:var(--gradient-primary)!important;color:var(--color-on-primary)!important}
+html [data-variant=filled],html .btn-primary{box-shadow:var(--primary-shadow)!important}

@@ -239,6 +239,7 @@ function showView(v,el){
   document.querySelectorAll('.view').forEach(x=>x.classList.add('hidden'));
   const target=document.getElementById('view-'+v);
   if(target) target.classList.remove('hidden');
+  if(v==='meetings') renderMeetingsTable();
   if(el){ document.querySelectorAll('.nav-item[data-view]').forEach(n=>n.classList.remove('active')); el.classList.add('active'); }
   document.dispatchEvent(new CustomEvent('akk:viewchange',{detail:{view:v}}));
 }
@@ -416,7 +417,7 @@ async function submitCreateMeeting(){
       }
     } else {
       const status=(meetUrl && inviteKimkim) ? 'progress' : (document.getElementById('view-createMeeting').dataset.status||'processing');
-      const id=await MeetingService.createMeeting({title,date,time,participants,meetUrl,description,status,inviteKimkim});
+      const id=await MeetingService.createMeeting({title,date,time,participants,meetUrl,description,status,inviteKimkim,source:{kind:'manual',format:'unknown'}});
       openMeeting(id);
       if(meetUrl && inviteKimkim){
         startMeetBotJob(meetUrl, title, id);
@@ -438,7 +439,6 @@ function openMeeting(id){
   segments = (currentMeetingObj && currentMeetingObj.transcript && currentMeetingObj.transcript.length) ? [...currentMeetingObj.transcript] : [];
   const jobsEl=document.getElementById('mdGenerationJobs');
   if (jobsEl) {jobsEl.textContent = '';delete jobsEl.dataset.i18n;}
-  meetingSummaryTranslated=false;
   showView('meetingDetail');
   showMeetingTab('transcript');
   renderMeetingDetail();
@@ -625,12 +625,6 @@ async function requestGenerationHandler(kind){
     }catch(err){ if(jobsEl){delete jobsEl.dataset.i18n;jobsEl.textContent=t('detailError')+safeServiceMessage(err.message);} }
   }
 }
-let meetingSummaryTranslated=false;
-async function toggleMeetingSummaryTranslation(){
-  // The current TranslationService is a passthrough, not a translation backend.
-  // Do not mark an untranslated summary as successfully translated.
-  notify(t('detailTranslationUnavailable'));
-}
 
 function extractActionItems(summary) {
   if (!summary) return [];
@@ -722,10 +716,37 @@ function onGlobalSearch(v){
   renderMeetingsTable();
   renderAll();
 }
+const MEETING_FILE_FORMATS=['pdf','docx','mp3','mp4','m4a','wav','webm','aac','flac','ogg','mov','mkv'];
+function meetingFileInfo(m){
+  const source=m.source||{};
+  const name=source.fileName||m.document?.name||'';
+  const extension=/\.([a-z0-9]+)$/i.exec(name)?.[1]?.toLowerCase();
+  const candidate=String(source.format||m.document?.kind||extension||'').toLowerCase();
+  const format=MEETING_FILE_FORMATS.includes(candidate)?candidate:'unknown';
+  const kinds=['upload','recorder','kimkim_meeting','manual'];
+  const kind=kinds.includes(source.kind)?source.kind:m.document?'upload':'unknown';
+  return {format,kind};
+}
+function sourceMetadata(kind,file){
+  const extension=/\.([a-z0-9]+)$/i.exec(file?.name||'')?.[1]?.toLowerCase();
+  const mime=(file?.type||'').split(';')[0].toLowerCase();
+  const types={'audio/mpeg':'mp3','audio/mp4':'m4a','video/mp4':'mp4','audio/webm':'webm','video/webm':'webm','audio/wav':'wav','audio/x-wav':'wav','application/pdf':'pdf'};
+  const candidate=extension||types[mime]||'unknown';
+  return {kind,format:MEETING_FILE_FORMATS.includes(candidate)?candidate:'unknown',fileName:file?.name||'',mimeType:mime};
+}
+const meetingSourceKey={upload:'filesUpload',recorder:'filesRecorder',kimkim_meeting:'filesMeeting',manual:'filesManual',unknown:'filesUnknown'};
+let meetingFormatFilter='all',meetingSourceFilter='all';
+function setMeetingFileFilter(axis,value){
+  if(axis==='format')meetingFormatFilter=value;
+  if(axis==='source')meetingSourceFilter=value;
+  renderMeetingsTable();
+}
 function visibleMeetings(){
   return meetings
     .filter(m=>activeMeetingFilter==='all' || m.status===activeMeetingFilter)
-    .filter(m=>!searchQuery || (m.title||'').toLowerCase().includes(searchQuery));
+    .filter(m=>!searchQuery || (m.title||'').toLowerCase().includes(searchQuery))
+    .filter(m=>meetingFormatFilter==='all'||meetingFileInfo(m).format===meetingFormatFilter)
+    .filter(m=>meetingSourceFilter==='all'||meetingFileInfo(m).kind===meetingSourceFilter);
 }
 
 /* ---- Notes ---- */
@@ -837,7 +858,7 @@ async function changeRoleHandler(id,role){
 function selectUploadFile(){
   document.getElementById('hiddenFileInput').click();
 }
-async function addProcessedMeeting(title, transcript, durSeconds, documentInfo = null) {
+async function addProcessedMeeting(title, transcript, durSeconds, documentInfo = null, sourceInfo = null) {
   const now = new Date();
   const durFormatted = documentInfo ? '—' : (durSeconds ? fmt(durSeconds) : '00:30');
   const meetingData = {
@@ -852,7 +873,8 @@ async function addProcessedMeeting(title, transcript, durSeconds, documentInfo =
     actionItems: [],
     notes: '',
     participants: [],
-    ...(documentInfo ? {document: documentInfo} : {})
+    ...(documentInfo ? {document: documentInfo} : {}),
+    source:sourceInfo||{kind:documentInfo?'upload':'unknown',format:documentInfo?.kind||'unknown'}
   };
 
   let meetingId = 'm_' + Date.now();
@@ -908,7 +930,7 @@ async function handleFileSelected(fileOrInput){
     });
     const meetingTitle = file.name.replace(/\.[^.]+$/, '') || 'Tệp tải lên';
     const durEst = (transcript && transcript.length) ? (transcript[transcript.length - 1].t + 5) : 30;
-    await addProcessedMeeting(meetingTitle, transcript, durEst);
+    await addProcessedMeeting(meetingTitle, transcript, durEst, null, sourceMetadata('upload',file));
     row.textContent = '✅ ' + file.name + ' — Đã xử lý và tạo cuộc họp thành công';
   }catch(err){
     console.error("Upload error:", err);
@@ -932,7 +954,7 @@ async function importDocumentFile(file, row) {
     name: file.name, kind: result.kind,
     pageCount: result.page_count, characterCount: result.character_count
   };
-  await addProcessedMeeting(file.name.replace(/\.[^.]+$/, ''), transcript, 0, documentInfo);
+  await addProcessedMeeting(file.name.replace(/\.[^.]+$/, ''), transcript, 0, documentInfo, sourceMetadata('upload',file));
   row.textContent = '✓ ' + file.name + (lang === 'vi'
     ? ' — Đã đọc và lưu nội dung. Bạn có thể tóm tắt hoặc hỏi KimKim về tài liệu.'
     : ' — Content imported. You can summarize it or ask KimKim about the document.');
@@ -1015,7 +1037,7 @@ window.saveRecording = async function() {
     });
     const now = new Date();
     const durSec = (transcript && transcript.length) ? (transcript[transcript.length - 1].t + 5) : 30;
-    await addProcessedMeeting('Ghi âm ' + now.toLocaleString('vi-VN'), transcript, durSec);
+    await addProcessedMeeting('Ghi âm ' + now.toLocaleString('vi-VN'), transcript, durSec, null, sourceMetadata('recorder',blob));
     RecordingService.cancelRecording();
   } catch (err) {
     console.error("Recording transcription error:", err);
@@ -1039,14 +1061,14 @@ function initials(n){return (n||'?').split(' ').map(w=>w[0]).slice(0,2).join('')
 function renderMeetingsTable(){
   const el=document.getElementById('meetingsTable');
   if(!el) return;
-  if(meetingsState==='loading'){ el.innerHTML = `<tr><td colspan="5" style="color:var(--text-2)">${I18N[lang].loadingMeetings}</td></tr>`; return; }
-  if(meetingsState==='error'){ el.innerHTML = `<tr><td colspan="5" style="color:var(--red)">${I18N[lang].errorMeetings}</td></tr>`; return; }
+  if(meetingsState==='loading'){ el.innerHTML = `<tr><td colspan="6" style="color:var(--text-2)">${I18N[lang].loadingMeetings}</td></tr>`; return; }
+  if(meetingsState==='error'){ el.innerHTML = `<tr><td colspan="6" style="color:var(--red)">${I18N[lang].errorMeetings}</td></tr>`; return; }
   const rows=visibleMeetings();
   el.innerHTML = rows.map(m=>`
     <tr style="cursor:pointer" onclick="openMeeting('${m.id}')">
-      <td>${m.title}</td><td>${m.date||''}</td><td>${m.dur||''}</td><td>${statusBadge(m.status)}</td>
+      <td><span class="files-item-title">${escapeHtml(m.title)}</span><span class="files-source-label">${escapeHtml(t(meetingSourceKey[meetingFileInfo(m).kind]))}</span></td><td><span class="files-format">${meetingFileInfo(m).format==='unknown'?escapeHtml(t('filesUnknown')):meetingFileInfo(m).format.toUpperCase()}</span></td><td>${m.date||''}</td><td>${m.dur||''}</td><td>${statusBadge(m.status)}<span class="files-ai-status">${escapeHtml(t(analysisInFlight.has('summary:'+m.id)?'filesAiWorking':(typeof m.summary==='string'&&m.summary.trim())?'filesAiReady':'filesAiMissing'))}</span></td>
       <td style="text-align:right;color:var(--text-2)">→</td>
-    </tr>`).join('') || `<tr><td colspan="5" style="color:var(--text-2)">${I18N[lang].noMeetings}</td></tr>`;
+    </tr>`).join('') || `<tr><td colspan="6" style="color:var(--text-2)">${searchQuery||meetingFormatFilter!=='all'||meetingSourceFilter!=='all'?t('filesNoMatches'):I18N[lang].noMeetings}</td></tr>`;
 }
 
 function renderAll(){
@@ -1696,6 +1718,7 @@ async function finalizeMeetBotResult(botInfo, result) {
   ]));
 
   const meetingPayload = {
+    source:{kind:'kimkim_meeting',format:'unknown'},
     title: finalTitle,
     date: (existingMeeting && existingMeeting.date) || now.toISOString().slice(0, 10),
     time: (existingMeeting && existingMeeting.time) || now.toTimeString().slice(0, 5),

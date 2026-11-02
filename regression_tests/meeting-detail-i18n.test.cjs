@@ -18,6 +18,30 @@ test('switching locale updates detail controls and empty states without overwrit
  vm.runInContext("currentMeetingObj.document={};setLang('vi');",x.ctx);assert.equal(x.labels[0].innerHTML,'Quay lại');assert.equal(x.el('btnQuickSummarize').textContent,'Tóm tắt tài liệu với AI');assert.equal(x.el('mdNotesInput').value,'Unsaved draft — giữ nguyên');
 });
 test('in-flight summary keeps its progress label when language changes',()=>{const x=setup();x.el('btnQuickSummarize').textContent='Summarizing sections (2/4)';vm.runInContext("currentMeetingId='m1';analysisInFlight.add('summary:m1');setLang('en');",x.ctx);assert.equal(x.el('btnQuickSummarize').textContent,'Summarizing sections (2/4)');});
-test('unavailable translation never replaces content with the old [EN] passthrough',async()=>{const x=setup();x.el('mdSummary').innerHTML='Original content';vm.runInContext("setLang('en');",x.ctx);await vm.runInContext('toggleMeetingSummaryTranslation()',x.ctx);assert.equal(x.el('mdSummary').innerHTML,'Original content');assert.equal(x.notifications.at(-1),'Translation is not connected yet. Your original summary is unchanged.');});
+test('unavailable meeting translation is removed completely',()=>{const x=setup();const html=fs.readFileSync(path.join(root,'frontend/index.html'),'utf8');assert.doesNotMatch(html,/id="mdTranslateBtn"/);assert.equal(vm.runInContext('typeof toggleMeetingSummaryTranslation',x.ctx),'undefined');});
 test('HTTP 200 JSON errors are not downloaded as PowerPoint files; error is localized',async()=>{const x=setup();vm.runInContext("currentMeetingId='m1';currentMeetingObj={summary:'Synthetic summary'};setLang('en');getApiUrl=()=> 'https://example.test';apiFetch=async()=>({headers:{get:()=> 'application/json'},blob(){throw Error('must not download JSON')}});",x.ctx);await vm.runInContext("requestGenerationHandler('slides')",x.ctx);assert.equal(x.el('mdGenerationJobs').textContent,'Error: The service did not return a valid file. Please try again.');});
-test('the detail and create/edit Back controls and disabled translation are wired to locale keys',()=>{const s=fs.readFileSync(path.join(root,'frontend/index.html'),'utf8');assert.equal((s.match(/data-i18n="detailBack"/g)||[]).length,2);assert.match(s,/id="mdTranslateBtn"[^>]+disabled[^>]+detailTranslationSoon/);assert.doesNotMatch(s,/>← Quay lại<\/button>/);});
+test('the detail and create/edit Back controls are wired to locale keys',()=>{const s=fs.readFileSync(path.join(root,'frontend/index.html'),'utf8');assert.equal((s.match(/data-i18n="detailBack"/g)||[]).length,2);assert.doesNotMatch(s,/id="mdTranslateBtn"/);assert.doesNotMatch(s,/>← Quay lại<\/button>/);});
+
+
+test('file format, source, status and search filters intersect without guessing legacy recording types',()=>{
+ const x=setup();vm.runInContext(`meetings=[
+ {id:'1',title:'Weekly audio',status:'done',source:{kind:'upload',format:'mp3'}},
+ {id:'2',title:'Weekly Meet',status:'done',source:{kind:'kimkim_meeting',format:'unknown'}},
+ {id:'3',title:'Weekly legacy',status:'done',dur:'34:29',meetUrl:'https://meet.google.com/abc-defg-hij'},
+ {id:'4',title:'Handbook',status:'done',document:{kind:'pdf',name:'Handbook.pdf'}}];
+ meetingFormatFilter='mp3';meetingSourceFilter='upload';activeMeetingFilter='done';searchQuery='weekly';`,x.ctx);
+ assert.equal(vm.runInContext('visibleMeetings().map(m=>m.id).join()',x.ctx),'1');
+ assert.equal(vm.runInContext('meetingFileInfo(meetings[2]).format',x.ctx),'unknown');assert.equal(vm.runInContext('meetingFileInfo(meetings[2]).kind',x.ctx),'unknown');
+ assert.equal(vm.runInContext('meetingFileInfo(meetings[3]).format',x.ctx),'pdf');
+ vm.runInContext("meetingFormatFilter='all';meetingSourceFilter='kimkim_meeting';",x.ctx);assert.equal(vm.runInContext('visibleMeetings().map(m=>m.id).join()',x.ctx),'2');
+});
+test('source metadata distinguishes uploaded M4A from MP4 and preserves recorder MIME types',()=>{
+ const x=setup();assert.equal(vm.runInContext("sourceMetadata('upload',{name:'a.M4A',type:'audio/mp4'}).format",x.ctx),'m4a');assert.equal(vm.runInContext("sourceMetadata('upload',{name:'a.mp4',type:'video/mp4'}).format",x.ctx),'mp4');assert.equal(vm.runInContext("sourceMetadata('recorder',{type:'audio/webm;codecs=opus'}).format",x.ctx),'webm');
+});
+test('Completed content is not presented as a saved AI result',()=>{const x=setup();vm.runInContext("setLang('en');meetingsState='ready';meetings=[{id:'1',title:'Imported audio',status:'done',summary:''}];renderMeetingsTable();",x.ctx);assert.match(x.el('meetingsTable').innerHTML,/AI summary: No result saved/);vm.runInContext("meetings[0].summary='Saved summary';renderMeetingsTable();",x.ctx);assert.match(x.el('meetingsTable').innerHTML,/AI summary: Result saved/);});
+test('createMeeting persists supplied AI results and source metadata instead of clearing them',async()=>{
+ let stored;const context=vm.createContext({window:{FirebaseClient:{userCol(){return{add:async data=>{stored=data;return{id:'new-id'}}}},serverTimestamp(){return 'server-time'}}}});
+ vm.runInContext(fs.readFileSync(path.join(root,'frontend/services/meetingService.js'),'utf8'),context);
+ const data={title:'Imported result',summary:'Saved worker summary',keyPoints:['Point'],actionItems:['Action'],notes:'Note',source:{kind:'kimkim_meeting',format:'unknown'}};
+ await context.window.MeetingService.createMeeting(data);assert.equal(stored.summary,data.summary);assert.equal(stored.source.kind,'kimkim_meeting');assert.equal(stored.keyPoints[0],'Point');assert.equal(stored.actionItems[0],'Action');
+});

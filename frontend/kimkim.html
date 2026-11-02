@@ -52,7 +52,7 @@
 <link rel="stylesheet" href="chat-widget.css?v=1">
 <link rel="stylesheet" href="design-tokens.css?v=rose-dusk-3">
 <link rel="stylesheet" href="hig-components.css?v=rose-dusk-3">
-<link rel="stylesheet" href="hig-screens.css?v=rose-dusk-3">
+<link rel="stylesheet" href="hig-screens.css?v=files-flow-1">
 </head>
 <body>
 
@@ -158,15 +158,21 @@
         <button onclick="filterMeetings('processing',this)" data-i18n="fProcessing">Đang xử lý</button>
         <button onclick="filterMeetings('done',this)" data-i18n="fDone">Hoàn tất</button>
       </div>
+      <div class="files-filters" role="group" aria-label="File filters">
+        <label><span data-i18n="filesFormat">Loại tệp</span><select id="meetingFormatFilter" onchange="setMeetingFileFilter('format',this.value)"><option value="all" data-i18n="filesAllFormats">Tất cả loại tệp</option><option value="pdf">PDF</option><option value="docx">DOCX</option><option value="mp3">MP3</option><option value="mp4">MP4</option><option value="m4a">M4A</option><option value="wav">WAV</option><option value="webm">WEBM</option><option value="aac">AAC</option><option value="flac">FLAC</option><option value="ogg">OGG</option><option value="mov">MOV</option><option value="mkv">MKV</option><option value="unknown" data-i18n="filesUnknown">Chưa rõ</option></select></label>
+        <label><span data-i18n="filesSource">Nguồn</span><select id="meetingSourceFilter" onchange="setMeetingFileFilter('source',this.value)"><option value="all" data-i18n="filesAllSources">Tất cả nguồn</option><option value="upload" data-i18n="filesUpload">Tệp tải lên</option><option value="recorder" data-i18n="filesRecorder">KimKim Recorder</option><option value="kimkim_meeting" data-i18n="filesMeeting">KimKim Meeting</option><option value="manual" data-i18n="filesManual">Tạo thủ công</option><option value="unknown" data-i18n="filesUnknown">Chưa rõ</option></select></label>
+      </div>
+      <p class="files-filter-note" data-i18n="filesStatusHelp">Trạng thái nội dung và kết quả AI được hiển thị riêng.</p>
       <div class="card table-wrap">
         <table>
           <thead><tr>
-            <th data-i18n="colName">Tên cuộc họp</th><th data-i18n="colDate">Ngày</th>
+            <th data-i18n="filesName">Tệp / bản ghi</th><th data-i18n="filesFormat">Loại tệp</th><th data-i18n="colDate">Ngày</th>
             <th data-i18n="colDur">Thời lượng</th><th data-i18n="colStatus">Trạng thái</th><th></th>
           </tr></thead>
           <tbody id="meetingsTable"></tbody>
         </table>
       </div>
+      <p class="files-filter-note" data-i18n="filesFilterNote">Bản ghi cũ thiếu thông tin tệp gốc sẽ hiển thị Chưa rõ.</p>
     </div>
 
     <!-- ===== MEETING DETAIL ===== -->
@@ -208,7 +214,6 @@
           <div class="card keypoints">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
               <div class="view-sub" style="margin:0" data-i18n="summaryLbl">Tóm tắt</div>
-              <button class="btn btn-ghost" id="mdTranslateBtn" style="padding:3px 8px;font-size:11px;" disabled data-i18n="detailTranslationSoon" data-i18n-title="detailTranslationUnavailable" title="Chưa kết nối dịch nội dung">Dịch · Sắp có</button>
             </div>
             <div id="mdSummary" style="font-size:13px;color:var(--text-1);"></div>
           </div>
@@ -536,14 +541,14 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="localizations/vi-vn.js?v=detail-i18n-1"></script>
-<script src="localizations/eng-en.js?v=detail-i18n-1"></script>
+<script src="localizations/vi-vn.js?v=files-flow-1"></script>
+<script src="localizations/eng-en.js?v=files-flow-1"></script>
 <script src="services/firebaseClient.js?v=3"></script>
 <script src="services/profileMedia.js?v=1"></script>
 <script src="imageCropper.js?v=1"></script>
 <script src="services/avatarService.js?v=6"></script>
 <script src="services/authService.js?v=4"></script>
-<script src="services/meetingService.js?v=4"></script>
+<script src="services/meetingService.js?v=files-flow-1"></script>
 <script src="services/noteService.js?v=3"></script>
 <script src="services/recordingService.js?v=3"></script>
 <script src="services/teamService.js?v=3"></script>
@@ -554,7 +559,7 @@
 <script src="hig-ui.js?v=1"></script>
 <script src="layout.js"></script>
 <script src="ui-feedback.js"></script>
-<script src="app.js?v=detail-i18n-20"></script>
+<script src="app.js?v=files-flow-1"></script>
 <script src="home.js?v=4"></script>
 <script src="notes-studio.js?v=3"></script>
 <script src="services/communityService.js?v=4"></script>

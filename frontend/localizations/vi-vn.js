@@ -1,5 +1,12 @@
 window.I18N = window.I18N || {};
 window.I18N.vi = {
+  studioLive: "Phiên âm trực tiếp",
+  studioWorkspace: "Không gian nội dung",
+  studioContent: "Nội dung",
+  studioAsk: "Hỏi KimKim",
+  studioScoped: "Theo nội dung này",
+  studioChatEmpty: "Hỏi về ý chính, quyết định hoặc thông tin trong nội dung này.",
+
   installApp: 'Cài ứng dụng',
   updateApp: 'Cập nhật',
   navRecording: 'Ghi âm',
@@ -238,3 +245,4 @@ Object.assign(window.I18N.vi,{"detailBack": "Quay lại", "detailRecording": "Đ
 Object.assign(window.I18N.vi,{"filesFormat": "Loại tệp", "filesAllFormats": "Tất cả loại tệp", "filesUnknown": "Chưa rõ", "filesSource": "Nguồn", "filesAllSources": "Tất cả nguồn", "filesUpload": "Tệp tải lên", "filesRecorder": "KimKim Recorder", "filesMeeting": "KimKim Meeting", "filesManual": "Tạo thủ công", "filesName": "Tệp / bản ghi", "filesAiReady": "Tóm tắt AI: Đã lưu kết quả", "filesAiMissing": "Tóm tắt AI: Chưa có kết quả được lưu", "filesAiWorking": "Tóm tắt AI: Đang xử lý…", "filesStatusHelp": "Trạng thái nội dung và kết quả AI được hiển thị riêng.", "filesFilterNote": "Bản ghi cũ thiếu thông tin tệp gốc sẽ hiển thị Chưa rõ."});
 
 Object.assign(window.I18N.vi, {filesNoMatches:"Không có nội dung khớp bộ lọc."});
+

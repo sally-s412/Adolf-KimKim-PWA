@@ -440,7 +440,7 @@ function openMeeting(id){
   const jobsEl=document.getElementById('mdGenerationJobs');
   if (jobsEl) {jobsEl.textContent = '';delete jobsEl.dataset.i18n;}
   showView('meetingDetail');
-  showMeetingTab('transcript');
+  showMeetingTab('summary');
   renderMeetingDetail();
 
   // Always refresh latest authoritative doc from Firestore
@@ -457,6 +457,7 @@ function openMeeting(id){
   if(mdJobsUnsub) mdJobsUnsub();
   const chatBody = document.getElementById('mdChatBody');
   if (chatBody) chatBody.innerHTML='';
+  document.getElementById('mdChatEmpty')?.classList.remove('hidden');
 
   function renderChatRows(rows) {
     const body = document.getElementById('mdChatBody');
@@ -468,6 +469,7 @@ function openMeeting(id){
       body.insertAdjacentHTML('beforeend', `<div class="bubble ${cls}">${content}</div>`);
     });
     body.scrollTop = body.scrollHeight;
+    document.getElementById('mdChatEmpty')?.classList.toggle('hidden',!!rows?.length);
   }
 
   // Render cached chatHistory if available on meeting object
@@ -489,12 +491,23 @@ function openMeeting(id){
   // The unused prototype generationJobs collection is not part of that flow.
   mdJobsUnsub = null;
 }
+let studioContentTab='summary';
 function showMeetingTab(which){
-  document.getElementById('mdTabTranscriptBtn').classList.toggle('active', which==='transcript');
-  document.getElementById('mdTabChatBtn').classList.toggle('active', which==='chat');
-  document.getElementById('mdTranscriptPane').classList.toggle('hidden', which!=='transcript');
-  document.getElementById('mdChatPane').classList.toggle('hidden', which!=='chat');
+  const chat=which==='chat';
+  if(!chat) studioContentTab=which==='transcript'?'transcript':'summary';
+  for(const name of ['summary','transcript']){
+    const selected=studioContentTab===name;
+    const button=document.getElementById(name==='summary'?'mdTabSummaryBtn':'mdTabTranscriptBtn');
+    button?.classList.toggle('active',selected);
+    button?.setAttribute('aria-selected',String(selected));
+    document.getElementById(name==='summary'?'mdSummaryPane':'mdTranscriptPane')?.classList.toggle('hidden',!selected);
+  }
+  document.getElementById('meetingDetailBody')?.classList.toggle('studio-chat-open',chat);
+  for(const [id,selected] of [['mdMobileContentBtn',!chat],['mdTabChatBtn',chat]]){
+    const button=document.getElementById(id);button?.classList.toggle('active',selected);button?.setAttribute('aria-selected',String(selected));
+  }
 }
+
 const analysisInFlight = new Set();
 async function runTranscriptAnalysis(kind, transcript, message, onProgress) {
   const uid=firebase.auth().currentUser?.uid;
@@ -524,6 +537,7 @@ async function sendMeetingChatMsg(){
   const body = document.getElementById('mdChatBody');
   if (!body) return;
 
+  document.getElementById('mdChatEmpty')?.classList.add('hidden');
   const sourceId=currentMeetingId, sourceObj=currentMeetingObj || meetings.find(m=>m.id===sourceId) || {id:sourceId};
   const lock='chat:'+sourceId;if(analysisInFlight.has(lock)){notify(lang==='vi'?'KimKim đang xử lý câu hỏi trước.':'KimKim is processing the previous question.');return;}analysisInFlight.add(lock);
   const transcript=segments.map(s=>({...s}));
@@ -652,7 +666,7 @@ function updateMeetingDetailLocale(){
 function renderMeetingDetail(){
   const m=currentMeetingObj;
   const isDocument = !!m?.document;
-  document.querySelector('#view-meetingDetail .video-controls')?.classList.toggle('hidden', isDocument);
+  document.querySelector('#view-meetingDetail .video-controls')?.classList.toggle('hidden', !isMeetingRecording);
   document.getElementById('mdParticipants')?.closest('.card')?.classList.toggle('hidden', isDocument);
   const contentTab = document.getElementById('mdTabTranscriptBtn');
   if (contentTab) contentTab.textContent = isDocument ? (lang === 'vi' ? 'Nội dung tài liệu' : 'Document content') : 'Transcript';
@@ -698,6 +712,9 @@ function renderMeetingDetail(){
   const barEl=document.getElementById('mdMeetBotBar');
   if(barEl) barEl.classList.toggle('hidden', !(activeMeetBot && (!activeMeetBot.meetingId || activeMeetBot.meetingId===currentMeetingId)));
   renderTranscriptAndStats();
+  const source=meetingFileInfo(m||{});
+  const meta=document.getElementById('mdSourceMeta');
+  if(meta) meta.textContent=[source.format==='unknown'?t('filesUnknown'):source.format.toUpperCase(),t(meetingSourceKey[source.kind])].join(' · ');
   updateMeetingDetailLocale();
 }
 function saveMeetingNotes(){
@@ -1846,4 +1863,5 @@ for (const [id, action] of [['signinPassword',signInWithEmail],['signupPassword'
     if(event.key==='Enter'&&!event.isComposing){event.preventDefault();action();}
   });
 }
+
 

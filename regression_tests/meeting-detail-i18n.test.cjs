@@ -45,3 +45,8 @@ test('createMeeting persists supplied AI results and source metadata instead of 
  const data={title:'Imported result',summary:'Saved worker summary',keyPoints:['Point'],actionItems:['Action'],notes:'Note',source:{kind:'kimkim_meeting',format:'unknown'}};
  await context.window.MeetingService.createMeeting(data);assert.equal(stored.summary,data.summary);assert.equal(stored.source.kind,'kimkim_meeting');assert.equal(stored.keyPoints[0],'Point');assert.equal(stored.actionItems[0],'Action');
 });
+
+test('Studio tabs preserve source selection while chat remains a separate region',()=>{
+ const x=setup();vm.runInContext("showMeetingTab('summary')",x.ctx);assert.equal(x.el('mdTabSummaryBtn')['aria-selected'],'true');assert.equal(x.el('mdTabTranscriptBtn')['aria-selected'],'false');vm.runInContext("showMeetingTab('transcript');showMeetingTab('chat')",x.ctx);assert.equal(vm.runInContext('studioContentTab',x.ctx),'transcript');assert.equal(x.el('mdTabChatBtn')['aria-selected'],'true');assert.equal(x.el('mdTabTranscriptBtn')['aria-selected'],'true');
+});
+test('Studio groups Summary, Key Points, Action Items, Participants and keeps chat parallel',()=>{const html=fs.readFileSync(path.join(root,'frontend/index.html'),'utf8');const start=html.indexOf('id="mdSummaryPane"'),end=html.indexOf('id="mdTranscriptPane"',start),group=html.slice(start,end);for(const id of ['mdSummary','mdKeyPoints','mdActionItems','mdParticipants'])assert.match(group,new RegExp('id="'+id+'"'));assert.ok(html.indexOf('id="mdChatColumn"')>end);for(const id of ['mdSummary','mdKeyPoints','mdActionItems','mdParticipants','segList','mdChatBody','mdChatInput'])assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1);assert.doesNotMatch(html,/id="mdTranslateBtn"/);});

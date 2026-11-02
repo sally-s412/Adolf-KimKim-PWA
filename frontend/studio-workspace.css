@@ -1,0 +1,47 @@
+/* Studio Canvas: scoped to file/recording detail; uses the shared Rose Dusk tokens. */
+html #view-meetingDetail{max-width:1520px;margin:0 auto;padding:28px 38px 90px;overflow:visible}
+html #view-meetingDetail .page-heading{margin-bottom:22px;align-items:center}
+html #view-meetingDetail .page-heading .btn{min-height:36px;padding:7px 12px;font-size:12px;border-radius:9px;box-shadow:none!important}
+html #view-meetingDetail>.view-title{font-size:clamp(25px,2.5vw,36px);line-height:1.2;letter-spacing:-1px;margin:0 0 10px;overflow-wrap:anywhere}
+html #view-meetingDetail>.view-sub{font-size:12px;line-height:1.6;margin:0 0 8px}
+#view-meetingDetail .studio-source-meta{font-size:11px;color:var(--text-2);margin:0 0 20px;text-transform:uppercase;letter-spacing:.6px}
+#view-meetingDetail .studio-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 0 24px;border-bottom:1px solid var(--border);margin-bottom:24px}
+#view-meetingDetail .video-controls{display:flex;gap:8px;flex-wrap:wrap}
+html #view-meetingDetail .studio-toolbar .btn{min-height:40px;width:auto;padding:9px 16px;font-size:12px;border-radius:10px;box-shadow:none!important}
+#view-meetingDetail .studio-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,36%);gap:32px;align-items:start}
+#view-meetingDetail .studio-document{min-width:0}
+#view-meetingDetail .studio-tabs{display:flex;gap:28px;border-bottom:1px solid var(--border);margin-bottom:8px}
+#view-meetingDetail .studio-tabs button{font:inherit;font-size:13px;font-weight:600;color:var(--text-2);padding:13px 0;background:none;border:0;border-bottom:2px solid transparent;cursor:pointer;border-radius:0;box-shadow:none}
+#view-meetingDetail .studio-tabs button.active{color:var(--text-0);border-bottom-color:var(--ac)}
+html #view-meetingDetail #mdSummaryPane>.card{border:0!important;border-bottom:1px solid var(--border)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;padding:26px 0!important;margin:0!important;min-height:0}
+html #view-meetingDetail #mdSummaryPane .view-sub{font-size:15px;font-weight:650;line-height:1.4;color:var(--text-0);letter-spacing:-.2px}
+html #view-meetingDetail #mdSummary,html #view-meetingDetail #mdKeyPoints,html #view-meetingDetail #mdActionItems{font-size:14px!important;line-height:1.85;color:var(--text-1)}
+#view-meetingDetail #mdSummary p{margin:0 0 12px}#view-meetingDetail #mdSummary h2{font-size:16px;margin:18px 0 8px}
+#view-meetingDetail #mdKeyPoints .tag{display:block;background:none;border:0;border-radius:0;padding:6px 0;margin:0;font-size:14px;line-height:1.7;white-space:normal;color:var(--text-1)}
+#view-meetingDetail #mdActionItems li{font-size:14px!important;line-height:1.8;padding:4px 0}
+#view-meetingDetail #mdParticipants{display:flex;gap:8px;flex-wrap:wrap}#view-meetingDetail #mdParticipants .tag{font-size:12px;padding:5px 10px;background:var(--field);border:1px solid var(--border);border-radius:7px}
+#view-meetingDetail #mdTranscriptPane{min-height:360px;padding:18px 0;background:none;border:0;border-radius:0;box-shadow:none}
+#view-meetingDetail #segList{height:auto;max-height:none;overflow:visible;padding:0;margin:0}
+#view-meetingDetail .seg{border:0;border-bottom:1px solid var(--border);padding:18px 0;background:transparent;border-radius:0;margin:0}
+#view-meetingDetail .seg .meta{font-size:11px;gap:8px;color:var(--text-2)}#view-meetingDetail .seg p{font-size:14px;line-height:1.8;margin:8px 0 0}
+#view-meetingDetail .studio-chat{position:sticky;top:20px;display:flex;flex-direction:column;height:min(680px,calc(100dvh - 120px));min-height:380px;background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:none}
+#view-meetingDetail .studio-chat-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:20px;border-bottom:1px solid var(--border)}
+#view-meetingDetail .studio-kicker{font-size:9px;letter-spacing:1.5px;color:var(--ac);font-weight:650}#view-meetingDetail .studio-chat-heading h2{font-size:17px;letter-spacing:-.4px;margin:4px 0 0;color:var(--text-0)}
+#view-meetingDetail .studio-context{font-size:10px;color:var(--text-2)}
+html #view-meetingDetail #mdChatPane{border:0!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;padding:18px!important;margin:0!important;flex:1;min-height:0}
+#view-meetingDetail #mdChatBody{overscroll-behavior:contain;scrollbar-width:thin;padding:8px 0;min-height:0}
+#view-meetingDetail #mdChatBody .bubble{max-width:94%;font-size:13px;line-height:1.7;border-radius:12px;padding:11px 13px;overflow-wrap:anywhere;box-shadow:none}
+#view-meetingDetail #mdChatBody .user{background:var(--act);color:var(--text-0);align-self:flex-end}#view-meetingDetail #mdChatBody .agent{background:var(--field);color:var(--text-1);align-self:flex-start;border:1px solid var(--border)}
+#view-meetingDetail .studio-chat-empty{font-size:14px;line-height:1.8;color:var(--text-2);padding:40px 10px 16px;max-width:280px}
+#view-meetingDetail #mdChatInput{min-width:0;font-size:13px;min-height:44px;border-radius:10px}html #view-meetingDetail #mdChatPane .btn{min-width:42px;padding:8px 12px;box-shadow:none!important;border-radius:10px}
+#view-meetingDetail .studio-notes,#view-meetingDetail .studio-exports{border-bottom:1px solid var(--border);padding:18px 0}
+#view-meetingDetail details>summary{cursor:pointer;font-size:12px;font-weight:600;color:var(--text-2)}
+html #view-meetingDetail details>.card{background:transparent!important;border:0!important;box-shadow:none!important;padding:16px 0 0!important;margin:0!important;border-radius:0!important}
+#view-meetingDetail details>.card>.view-sub{display:none}
+#view-meetingDetail #mdNotesInput{font-size:14px;line-height:1.7;min-height:120px!important}
+#view-meetingDetail .studio-mobile-nav{display:none}
+#view-meetingDetail #mdMeetBotBar{background:var(--field)!important;border-color:var(--border)!important;color:var(--text-1)}
+#view-meetingDetail button:focus-visible,#view-meetingDetail summary:focus-visible{outline:2px solid var(--ac);outline-offset:4px}
+@media(min-width:901px){#view-meetingDetail .studio-chat-open #mdContentColumn{display:block}#view-meetingDetail #mdChatColumn{display:flex}}
+@media(max-width:1100px){html #view-meetingDetail{padding:24px 22px 90px}#view-meetingDetail .studio-grid{gap:22px;grid-template-columns:minmax(0,1fr) minmax(290px,40%)}}
+@media(max-width:900px){html #view-meetingDetail{padding:20px 16px 100px}#view-meetingDetail .studio-grid{grid-template-columns:minmax(0,1fr);gap:0}#view-meetingDetail .studio-mobile-nav{display:flex;gap:4px;background:var(--field);border:1px solid var(--border);border-radius:11px;padding:4px;margin-bottom:18px}#view-meetingDetail .studio-mobile-nav button{flex:1;border:0;background:none;color:var(--text-2);padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer}#view-meetingDetail .studio-mobile-nav .active{background:var(--act);color:var(--text-0)}#view-meetingDetail #mdChatColumn{display:none}#view-meetingDetail .studio-chat-open #mdContentColumn{display:none}#view-meetingDetail .studio-chat-open #mdChatColumn{display:flex;position:relative;top:auto;height:calc(100dvh - 285px);min-height:300px;max-height:680px}#view-meetingDetail .studio-toolbar{padding-bottom:18px;margin-bottom:18px;flex-wrap:wrap}#view-meetingDetail .studio-toolbar .btn{max-width:100%}#view-meetingDetail #mdChatBody .bubble{max-width:95%}html #view-meetingDetail #mdSummaryPane>.card{padding:22px 0!important}}

@@ -681,9 +681,11 @@ function renderMeetingDetail(){
     segments = (m && m.transcript && m.transcript.length) ? [...m.transcript] : [];
   }
 
+  const summaryAction = document.getElementById('btnQuickSummarize');
+  summaryAction?.classList.toggle('hidden', Boolean(m?.summary?.trim()));
   const partEl=document.getElementById('mdParticipants');
   if(partEl){
-    const list=(m && m.participants) || [];
+    const list = cleanMeetingParticipants(m?.participants);
     partEl.innerHTML = list.length ? list.map(p=>`<span class="tag">${escapeHtml(p)}</span>`).join('') :
       `<div style="color:var(--text-2);font-size:12px;">${I18N[lang].noParticipants}</div>`;
   }
@@ -1579,6 +1581,13 @@ function meetBotInviteFallback() {
 function clearMeetBotPending(){pendingMeetBot=null;clearTimeout(meetBotSwitchTimer);meetBotSwitchTimer=null;}
 function sameMeetBotUser(bot){return !bot.uid || bot.uid===firebase.auth().currentUser?.uid;}
 
+function cleanMeetingParticipants(participants) {
+  return [...new Set((participants || [])
+    .filter(name => typeof name === 'string')
+    .map(name => name.trim())
+    .filter(name => name && !/^(zoom_in|zoom_out|backgrounds and effects|hình nền và hiệu ứng)$/i.test(name)))];
+}
+
 async function startMeetBotFromRecording() {
   const urlInput = document.getElementById('recMeetUrl');
   const titleInput = document.getElementById('recMeetTitle');
@@ -1652,7 +1661,7 @@ async function pollMeetBotStatus(jobId) {
       message:pendingMeetBot?meetBotText('Đang xử lý và lưu phiên cũ; link mới đang chờ. ','Processing and saving previous meeting; new link is queued. ')+(data.message||''):data.message,
       elapsed_sec:data.elapsed_sec||0,participants:data.participants||[]});
     if(bot.meetingId&&currentMeetingId===bot.meetingId&&currentMeetingObj&&data.participants?.length){
-      const merged=Array.from(new Set([...(currentMeetingObj.participants||[]),...data.participants]));currentMeetingObj.participants=merged;
+      const merged=cleanMeetingParticipants([...(currentMeetingObj.participants||[]),...data.participants]);currentMeetingObj.participants=merged;
       const part=document.getElementById('mdParticipants');if(part)part.innerHTML=merged.map(p=>'<span class="tag">'+escapeHtml(p)+'</span>').join('');
     }
     if(terminal&&data.result){
@@ -1679,7 +1688,7 @@ async function pollMeetBotStatus(jobId) {
 
 function updateMeetBotUI({ active, status, message, elapsed_sec = 0, participants = [] }) {
   message = safeServiceMessage(message);
-  participants = participants.filter(p => typeof p==='string' && !['Backgrounds and effects','Hình nền và hiệu ứng'].includes(p.trim()));
+  participants = cleanMeetingParticipants(participants);
   // 1. Recording view card
   const startBtn = document.getElementById('recMeetStartBtn');
   const stopBtn = document.getElementById('recMeetStopBtn');
@@ -1742,10 +1751,10 @@ async function finalizeMeetBotResult(botInfo, result) {
 
   let meetingId = botInfo.meetingId;
   const existingMeeting = meetingId ? meetings.find(m => m.id === meetingId) : null;
-  const mergedParticipants = Array.from(new Set([
+  const mergedParticipants = cleanMeetingParticipants([
     ...((existingMeeting && existingMeeting.participants) || []),
     ...(result.participants || [])
-  ]));
+  ]);
 
   const meetingPayload = {
     source:{kind:'kimkim_meeting',format:'unknown'},
@@ -1777,16 +1786,6 @@ async function finalizeMeetBotResult(botInfo, result) {
   if (idx >= 0) meetings[idx] = { ...meetings[idx], ...meetingPayload };
   else meetings.unshift(meetingPayload);
 
-  // Also save summary to Notes if non-empty
-  if (summary) {
-    try {
-      const noteId = await NoteService.createNote(finalTitle);
-      if (noteId) await NoteService.updateNote(noteId, { title: finalTitle, content: summary });
-    } catch (e) {
-      console.warn('Could not create note from Meet Bot summary:', e);
-    }
-  }
-
   updateMeetBotUI({ active: false, status: 'done', message: '✅ Đã lưu biên bản cuộc họp Google Meet!' });
   renderAll();
   showView('meetings', document.querySelector('[data-view=meetings]'));
@@ -1816,9 +1815,8 @@ async function generateSummaryFromCurrentTranscript() {
     if(!id)throw Error(lang==='vi'?'Chưa lưu được kết quả. Hãy thử lại.':'Result was not saved. Please retry.');
     const idx=meetings.findIndex(m=>m.id===id);if(idx>=0)Object.assign(meetings[idx],updates);else meetings.unshift({id,...updates});
     if(currentMeetingId===sourceId){currentMeetingId=id;currentMeetingObj={...(sourceObj||{}),id,...updates};currentSummaryData=data;renderMeetingDetail();}
-    let noteSaved=false;
-    try{const noteId=await NoteService.createNote(title);if(noteId){await NoteService.updateNote(noteId,{title,content:data.summary});noteSaved=true;}}catch(e){console.warn('Summary note save failed');}
-    renderAll();notify(lang==='vi'?'Đã lưu tóm tắt cuộc họp.'+(noteSaved?' Đã tạo ghi chú.':''):'Meeting summary saved.'+(noteSaved?' Note created.':''));
+    renderAll();
+    notify(lang==='vi'?'Đã lưu tóm tắt cuộc họp.':'Meeting summary saved.');
   }catch(err){notify(safeServiceMessage(err.message));}
   finally{analysisInFlight.delete(lock);badge?.classList.add('hidden');if(btn){btn.disabled=false;updateMeetingDetailLocale();}}
 }

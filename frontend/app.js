@@ -30,6 +30,7 @@ function setLang(l){
   document.querySelectorAll('[data-i18n-aria]').forEach(el=>el.setAttribute('aria-label',t(el.dataset.i18nAria)));
   renderAll();
   updateMeetingDetailLocale();
+  updateMeetingFormLocale();
   if(currentUser) updateUserUI(currentUser);
   if(typeof RecordingRefreshLang==='function') RecordingRefreshLang();
   document.dispatchEvent(new Event('akk:languagechange'));
@@ -431,6 +432,20 @@ async function deleteMeetingHandler(id){
   try{ await MeetingService.deleteMeeting(id); showView('meetings',document.querySelector('[data-view=meetings]')); }
   catch(err){ notify(err.message); }
 }
+function meetingSystemMessageKey(text){
+  const value=String(text||'').trim().replace(/\s+/g,' ');
+  const unavailable=new Set(['Xin lỗi, không thể kết nối tới mô hình AI lúc này.','Sorry, cannot connect to the AI model right now.','Sorry, unable to connect to the AI model at the moment.','The AI service is temporarily unavailable. Please try again later.','Dịch vụ AI đang gián đoạn. Vui lòng thử lại sau.']);
+  return (unavailable.has(value)||[I18N.vi?.detailAIUnavailable,I18N.en?.detailAIUnavailable].includes(value))?'detailAIUnavailable':null;
+}
+function meetingAgentContent(text){
+  const key=meetingSystemMessageKey(text);
+  return key?'<span data-i18n="'+key+'">'+escapeHtml(t(key))+'</span>':formatMarkdownToHtml(text||'');
+}
+function updateMeetingFormLocale(){
+  const title=document.getElementById('cmFormTitle'),button=document.getElementById('cmSubmitBtn');
+  if(title)title.textContent=t(editingMeetingId?'editMeetingTitle':'createMeetingTitle');
+  if(button)button.textContent=t(editingMeetingId?'saveBtn':'createBtn');
+}
 let mdChatUnsub=null, mdJobsUnsub=null;
 function openMeeting(id){
   currentMeetingId=id;
@@ -464,7 +479,7 @@ function openMeeting(id){
     body.innerHTML = '';
     (rows || []).forEach(m => {
       const cls = m.role === 'user' ? 'user' : 'agent';
-      const content = cls === 'agent' ? formatMarkdownToHtml(m.text || '') : escapeHtml(m.text || '');
+      const content = cls === 'agent' ? meetingAgentContent(m.text || '') : escapeHtml(m.text || '');
       body.insertAdjacentHTML('beforeend', `<div class="bubble ${cls}">${content}</div>`);
     });
     body.scrollTop = body.scrollHeight;
@@ -555,7 +570,7 @@ async function sendMeetingChatMsg(){
     if (thinkingEl) thinkingEl.remove();
 
     // Render agent reply
-    body.insertAdjacentHTML('beforeend', `<div class="bubble agent">${formatMarkdownToHtml(reply)}</div>`);
+    body.insertAdjacentHTML('beforeend', `<div class="bubble agent">${meetingAgentContent(reply)}</div>`);
     body.scrollTop = body.scrollHeight;
 
     // Update local chatHistory
@@ -574,7 +589,7 @@ async function sendMeetingChatMsg(){
   } catch (err) {
     const thinkingEl = document.getElementById(thinkingId);
     if (thinkingEl) thinkingEl.remove();
-    body.insertAdjacentHTML('beforeend', `<div class="bubble agent" style="color:var(--red);">${escapeHtml(safeServiceMessage(err.message))}</div>`);
+    body.insertAdjacentHTML('beforeend', `<div class="bubble agent" style="color:var(--red);">${meetingAgentContent(safeServiceMessage(err.message))}</div>`);
     body.scrollTop = body.scrollHeight;
   } finally {analysisInFlight.delete(lock);}
 }
@@ -640,7 +655,7 @@ function updateMeetingDetailLocale(){
   const contentTab=document.getElementById('mdTabTranscriptBtn');
   if(contentTab) contentTab.textContent=t(m?.document?'detailContentTab':'detailTranscriptTab');
   const button=document.getElementById('btnQuickSummarize');
-  if(button&&!analysisInFlight.has('summary:'+currentMeetingId)) button.textContent=t(m?.document?'detailSummaryDocument':'detailSummaryMeeting');
+  if(button&&!analysisInFlight.has('summary:'+currentMeetingId)) button.textContent=t('detailAskSummary');
   if(m){
     if(!m.participants?.length){const n=document.getElementById('mdParticipants');if(n)n.textContent=t('noParticipants');}
     if(!m.keyPoints?.length){const n=document.getElementById('mdKeyPoints');if(n)n.textContent=t('detailNoResult');}
@@ -655,11 +670,9 @@ function renderMeetingDetail(){
   document.querySelector('#view-meetingDetail .video-controls')?.classList.toggle('hidden', isDocument);
   document.getElementById('mdParticipants')?.closest('.card')?.classList.toggle('hidden', isDocument);
   const contentTab = document.getElementById('mdTabTranscriptBtn');
-  if (contentTab) contentTab.textContent = isDocument ? (lang === 'vi' ? 'Nội dung tài liệu' : 'Document content') : 'Transcript';
+  if(contentTab) contentTab.textContent=t(isDocument?'detailContentTab':'detailTranscriptTab');
   const summaryButton = document.getElementById('btnQuickSummarize');
-  if (summaryButton) summaryButton.textContent = isDocument
-    ? (lang === 'vi' ? 'Tóm tắt tài liệu với AI' : 'Summarize document with AI')
-    : (lang === 'vi' ? '⚡ Tóm tắt cuộc họp với AI' : '⚡ Summarize meeting with AI');
+  if(summaryButton&&!analysisInFlight.has('summary:'+currentMeetingId)) summaryButton.textContent=t('detailAskSummary');
   const titleEl = document.querySelector('#view-meetingDetail .view-title');
   if (titleEl) titleEl.textContent = m ? m.title : '';
   const subEl = document.querySelector('#view-meetingDetail .view-sub');
@@ -678,11 +691,11 @@ function renderMeetingDetail(){
   if(kpEl){
     const kp=(m && m.keyPoints) || [];
     kpEl.innerHTML = kp.length ? kp.map(k=>`<span class="tag">${escapeHtml(k)}</span>`).join('') :
-      `<div style="color:var(--text-2);font-size:12px;">${(lang==='vi'?'Chưa có kết quả.':'No result yet.')}</div>`;
+      `<div style="color:var(--text-2);font-size:12px;">${t('detailNoResult')}</div>`;
   }
   const sumEl=document.getElementById('mdSummary');
   if(sumEl) {
-    sumEl.innerHTML = (m && m.summary) ? formatMarkdownToHtml(m.summary) : (lang==='vi'?'Chưa có kết quả.':'No result yet.');
+    sumEl.innerHTML = (m && m.summary) ? formatMarkdownToHtml(m.summary) : t('detailNoResult');
   }
   const aiEl=document.getElementById('mdActionItems');
   if(aiEl){
@@ -691,7 +704,7 @@ function renderMeetingDetail(){
       items = extractActionItems(m.summary);
     }
     aiEl.innerHTML = items.length ? '<ul style="margin:0;padding-left:18px;">'+items.map(i=>`<li style="font-size:13px;">${escapeHtml(i)}</li>`).join('')+'</ul>' :
-      `<div style="color:var(--text-2);font-size:12px;">${(lang==='vi'?'Chưa có kết quả.':'No result yet.')}</div>`;
+      `<div style="color:var(--text-2);font-size:12px;">${t('detailNoResult')}</div>`;
   }
   const notesInput=document.getElementById('mdNotesInput');
   if(notesInput) notesInput.value = (m && m.notes) || '';
@@ -1318,6 +1331,7 @@ function getApiUrl() {
 // Firebase credentials are sent only to the configured backend, never persisted.
 function safeServiceMessage(value, fallback) {
   const text=typeof value==='string'?value:'';
+  const key=meetingSystemMessageKey(text);if(key)return t(key);
   if (/<!doctype|<html|<head|<body|<script|Gipformer STT error|Traceback|trycloudflare/i.test(text) || text.length>600)
     return fallback || (lang==='vi'?'Dịch vụ AI đang gián đoạn. Vui lòng thử lại sau.':'The AI service is temporarily unavailable. Please try again later.');
   return text || fallback || '';
@@ -1846,4 +1860,5 @@ for (const [id, action] of [['signinPassword',signInWithEmail],['signupPassword'
     if(event.key==='Enter'&&!event.isComposing){event.preventDefault();action();}
   });
 }
+
 

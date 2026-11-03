@@ -243,7 +243,6 @@
             <div class="trans-list" id="segList"></div>
           </div>
           <div class="card hidden" id="mdChatPane" style="flex:1;padding:12px;display:flex;flex-direction:column;min-height:0;">
-            <div style="font-size:11px;color:var(--text-2);margin-bottom:6px;" data-i18n="scopedChatNote">Chatbot chỉ trả lời trong phạm vi bản ghi và file đã tải lên của cuộc họp này.</div>
             <div id="mdChatBody" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
             <div style="display:flex;gap:6px;margin-top:8px;">
               <input id="mdChatInput" data-i18n-ph="mdChatPh" placeholder="Hỏi về cuộc họp này..." style="flex:1;" onkeydown="if(event.key==='Enter')sendMeetingChatMsg()">
@@ -269,7 +268,7 @@
           <div class="field" style="flex:1"><label data-i18n="cmTimeLbl">Giờ</label><input id="cmTime" type="time" style="width:100%"></div>
         </div>
         <div class="field"><label data-i18n="cmParticipantsLbl">Người tham gia (email, cách nhau bởi dấu phẩy)</label><input id="cmParticipants" style="width:100%" placeholder="a@x.com, b@x.com"></div>
-        <div class="field"><label>Link Google Meet (tuỳ chọn)</label><input id="cmMeetUrl" style="width:100%" placeholder="https://meet.google.com/xxx-xxxx-xxx"></div>
+        <div class="field"><label data-i18n="detailMeetLink">Link Google Meet (tuỳ chọn)</label><input id="cmMeetUrl" style="width:100%" placeholder="https://meet.google.com/xxx-xxxx-xxx"></div>
         <div class="field"><label data-i18n="cmDescLbl">Mô tả</label><textarea id="cmDescription" style="width:100%;min-height:70px;"></textarea></div>
         <div class="toggle-row" style="margin:8px 0;">
           <span data-i18n="inviteKimkimLbl">Mời Adolf KimKim vào lịch</span>
@@ -540,8 +539,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="localizations/vi-vn.js?v=files-flow-1"></script>
-<script src="localizations/eng-en.js?v=files-flow-1"></script>
+<script src="localizations/vi-vn.js?v=copy-restore-1"></script>
+<script src="localizations/eng-en.js?v=copy-restore-1"></script>
 <script src="services/firebaseClient.js?v=3"></script>
 <script src="services/profileMedia.js?v=1"></script>
 <script src="imageCropper.js?v=1"></script>
@@ -558,7 +557,7 @@
 <script src="hig-ui.js?v=1"></script>
 <script src="layout.js"></script>
 <script src="ui-feedback.js"></script>
-<script src="app.js?v=files-flow-1"></script>
+<script src="app.js?v=copy-restore-1"></script>
 <script src="home.js?v=4"></script>
 <script src="notes-studio.js?v=3"></script>
 <script src="services/communityService.js?v=4"></script>
@@ -600,6 +599,7 @@ if(typeof signInWithEmail !== 'function' && 'serviceWorker' in navigator){
 </dialog>
 </body>
 </html>
+
 
 
 

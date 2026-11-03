@@ -1142,6 +1142,7 @@ function renderAll(){
 }
 function renderTranscriptAndStats(){
   const segEl=document.getElementById('segList');
+  segEl?.classList.toggle('extracted-reader', Boolean(currentMeetingObj?.document));
   if (currentMeetingObj?.document) {
     if (segEl) {
       segEl.innerHTML = segments.filter(section => section.text?.trim()).map(section => {

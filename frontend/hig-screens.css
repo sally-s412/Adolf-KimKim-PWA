@@ -156,26 +156,40 @@ html .app-header .desktop-sidebar-toggle{display:none}
 @media(min-width:761px){html #view-home,html #app>.sidebar,html #app>.main:has(>#view-home.active){scrollbar-width:none}html #view-home::-webkit-scrollbar,html #app>.sidebar::-webkit-scrollbar,html #app>.main:has(>#view-home.active)::-webkit-scrollbar{display:none;width:0;height:0}}
 
 /* Document text reader */
+#segList.extracted-reader {
+  padding: 0 clamp(16px, 3vw, 36px);
+}
 #segList .extracted-page {
-  padding: clamp(14px, 2vw, 24px);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  margin-block: 0 14px;
-  background: var(--field);
+  box-sizing: border-box;
+  max-width: 68ch;
+  margin-inline: auto;
+  padding-block: 22px 26px;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.75;
+  text-align: start;
+  letter-spacing: normal;
+}
+#segList .extracted-page + .extracted-page {
+  border-top: 1px solid var(--border);
 }
 #segList .extracted-page h3 {
-  margin: 0 0 12px;
+  margin: 0 0 14px;
   color: var(--text-1);
   font-size: 12px;
   font-weight: 650;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
 }
 #segList .extracted-page p {
-  margin: 0 0 12px;
+  margin: 0;
   color: var(--text-0);
-  font-size: 14px;
-  line-height: 1.7;
+  font: inherit;
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
-#segList .extracted-page p:last-child { margin-bottom: 0; }
-#segList .extracted-empty { padding: 12px; color: var(--text-1); }
+#segList .extracted-page p + p { margin-top: 0.9em; }
+#segList .extracted-empty { padding-block: 16px; color: var(--text-1); }
+@media (max-width: 760px) {
+  #segList .extracted-page { padding-block: 16px 20px; }
+}

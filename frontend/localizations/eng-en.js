@@ -1,12 +1,5 @@
 window.I18N = window.I18N || {};
 window.I18N.en = {
-  studioLive: "Live transcription",
-  studioWorkspace: "Content workspace",
-  studioContent: "Content",
-  studioAsk: "Ask KimKim",
-  studioScoped: "This content only",
-  studioChatEmpty: "Ask about key points, decisions or details in this content.",
-
   installApp: 'Install app',
   updateApp: 'Update',
   navRecording: 'Recording',
@@ -245,7 +238,3 @@ Object.assign(window.I18N.en,{"detailBack": "Back", "detailRecording": "RECORDIN
 Object.assign(window.I18N.en,{"filesFormat": "File type", "filesAllFormats": "All file types", "filesUnknown": "Unknown", "filesSource": "Source", "filesAllSources": "All sources", "filesUpload": "Uploaded file", "filesRecorder": "KimKim Recorder", "filesMeeting": "KimKim Meeting", "filesManual": "Manual entry", "filesName": "File / recording", "filesAiReady": "AI summary: Result saved", "filesAiMissing": "AI summary: No result saved", "filesAiWorking": "AI summary: Processing…", "filesStatusHelp": "Content status and saved AI results are shown separately.", "filesFilterNote": "Older recordings without original file metadata are shown as Unknown."});
 
 Object.assign(window.I18N.en, {filesNoMatches:"No content matches these filters."});
-
-
-
-Object.assign(window.I18N.en,{"studioSummarize": "Ask KimKim to summarize", "detailSummaryDocument": "Ask KimKim to summarize", "detailSummaryMeeting": "Ask KimKim to summarize", "studioEdit": "Edit", "studioDelete": "Delete", "studioMindmap": "Mind map", "studioSend": "Send", "studioMeetLink": "Google Meet link (optional)", "studioResultSaved": "Summary saved", "studioChatEmpty": "What would you like to know?", "mdChatPh": "Ask KimKim…", "studioScoped": "This content", "detailNoResult": "No result yet."});

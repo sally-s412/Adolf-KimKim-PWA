@@ -1140,8 +1140,8 @@ function renderTranscriptAndStats(){
   if(segEl) {
     let html = segments.map(s=>`
       <div class="seg" onclick="highlightSeg(this)">
-        <div class="meta"><span class="dot" style="background:${s.color}"></span><b>${escapeHtml(s.speaker)}</b>
-        <span class="time">${fmt(s.t)}</span></div><p>${escapeHtml(s.text)}</p></div>`).join('');
+        <div class="meta"><span class="dot" style="background:${s.color}"></span><b>${escapeHtml(speakerDisplayName(s.speaker))}</b>
+        <span class="time">${Number.isFinite(s.t) ? fmt(Math.floor(s.t)) : "—"}</span></div><p>${escapeHtml(s.text)}</p></div>`).join('');
     if (livePartialText) {
       html += `
         <div class="seg partial">
@@ -1152,12 +1152,24 @@ function renderTranscriptAndStats(){
     segEl.innerHTML = html || `<div style="color:var(--text-2);font-size:13px;">${isMeetingRecording ? I18N[lang].aiProcessing : t('detailNoTranscript')}</div>`;
     segEl.scrollTop = segEl.scrollHeight;
   }
-  const totals={}; segments.forEach(s=>totals[s.speaker]=(totals[s.speaker]||0)+1);
+  const hasDurations = segments.length > 0 && segments.every(s =>
+    Number.isFinite(s.start) && Number.isFinite(s.end) && s.end > s.start);
+  const totals = Object.create(null);
+  segments.forEach(s => {
+    totals[s.speaker] = (totals[s.speaker] || 0) + (hasDurations ? s.end - s.start : 1);
+  });
+  const statsTitle = document.getElementById('speakerStats')?.previousElementSibling;
+  if (statsTitle) {
+    statsTitle.removeAttribute('data-i18n');
+    statsTitle.textContent = hasDurations
+      ? (lang === 'vi' ? 'Thời gian phát biểu' : 'Speaking time')
+      : (lang === 'vi' ? 'Số đoạn thoại theo giọng' : 'Transcript segments by speaker');
+  }
   const max=Math.max(1,...Object.values(totals));
   const statEl=document.getElementById('speakerStats');
   if(statEl) statEl.innerHTML = Object.entries(totals).map(([name,c])=>{
     const sp = segments.find(s=>s.speaker===name);
-    return `<div class="sp-row"><span style="width:110px;max-width:40%;flex-shrink:0;overflow-wrap:anywhere">${escapeHtml(name)}</span><div class="sp-bar"><i style="width:${(c/max)*100}%;background:${sp ? sp.color : 'var(--color-primary)'}"></i></div></div>`;
+    return `<div class="sp-row"><span style="width:110px;max-width:40%;flex-shrink:0;overflow-wrap:anywhere">${escapeHtml(speakerDisplayName(name))}</span><div class="sp-bar"><i style="width:${(c/max)*100}%;background:${sp ? sp.color : 'var(--color-primary)'}"></i></div></div>`;
   }).join('') || (statEl ? `<div style="color:var(--text-2);font-size:12px;">${t('detailNoSpeakerData')}</div>` : '');
 }
 function fmt(s){const m=Math.floor(s/60),sec=s%60;return `${m}:${sec.toString().padStart(2,'0')}`;}
@@ -1302,6 +1314,13 @@ document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='
 function mapSpeakerName(spk) {
   if (spk === null || spk === undefined || String(spk).trim() === '') return 'UNKNOWN';
   return String(spk).trim();
+}
+function speakerDisplayName(value) {
+  const name = mapSpeakerName(value);
+  const id = /^SPEAKER_(\d+)$/i.exec(name);
+  if (id) return (lang === 'vi' ? 'Giọng chưa xác định ' : 'Unidentified speaker ') + (Number(id[1]) + 1);
+  if (/^(unknown|speaker)$/i.test(name)) return lang === 'vi' ? 'Giọng chưa xác định' : 'Unidentified speaker';
+  return name;
 }
 function getSpeakerColor(name) {
   const palette = ["var(--speaker-1)", "var(--speaker-2)", "var(--speaker-3)", "var(--speaker-4)", "var(--speaker-5)", "var(--speaker-6)", "var(--speaker-7)"];
@@ -1733,9 +1752,11 @@ function updateMeetBotUI({ active, status, message, elapsed_sec = 0, participant
 async function finalizeMeetBotResult(botInfo, result) {
   const rawTranscript = result.transcript || [];
   const mappedSegments = rawTranscript.map(s => {
-    const spk = mapSpeakerName(s.speaker || 'Speaker');
+    const spk = mapSpeakerName(s.speaker ?? s.speaker_id);
+    const start = s.start ?? s.t;
     return {
-      t: Math.floor(s.t ?? s.start ?? 0),
+      t: Number.isFinite(start) && start >= 0 ? Math.floor(start) : null,
+      ...(Number.isFinite(start) && start >= 0 && Number.isFinite(s.end) && s.end > start ? {start, end: s.end} : {}),
       speaker: spk,
       color: getSpeakerColor(spk),
       text: (s.text || '').trim()

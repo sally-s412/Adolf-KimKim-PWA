@@ -51,7 +51,7 @@
 <link rel="stylesheet" href="chat-widget.css?v=1">
 <link rel="stylesheet" href="design-tokens.css?v=rose-dusk-3">
 <link rel="stylesheet" href="hig-components.css?v=rose-dusk-3">
-<link rel="stylesheet" href="hig-screens.css?v=files-flow-1">
+<link rel="stylesheet" href="hig-screens.css?v=home-sidebar-1">
 </head>
 <body>
 
@@ -134,7 +134,7 @@
     <!-- ===== HOME ===== -->
     <div class="view" id="view-home">
       <header class="home-intro"><div class="home-welcome-content"><p id="homeGreeting">Xin chào bạn</p><h1 id="homeHeading">WELCOME TO<br>ADOLF KIMKIM</h1><p data-home-copy="sub">Để KimKim ghi lại, đọc hiểu và tóm tắt cho bạn.</p><div class="home-hero-actions"><button class="btn btn-primary" onclick="homeStudio()" data-home-copy="heroAction">KimKim AI Studio</button><button class="btn btn-ghost" onclick="homeSocial()" data-home-copy="socialAction">KimKim Social</button></div></div></header>
-      <section id="kimkimAIStudio" class="home-ai-studio" aria-labelledby="studioTitle" tabindex="-1"><div class="home-tools-title"><img src="assets/kimkimAI.png" alt="" width="34" height="42"><div><strong id="studioTitle">KimKim AI Studio</strong><span data-home-copy="toolsSub">Biến nội dung thành điều hữu ích.</span></div><span class="home-tools-line"></span></div><div class="home-actions">
+      <section id="kimkimAIStudio" class="home-ai-studio" aria-labelledby="studioTitle" tabindex="-1"><div class="home-tools-title"><img src="assets/kimkimAI.png" alt="" width="34" height="42"><div><strong id="studioTitle">KimKim AI Studio</strong><span data-home-copy="toolsSub">Biến nội dung thành điều hữu ích.</span></div></div><div class="home-actions">
         <article class="home-action"><span class="home-action-icon" data-home-icon="recording" aria-hidden="true"></span><h2 data-home-copy="record"></h2><p data-home-copy="recordSub"></p><button type="button" class="btn" data-variant="gray" onclick="homeRecord()" data-home-copy="recordAction"></button></article>
         <article class="home-action "><span class="home-action-icon" data-home-icon="meetings" aria-hidden="true"></span><h2 data-home-copy="meet"></h2><p data-home-copy="meetSub"></p><button type="button" class="btn" data-variant="gray" onclick="homeMeet()" data-home-copy="meetAction"></button></article>
         <article class="home-action "><span class="home-action-icon" data-home-icon="uploads" aria-hidden="true"></span><h2 data-home-copy="upload"></h2><p data-home-copy="uploadSub"></p><button type="button" class="btn" data-variant="gray" onclick="homeUpload()" data-home-copy="uploadAction"></button></article>
@@ -574,7 +574,7 @@
 <script src="ux-completeness.js?v=1"></script>
 <script src="chat-widget.js?v=1"></script>
 <script src="account-social-settings.js?v=1"></script>
-<script src="shell-refinement.js?v=5"></script>
+<script src="shell-refinement.js?v=6"></script>
 <script src="pwa.js"></script>
 <script>
 // Recover only a failed app boot; a working app keeps the normal update prompt.
@@ -599,6 +599,7 @@ if(typeof signInWithEmail !== 'function' && 'serviceWorker' in navigator){
 </dialog>
 </body>
 </html>
+
 
 
 

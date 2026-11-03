@@ -1,5 +1,5 @@
 /* Studio Canvas: scoped to file/recording detail; uses the shared Rose Dusk tokens. */
-html #view-meetingDetail{max-width:1520px;margin:0 auto;padding:28px 38px 90px;overflow:visible}
+html #view-meetingDetail{box-sizing:border-box;width:100%;min-width:0;align-self:stretch;max-width:1520px;margin:0 auto;padding:28px 38px 90px;overflow:visible}
 html #view-meetingDetail .page-heading{margin-bottom:22px;align-items:center}
 html #view-meetingDetail .page-heading .btn{min-height:36px;padding:7px 12px;font-size:12px;border-radius:9px;box-shadow:none!important}
 html #view-meetingDetail>.view-title{font-size:clamp(25px,2.5vw,36px);line-height:1.2;letter-spacing:-1px;margin:0 0 10px;overflow-wrap:anywhere}
@@ -69,3 +69,20 @@ html #view-meetingDetail .page-heading{margin-bottom:16px}
 #view-meetingDetail .studio-tabs button{font-size:13px;padding-top:10px;padding-bottom:15px}
 #view-meetingDetail .studio-notes summary,#view-meetingDetail .studio-exports summary{padding:3px 0;font-size:13px}
 @media(max-width:900px){#view-meetingDetail .studio-toolbar{padding-top:4px;gap:14px}#view-meetingDetail #btnQuickSummarize{margin-left:0}#view-meetingDetail .studio-source-meta{width:100%}#view-meetingDetail .studio-section-heading{font-size:17px;margin-bottom:14px}#view-meetingDetail .studio-keypoints{gap:8px}}
+
+
+/* Forms share a predictable desktop canvas, independent of field content. */
+html #view-createMeeting{box-sizing:border-box;width:100%;min-width:0;align-self:stretch;max-width:1040px;margin:0 auto;padding:28px 38px 90px}
+html #view-createMeeting>.card{width:100%;max-width:none!important;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 24px;padding:28px!important;box-shadow:none}
+#view-createMeeting .field{min-width:0;margin:0}
+#view-createMeeting .field:first-child,#view-createMeeting .field:has(textarea),#view-createMeeting>.card>div:not(.field){grid-column:1/-1}
+#view-createMeeting .field-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+#view-createMeeting .field-pair>.field:first-child{grid-column:auto}
+#view-createMeeting input,#view-createMeeting textarea{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+#view-createMeeting textarea{min-height:110px!important}
+#view-meetingDetail .studio-grid,#view-meetingDetail #mdContentColumn,#view-meetingDetail #mdChatColumn{min-width:0;max-width:100%}
+#view-meetingDetail #mdChatBody pre{max-width:100%;overflow:auto}
+#view-meetingDetail #mdChatBody :is(p,li,a),#view-meetingDetail #mdSummary{overflow-wrap:anywhere}
+#view-meetingDetail .studio-chat-heading{min-width:0}
+@media(max-width:1100px){html #view-createMeeting{padding:24px 22px 90px}}
+@media(max-width:600px){html #view-createMeeting{padding:20px 16px 100px}html #view-createMeeting>.card{grid-template-columns:minmax(0,1fr);gap:18px;padding:20px!important}#view-createMeeting .field-pair{gap:12px}#view-createMeeting>.view-title{font-size:24px}}

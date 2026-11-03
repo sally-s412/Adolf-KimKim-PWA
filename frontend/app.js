@@ -1337,6 +1337,19 @@ function safeServiceMessage(value, fallback) {
   return text || fallback || '';
 }
 function apiErrorMessage(status, detail, path) {
+  if (path.replace(/\/$/, '') === '/api/meet-bot/join') {
+    const reason = typeof detail === 'string' ? detail : detail?.message || detail?.code || '';
+    if (status === 409 || /busy|already (?:in|running|active)|stale|cache/i.test(reason)) {
+      return meetBotText('KimKim đang bận nên không thể mời ngay lúc này. Vui lòng thử lại sau.', 'KimKim is busy and cannot join right now. Please try again later.');
+    }
+    if (/is starting|warming up/i.test(reason)) {
+      return meetBotText('Không thể mời KimKim vì dịch vụ đang khởi động. Vui lòng thử lại sau ít phút.', 'KimKim could not join because the service is starting. Please try again shortly.');
+    }
+    if (status === 401 || status === 403) {
+      return meetBotText('Không thể mời KimKim vì phiên đăng nhập không hợp lệ hoặc bạn chưa có quyền.','KimKim could not join because your session is invalid or access was denied.');
+    }
+    return meetBotInviteFallback();
+  }
   if (['/api/transcribe', '/transcribe'].includes(path.replace(/\/$/, ''))) {
     if ([500, 502, 503].includes(status)) {
       return lang === 'vi'
@@ -1560,6 +1573,9 @@ function renderTranscript() {
 let activeMeetBot = null; // Keep the old job until its result is durably saved.
 let pendingMeetBot = null, meetBotJoining = false, meetBotSwitchTimer = null;
 const meetBotText = (vi,en) => lang==='en'?en:vi;
+function meetBotInviteFallback() {
+  return meetBotText('Không thể mời KimKim vì dịch vụ họp chưa phản hồi thành công. Vui lòng thử lại sau.', 'KimKim could not join because the meeting service did not respond successfully. Please try again later.');
+}
 function clearMeetBotPending(){pendingMeetBot=null;clearTimeout(meetBotSwitchTimer);meetBotSwitchTimer=null;}
 function sameMeetBotUser(bot){return !bot.uid || bot.uid===firebase.auth().currentUser?.uid;}
 
@@ -1603,7 +1619,7 @@ async function startMeetBotJob(meetUrl, title, existingMeetingId) {
     activeMeetBot=bot;bot.pollTimer=setInterval(()=>pollMeetBotStatus(bot.jobId),2000);
     // Unlock before polling; the active job now prevents a second join.
     meetBotJoining=false;pollMeetBotStatus(bot.jobId);
-  }catch(err){if(uid===firebase.auth().currentUser?.uid){const msg=safeServiceMessage(err.message);updateMeetBotUI({active:false,status:'error',message:meetBotText('Không thể mời KimKim: ','Could not invite KimKim: ')+msg});notify(msg);}}
+  }catch(err){if(uid===firebase.auth().currentUser?.uid){const msg=/^(Không thể mời KimKim|KimKim đang bận|KimKim could not join|KimKim is busy)/.test(err.message) ? err.message : meetBotInviteFallback();updateMeetBotUI({active:false,status:'error',message:msg});notify(msg);}}
   finally{meetBotJoining=false;const start=document.getElementById('recMeetStartBtn');if(start)start.disabled=!!pendingMeetBot||!!activeMeetBot?.saving;}
 }
 

@@ -666,7 +666,7 @@ function extractActionItems(summary) {
 function updateMeetingDetailLocale(){
   const m=currentMeetingObj;
   const contentTab=document.getElementById('mdTabTranscriptBtn');
-  if(contentTab) contentTab.textContent=t(m?.document?'detailContentTab':'detailTranscriptTab');
+  if(contentTab) contentTab.textContent=m?.document ? (lang === 'vi' ? 'Văn bản trích xuất' : 'Extracted text') : t('detailTranscriptTab');
   const button=document.getElementById('btnQuickSummarize');
   if(button&&!analysisInFlight.has('summary:'+currentMeetingId)) button.textContent=t('detailAskSummary');
   if(m){
@@ -683,7 +683,7 @@ function renderMeetingDetail(){
   document.querySelector('#view-meetingDetail .video-controls')?.classList.toggle('hidden', isDocument);
   document.getElementById('mdParticipants')?.closest('.card')?.classList.toggle('hidden', isDocument);
   const contentTab = document.getElementById('mdTabTranscriptBtn');
-  if(contentTab) contentTab.textContent=t(isDocument?'detailContentTab':'detailTranscriptTab');
+  if(contentTab) contentTab.textContent=isDocument ? (lang === 'vi' ? 'Văn bản trích xuất' : 'Extracted text') : t('detailTranscriptTab');
   const summaryButton = document.getElementById('btnQuickSummarize');
   if(summaryButton&&!analysisInFlight.has('summary:'+currentMeetingId)) summaryButton.textContent=t('detailAskSummary');
   const titleEl = document.querySelector('#view-meetingDetail .view-title');
@@ -1143,9 +1143,16 @@ function renderAll(){
 function renderTranscriptAndStats(){
   const segEl=document.getElementById('segList');
   if (currentMeetingObj?.document) {
-    if (segEl) segEl.innerHTML = segments.map(section => '<div class="seg">' +
-      (section.page ? '<div class="meta">' + (lang === 'vi' ? 'Trang' : 'Page') + ' ' + section.page + '</div>' : '') +
-      '<p style="white-space:pre-wrap">' + escapeHtml(section.text) + '</p></div>').join('');
+    if (segEl) {
+      segEl.innerHTML = segments.filter(section => section.text?.trim()).map(section => {
+        const pageLabel = section.page == null ? '' : (lang === 'vi' ? 'Trang ' : 'Page ') + section.page;
+        const paragraphs = section.text.trim().split(/\r?\n[ \t]*\r?\n/);
+        return '<article class="extracted-page">' +
+          (pageLabel ? '<h3>' + escapeHtml(pageLabel) + '</h3>' : '') +
+          paragraphs.map(paragraph => '<p>' + escapeHtml(paragraph) + '</p>').join('') +
+          '</article>';
+      }).join('') || '<p class="extracted-empty">' + escapeHtml(t('detailNoTranscript')) + '</p>';
+    }
     const stats = document.getElementById('speakerStats');
     if (stats) stats.innerHTML = '';
     return;

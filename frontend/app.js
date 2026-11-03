@@ -641,9 +641,22 @@ async function requestGenerationHandler(kind){
   }
 }
 
+function summaryFields(result) {
+  const summary = typeof result.summary === 'string' ? result.summary.trim() : '';
+  const keyPoints = result.key_points ?? result.keyPoints;
+  const actionItems = result.action_items ?? result.actionItems;
+  return {
+    summary,
+    keyPoints: Array.isArray(keyPoints) ? keyPoints.filter(item => typeof item === 'string' && item.trim()) : [],
+    actionItems: Array.isArray(actionItems)
+      ? actionItems.filter(item => typeof item === 'string' && item.trim())
+      : extractActionItems(summary)
+  };
+}
+
 function extractActionItems(summary) {
   if (!summary) return [];
-  const match = summary.match(/## Action Items\s*\n([\s\S]*?)(?:\n##|$)/i);
+  const match = summary.match(/#{2,6}\s+(?:Action Items|Việc cần làm)\s*\n([\s\S]*?)(?:\n##|$)/i);
   if (!match) return [];
   return match[1].split('\n')
     .map(l => l.replace(/^[\d+.\-*]\s*/, '').trim())
@@ -1024,7 +1037,7 @@ async function transcribeAudioBlob(blob, onProgress) {
 
   const rawSegments = result.segments || [];
   const collectedSegments = rawSegments.map(s => {
-    const spk = mapSpeakerName(s.speaker ?? s.speaker_id);
+    const spk = mapSpeakerName(String(s.speaker ?? '').trim() || s.speaker_id);
     return {
       t: Math.floor(s.start || 0),
       speaker: spk,
@@ -1765,10 +1778,9 @@ async function finalizeMeetBotResult(botInfo, result) {
 
   const now = new Date();
   const finalTitle = botInfo.title || result.title || ('Google Meet ' + now.toLocaleString('vi-VN'));
-  const durFormatted = fmt(result.duration_sec || 30);
-  const summary = result.summary || '';
-  const keyPoints = result.key_points || [];
-  const actionItems = extractActionItems(summary);
+  const durFormatted = Number.isFinite(result.duration_sec) && result.duration_sec >= 0
+    ? fmt(Math.floor(result.duration_sec)) : '';
+  const analysis = summaryFields(result);
 
   let meetingId = botInfo.meetingId;
   const existingMeeting = meetingId ? meetings.find(m => m.id === meetingId) : null;
@@ -1786,9 +1798,7 @@ async function finalizeMeetBotResult(botInfo, result) {
     status: 'done',
     participants: mergedParticipants,
     transcript: mappedSegments,
-    summary,
-    keyPoints,
-    actionItems
+    ...analysis
   };
 
   try {
@@ -1820,22 +1830,24 @@ async function endMeetingAndSummarize() {
 }
 
 async function generateSummaryFromCurrentTranscript() {
+  if (currentMeetingObj?.summary?.trim()) return;
   if(!segments?.length){notify(lang==='vi'?'Chưa có nội dung để tóm tắt.':'No transcript to summarize.');return;}
   const sourceId=currentMeetingId,sourceObj=currentMeetingObj,transcript=segments.map(s=>({...s})),uid=firebase.auth().currentUser?.uid;
   const lock='summary:'+sourceId;if(analysisInFlight.has(lock))return;analysisInFlight.add(lock);
   const badge=document.getElementById('summaryStatusBadge'),btn=document.getElementById('btnQuickSummarize');
   badge?.classList.remove('hidden');if(btn)btn.disabled=true;
   try{
-    const data=await runTranscriptAnalysis('summary',transcript,'',msg=>{if(btn)btn.textContent=msg;});
+    const data=await runTranscriptAnalysis('summary',transcript,'',msg=>{if(btn && currentMeetingId===sourceId)btn.textContent=msg;});
     if(firebase.auth().currentUser?.uid!==uid)return;
-    const title=data.title||sourceObj?.title||'Meeting';
-    const updates={title,transcript,summary:data.summary,keyPoints:data.key_points||[],actionItems:extractActionItems(data.summary),status:'done',dur:sourceObj?.dur||'00:30'};
+    const analysis = summaryFields(data);
+    if (!analysis.summary) throw Error(meetBotText('KimKim chưa trả về bản tóm tắt. Vui lòng thử lại.', 'KimKim returned no summary. Please try again.'));
+    const updates = {...analysis, status: 'done'};
     let id=sourceId;
     if(id)await MeetingService.updateMeeting(id,updates);
-    else{id=await MeetingService.createMeeting({...updates,date:new Date().toISOString().slice(0,10),time:new Date().toTimeString().slice(0,5),participants:[]});}
+    else{id=await MeetingService.createMeeting({...updates,title:sourceObj?.title||data.title||'Meeting',transcript,date:new Date().toISOString().slice(0,10),time:new Date().toTimeString().slice(0,5),participants:[]});}
     if(!id)throw Error(lang==='vi'?'Chưa lưu được kết quả. Hãy thử lại.':'Result was not saved. Please retry.');
     const idx=meetings.findIndex(m=>m.id===id);if(idx>=0)Object.assign(meetings[idx],updates);else meetings.unshift({id,...updates});
-    if(currentMeetingId===sourceId){currentMeetingId=id;currentMeetingObj={...(sourceObj||{}),id,...updates};currentSummaryData=data;renderMeetingDetail();}
+    if(currentMeetingId===sourceId){currentMeetingId=id;currentMeetingObj={...(currentMeetingObj||{}),id,...updates};currentSummaryData=data;renderMeetingDetail();}
     renderAll();
     notify(lang==='vi'?'Đã lưu tóm tắt cuộc họp.':'Meeting summary saved.');
   }catch(err){notify(safeServiceMessage(err.message));}

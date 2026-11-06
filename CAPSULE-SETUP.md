@@ -1,48 +1,87 @@
-# KimKim Capsule deployment
+# Hướng dẫn cấu hình KimKim Capsule
 
-Finance and capsule drafts use the existing authenticated per-user Firestore subcollections. No new client access rules are needed. Scheduled letters are stored in `kimkimCapsules`, which must remain denied to every Firebase client. Do not add a broad read/write grant for this collection.
+## Trạng thái hiện tại
 
-## Required backend configuration
+Mã giao diện KimKim Finance và KimKim Capsule cùng API Capsule đã được triển khai. Gửi email hẹn giờ chưa được kích hoạt và chưa được kiểm thử với hộp thư thật. Người dùng vẫn có thể soạn và lưu bản nháp. Không bật nhận thư hẹn giờ trước khi hoàn tất các bước bên dưới.
 
-Set these on the `adolf-kimkim-beta` backend, not on the static site.
+Finance và bản nháp Capsule lưu trong các bộ sưu tập con thuộc tài khoản Firebase của từng người. Thư đã niêm phong nằm trong bộ sưu tập riêng `kimkimCapsules`, chỉ backend được truy cập. Không cấp quyền đọc/ghi trực tiếp bộ sưu tập này cho ứng dụng phía người dùng.
 
-| Variable | Purpose |
+## 1. Cấu hình backend trong Render
+
+Mở Environment của dịch vụ **adolf-kimkim-beta**, không nhập các khóa này vào dịch vụ giao diện tĩnh:
+
+https://dashboard.render.com/web/srv-dbh5o06c6qcc73fv34r0/env
+
+| Tên biến — giữ nguyên khi nhập | Nội dung cần điền |
 | --- | --- |
-| CAPSULE_FIREBASE_SERVICE_ACCOUNT_JSON | Dedicated service account JSON for the `adolfkimkim` Firestore database, with the minimum needed Firestore data access |
-| CAPSULE_ENCRYPTION_KEY | A persistent Fernet key, generated with `Fernet.generate_key()`. Keep this key backed up. Changing it prevents existing letters from being opened. |
-| CAPSULE_RESEND_API_KEY | Resend API key for transactional email |
-| CAPSULE_FROM_EMAIL | Verified sender, for example `KimKim <letters@your-verified-domain>` |
-| CAPSULE_PUBLIC_ORIGIN | Backend public HTTPS origin, currently `https://adolf-kimkim-beta.onrender.com` |
-| CAPSULE_DISPATCH_SECRET | Random secret of at least 32 characters for the trusted scheduler |
+| `CAPSULE_FIREBASE_SERVICE_ACCOUNT_JSON` | JSON của tài khoản dịch vụ Firebase riêng, thuộc dự án `adolfkimkim`, chỉ cấp quyền dữ liệu Firestore cần thiết. Đây là khóa riêng tư, không phải Firebase web config. |
+| `CAPSULE_ENCRYPTION_KEY` | Khóa Fernet cố định để mã hóa thư. Tạo bằng `Fernet.generate_key()` trong môi trường quản trị an toàn. Sao lưu bảo mật; thay khóa tùy tiện sẽ khiến thư cũ không mở được. |
+| `CAPSULE_RESEND_API_KEY` | Khóa gửi email của Resend, nên giới hạn quyền gửi và phạm vi tên miền. |
+| `CAPSULE_FROM_EMAIL` | Địa chỉ gửi thuộc tên miền đã xác minh trên Resend, ví dụ `KimKim <letters@ten-mien-cua-ban>`. Không sử dụng nguyên ví dụ này. |
+| `CAPSULE_PUBLIC_ORIGIN` | `https://adolf-kimkim-beta.onrender.com` |
+| `CAPSULE_DISPATCH_SECRET` | Chuỗi ngẫu nhiên bí mật tối thiểu 32 ký tự, dùng riêng để xác thực bộ chạy lịch gửi. |
+| `CAPSULE_SCHEDULER_ENABLED` | Chỉ đặt `true` sau khi bộ chạy lịch gửi đã được cấu hình và chạy thử thành công ở bước 3. |
 
-Do not put any of these credentials in frontend files, chat messages, or git. The API reports `ready: false` and keeps sealing disabled until all required settings are valid. Draft composition and saving remain available.
+Nhập khóa trực tiếp trong Render, không gửi qua chat, không đưa vào GitHub hoặc mã frontend. Lưu và triển khai lại backend để áp dụng thay đổi. Không ghi đè các cấu hình AI hiện có.
 
-## Scheduler
+Nếu chưa có dịch vụ gửi thư: tạo tài khoản Resend, thêm tên miền gửi, xác minh các bản ghi DNS do Resend cung cấp, rồi tạo khóa gửi riêng cho KimKim. Việc gửi tới email ngoài hệ thống không yêu cầu người nhận tạo tài khoản KimKim.
 
-Configure a trusted scheduler to POST `/api/capsules/dispatch` every minute, with header `X-Capsule-Secret` set to the secret above. A request body is not needed. On a sleeping free web service delivery can be late while the service wakes. For a strict minute-level delivery requirement use an always-on backend. A browser timer is never used for delivery.
+## 2. Kiểm tra Firestore
 
-Configure the Firestore composite index in `firebase/capsules.indexes.json`. The dispatch query requires `status` ascending and `sendAt` ascending.
+- Xác nhận quy tắc đang chạy chỉ cho người đăng nhập đọc/ghi dữ liệu tại `/users/{uid}` của chính họ.
+- Giữ nguyên việc chặn mọi Firebase client truy cập `kimkimCapsules`.
+- Tạo chỉ mục tổng hợp theo `firebase/capsules.indexes.json`: `status` tăng dần và `sendAt` tăng dần. Chờ chỉ mục sẵn sàng.
+- Không mở quyền toàn bộ cơ sở dữ liệu để xử lý lỗi thiếu quyền.
 
-## Recipient and privacy behavior
+## 3. Bật bộ chạy lịch gửi
 
-The recipient does not need an app account. The email includes a 256-bit random link. Anyone holding that link can read the letter after delivery. Avoid forwarding it. The recipient page sends no-referrer, no-store and restrictive CSP headers. Private text and attached JPEG photos are encrypted in server-owned Firestore records before the scheduled send. Owner-facing endpoints return delivery metadata only. Drafts remain editable in the author's private user collection until sealing.
+Cần bộ chạy phía server gọi API mỗi phút, kể cả khi người dùng đóng app. Trình duyệt không đảm nhiệm việc gửi thư.
 
-Cancellation uses Firestore's document version precondition and is allowed only before the worker claims the letter. Sealing reuses a deterministic record ID for a draft so a lost HTTP response cannot create another mail. The worker uses the same provider idempotency key for safe retries and stops retries before the provider's 24-hour idempotency retention expires. An ambiguous delivery after that window is marked failed for manual inspection instead of sending a possible duplicate. Sent means accepted by the mail provider, not confirmed received in the inbox. Closed mailboxes, spam filtering and bounces require checking the provider dashboard.
+Mã chạy đã có: `scripts/dispatch-capsules.py`.
 
-The first release supports one external recipient and up to three compressed images per letter. The frontend saves the draft before previewing. No test emails are sent during development checks.
+Cấu hình một cron runner tin cậy sử dụng đúng nhánh `ui/refine-notes-settings-chat`:
 
-## Checks
+- Lệnh: `python scripts/dispatch-capsules.py`.
+- Lịch cron: `* * * * *`.
+- Biến môi trường của runner: `CAPSULE_PUBLIC_ORIGIN` và `CAPSULE_DISPATCH_SECRET`, cùng giá trị với backend.
+- Runner gửi `POST /api/capsules/dispatch`, xác thực bằng header `X-Capsule-Secret`; không cần nội dung yêu cầu.
 
-`python -m unittest discover -s tests -p test_capsules.py -v`
+Chạy thủ công một lần và kiểm tra thành công trước. Sau đó đặt `CAPSULE_SCHEDULER_ENABLED=true` trên backend và triển khai lại.
 
-DOM workflow verification is in `tests/personal-dom.cjs`, with the isolated in-memory fixture `tests/fixtures/personal.html`. Install jsdom for that check. This fixture never connects to Firebase or sends email.
+Chưa tạo dịch vụ cron trả phí. Nếu chọn Render Cron Job, cần kiểm tra và chấp nhận chi phí trên Render trước khi tạo. Backend miễn phí có thể ngủ nên thư có thể gửi chậm lúc dịch vụ khởi động lại; không cam kết gửi chính xác từng phút với cấu hình này.
 
-## Activation checklist
+## 4. Kiểm thử trước khi mở cho người dùng
 
-1. In the backend Render Environment page, enter the credentials above directly; never send them through chat. Use a dedicated Resend sending key and dedicated Firebase service account. Back up the encryption key securely.
-2. Deploy the composite index and verify it is ready. Confirm live Firestore rules restrict each `/users/{uid}` subcollection to that user and deny client access to `kimkimCapsules`.
-3. Configure a trusted cron runner to execute `python scripts/dispatch-capsules.py` every minute with only `CAPSULE_PUBLIC_ORIGIN` and `CAPSULE_DISPATCH_SECRET` supplied securely. Use this branch as its source. Do not expose the dispatch secret to frontend build variables. A Render Cron Job is paid; no paid resource is provisioned by this change.
-4. Run the scheduler manually and confirm success. Only then set `CAPSULE_SCHEDULER_ENABLED=true` on the backend and redeploy. Missing activation keeps new sealing disabled.
-5. Verify the sender account email, seal one test letter to your own inbox, verify no early access, and confirm only one provider message and one inbox delivery after its deadline. Check spam and provider bounce events. Verify cancellation as well.
+1. Xác minh email tài khoản Firebase của người gửi.
+2. Soạn, lưu nháp và niêm phong một thư gửi tới hộp thư của chính mình, đặt giờ sau hiện tại.
+3. Kiểm tra thư không mở được trước hạn.
+4. Sau hạn, xác nhận nhà cung cấp chỉ nhận một yêu cầu gửi thành công và hộp thư chỉ nhận một email. Kiểm tra cả thư rác.
+5. Thử hủy thư khác trước giờ gửi và xác nhận không có email được gửi.
+6. Thử tài khoản khác, xác nhận không thấy dữ liệu Finance, bản nháp hoặc danh sách Capsule của tài khoản trước.
+7. Kiểm tra bảng điều khiển Resend để theo dõi lỗi, email bị trả lại và địa chỉ không tồn tại.
 
-Sealing requires a verified Firebase email. The server atomically writes ciphertext and deletes the exact previewed draft revision. Concurrent draft changes are rejected. Account switching clears dialogs and account data; Finance includes a session-only amount privacy toggle. Capsule API responses are private/no-store. Application access logs redact recipient query tokens; infrastructure request logs must also be restricted and reviewed before launch. Bearer links are private access credentials, not recipient identity verification. This beta has not undergone an independent security audit.
+Trạng thái “Đã gửi” nghĩa là nhà cung cấp đã chấp nhận yêu cầu, không có nghĩa người nhận chắc chắn đã nhận hoặc đọc email.
+
+## Bảo mật và giới hạn
+
+- Chỉ tài khoản đã xác minh email mới niêm phong được thư.
+- Niêm phong mã hóa nội dung và ảnh, đồng thời xóa đúng phiên bản bản nháp trong cùng một thao tác cơ sở dữ liệu. Nếu bản nháp bị sửa từ thiết bị khác, yêu cầu bị từ chối để tránh gửi nhầm nội dung.
+- Bản nháp chưa được mã hóa bằng khóa Capsule; được bảo vệ bằng quyền tài khoản Firestore. Đây không phải mã hóa đầu cuối.
+- Mỗi thư hỗ trợ một người nhận bên ngoài và tối đa ba ảnh JPEG nén.
+- API của chủ thư chỉ trả thông tin quản lý, không trả nội dung đã mã hóa hoặc khóa mở thư.
+- Liên kết người nhận chứa mã ngẫu nhiên 256 bit. Ai có liên kết đều có thể mở thư sau khi gửi; không chuyển tiếp liên kết nếu muốn giữ riêng tư. Liên kết không xác minh danh tính người nhận.
+- Trang mở thư có chính sách chống lưu cache, chống gửi referrer và giới hạn tài nguyên tải ngoài. Nhật ký truy cập ứng dụng che mã mở thư; vẫn cần hạn chế và rà soát nhật ký hạ tầng trước khi mở chính thức.
+- Yêu cầu niêm phong lặp dùng cùng mã thư. Các lần gửi lại dùng cùng khóa chống trùng của nhà cung cấp. Dừng gửi lại trước khi hết cửa sổ chống trùng 24 giờ; trường hợp không rõ kết quả được đánh dấu lỗi để kiểm tra thủ công.
+- Chỉ hủy được thư trước khi bộ chạy lịch bắt đầu xử lý.
+- Đổi tài khoản sẽ xóa dữ liệu và hộp thoại đang hiển thị. Finance có nút ẩn số tiền theo phiên; nút này không thay thế phân quyền dữ liệu.
+- Bản beta chưa trải qua kiểm toán bảo mật độc lập. Chưa kiểm thử gửi email thật vì chưa hoàn tất cấu hình.
+
+## Kiểm thử dành cho lập trình viên
+
+Backend:
+
+```bash
+python -m unittest discover -s tests -p test_capsules.py -v
+```
+
+Luồng giao diện: `tests/personal-dom.cjs`, dùng dữ liệu giả trong `tests/fixtures/personal.html`, cần cài jsdom. Các kiểm thử này không gửi email hoặc kết nối Firebase thật.

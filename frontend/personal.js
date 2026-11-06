@@ -451,6 +451,7 @@
       scheduled: tr("KimKim đang giữ thư", "KimKim is keeping your letter"),
       sending: tr("KimKim đang gửi", "KimKim is sending"),
       sent: tr("KimKim đã gửi thư", "KimKim sent your letter"),
+      delivery_unknown: tr("Cần kiểm tra kết quả gửi", "Delivery needs review"),
       failed: tr("Gửi chưa thành công", "Delivery failed"),
       cancelled: tr("Đã hủy lịch gửi", "Delivery cancelled"),
     })[item.status] || item.status;
@@ -465,7 +466,7 @@
         ? c.status === "draft"
         : state.tab === "sent"
           ? ["sent", "cancelled"].includes(c.status)
-          : ["scheduled", "sending", "failed"].includes(c.status),
+          : ["scheduled", "sending", "failed", "delivery_unknown"].includes(c.status),
     );
     const view = document.getElementById("view-capsules");
     if (!view) return;
@@ -659,7 +660,7 @@
     if (!c) return;
     modal(
       c.title,
-      `<span class="personal-badge">${esc(capsuleStatus(c))}</span><div class="personal-row"><div class="personal-row-copy"><b>${tr("Email người nhận", "Recipient email")}</b><small>${esc(c.email)}</small></div></div><div class="personal-row"><div class="personal-row-copy"><b>${tr("Ngày KimKim gửi", "Delivery date")}</b><small>${esc(new Date(c.sendAt).toLocaleString(tr("vi-VN", "en-US")))}</small></div></div><p class="personal-muted">${tr("KimKim giữ nội dung thư đến thời điểm đã hẹn.", "KimKim keeps the letter until its scheduled delivery.")}</p>${c.status === "scheduled" ? `<form id="capsuleCancel" class="personal-form"><p class="personal-error" role="alert"></p><button class="personal-btn" type="submit">${tr("Hủy lịch gửi", "Cancel delivery")}</button></form>` : ""}`,
+      `<span class="personal-badge">${esc(capsuleStatus(c))}</span><div class="personal-row"><div class="personal-row-copy"><b>${tr("Email người nhận", "Recipient email")}</b><small>${esc(c.email)}</small></div></div><div class="personal-row"><div class="personal-row-copy"><b>${tr("Ngày KimKim gửi", "Delivery date")}</b><small>${esc(new Date(c.sendAt).toLocaleString(tr("vi-VN", "en-US")))}</small></div></div><p class="personal-muted">${tr("KimKim giữ nội dung thư đến thời điểm đã hẹn.", "KimKim keeps the letter until its scheduled delivery.")}</p>${["failed", "delivery_unknown"].includes(c.status) ? `<p class="personal-notice">${c.errorCode === "capsule/gmail-authorization-required" ? tr("Tài khoản gửi cần được kết nối lại. Vui lòng liên hệ hỗ trợ KimKim.", "The sender account needs to be reconnected. Please contact KimKim support.") : tr("KimKim chưa xác nhận được việc gửi thư. Vui lòng liên hệ hỗ trợ; thư sẽ không tự gửi lại để tránh trùng.", "KimKim could not confirm delivery. Please contact support; this letter will not be sent again automatically to avoid duplicates.")}</p>` : ""}${c.status === "scheduled" ? `<form id="capsuleCancel" class="personal-form"><p class="personal-error" role="alert"></p><button class="personal-btn" type="submit">${tr("Hủy lịch gửi", "Cancel delivery")}</button></form>` : ""}`,
     );
     const form = document.getElementById("capsuleCancel");
     if (form)

@@ -1,4 +1,5 @@
 """Trusted scheduler entry point. Credentials come only from environment."""
+import json
 import os
 import sys
 import urllib.request
@@ -15,6 +16,9 @@ try:
     with urllib.request.urlopen(request, timeout=90) as response:
         if response.status != 200:
             sys.exit("Capsule dispatch failed")
+        result = json.load(response)
+        if result.get("failed") or result.get("deliveryUnknown"):
+            sys.exit("Capsule deliveries need review; inspect backend delivery status")
         print("Capsule dispatch completed")
 except Exception:
     sys.exit("Capsule dispatch failed; inspect backend delivery status")

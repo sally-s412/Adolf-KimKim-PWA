@@ -117,4 +117,66 @@ class CapsuleTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(caught.exception.status_code, 409)
             self.assertEqual(db.await_count, 2)
 
+
+class GmailTests(unittest.IsolatedAsyncioTestCase):
+    def config(self):
+        import json
+        cipher=Fernet(Fernet.generate_key())
+        info={'token_uri':'https://oauth2.googleapis.com/token','refresh_token':'test-refresh','client_id':'test-client','client_secret':'test-secret','scopes':[m.GMAIL_SCOPE]}
+        values={'CAPSULE_GMAIL_TOKEN_ENCRYPTED':cipher.encrypt(json.dumps(info).encode()).decode(),
+                'CAPSULE_FROM_EMAIL':'KimKim <sender@gmail.com>', 'CAPSULE_PUBLIC_ORIGIN':'https://example.com'}
+        return values, cipher, info
+
+    def test_encrypted_token_only_and_send_scope(self):
+        import json
+        values,cipher,info=self.config()
+        self.assertEqual(m.gmail_token_info(values,cipher)['refresh_token'],'test-refresh')
+        self.assertNotIn('test-refresh', values['CAPSULE_GMAIL_TOKEN_ENCRYPTED'])
+        for change in ({'token_uri':'https://evil.example/token'},{'scopes':['https://mail.google.com/']},{'refresh_token':''}):
+            bad={**info,**change}
+            values['CAPSULE_GMAIL_TOKEN_ENCRYPTED']=cipher.encrypt(json.dumps(bad).encode()).decode()
+            with self.assertRaises(ValueError):m.gmail_token_info(values,cipher)
+
+    async def test_gmail_mime_request(self):
+        import json,base64
+        from email import policy
+        from email.parser import BytesParser
+        values,cipher,_=self.config()
+        record={'id':'a'*64,'email':'recipient@example.com','title':'Thư tiếng Việt',
+                'encrypted':cipher.encrypt(json.dumps({'token':'private-link','language':'vi','body':'PRIVATE_BODY'}).encode()).decode()}
+        response=m.httpx.Response(200,json={'id':'gmail-id'})
+        client=AsyncMock();client.post.return_value=response
+        manager=AsyncMock();manager.__aenter__.return_value=client
+        with patch.object(m,'settings',return_value=(values,{},cipher)),patch.object(m,'gmail_access_token',return_value='access'),patch.object(m.httpx,'AsyncClient',return_value=manager):
+            self.assertEqual(await m.deliver(record),'gmail-id')
+        args,kw=client.post.call_args
+        self.assertEqual(args[0],'https://gmail.googleapis.com/gmail/v1/users/me/messages/send')
+        raw=base64.urlsafe_b64decode(kw['json']['raw'])
+        msg=BytesParser(policy=policy.default).parsebytes(raw)
+        self.assertEqual(str(msg['Subject']),'KimKim mang thư đến cho bạn · Thư tiếng Việt')
+        self.assertEqual(msg['To'],'recipient@example.com')
+        self.assertNotIn(b'PRIVATE_BODY',raw)
+
+    async def test_timeout_never_retries(self):
+        now=datetime.now(timezone.utc)
+        record={'id':'a'*64,'status':'scheduled','sendAt':(now-timedelta(days=1)).isoformat(),'attempts':'0','version':'v'}
+        db=AsyncMock(return_value={**record,'status':'sending'})
+        with patch.dict(os.environ,{'CAPSULE_SCHEDULER_ENABLED':'true'}),patch.object(m,'settings',return_value=({'CAPSULE_DISPATCH_SECRET':'correct'},None,None)),patch.object(m,'due_records',AsyncMock(side_effect=[[record],[]])),patch.object(m,'update',db),patch.object(m,'deliver',AsyncMock(side_effect=TimeoutError)) as send:
+            result=await m.dispatch(types.SimpleNamespace(headers={'x-capsule-secret':'correct'}))
+            self.assertEqual(result['sent'],0)
+            self.assertEqual(db.call_args.args[1]['status'],'delivery_unknown')
+            self.assertEqual(send.await_count,1)
+        old={**record,'status':'sending','claimedAt':(now-timedelta(minutes=15)).isoformat()}
+        with patch.dict(os.environ,{'CAPSULE_SCHEDULER_ENABLED':'true'}),patch.object(m,'settings',return_value=({'CAPSULE_DISPATCH_SECRET':'correct'},None,None)),patch.object(m,'due_records',AsyncMock(side_effect=[[],[old]])),patch.object(m,'update',AsyncMock()) as update,patch.object(m,'deliver',AsyncMock()) as send:
+            await m.dispatch(types.SimpleNamespace(headers={'x-capsule-secret':'correct'}))
+            send.assert_not_called()
+            self.assertEqual(update.call_args.args[1]['status'],'delivery_unknown')
+
+    async def test_scheduler_off_never_sends(self):
+        with patch.dict(os.environ,{'CAPSULE_SCHEDULER_ENABLED':'false'}),patch.object(m,'settings',return_value=({'CAPSULE_DISPATCH_SECRET':'correct'},None,None)),patch.object(m,'due_records',AsyncMock()) as query:
+            with self.assertRaises(HTTPException) as caught:
+                await m.dispatch(types.SimpleNamespace(headers={'x-capsule-secret':'correct'}))
+            self.assertEqual(caught.exception.detail,'capsule/scheduler-disabled')
+            query.assert_not_called()
+
 if __name__ == '__main__':unittest.main()

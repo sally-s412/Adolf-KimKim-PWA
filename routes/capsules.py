@@ -14,6 +14,9 @@ import re
 import secrets
 import time
 from datetime import datetime, timezone
+from email.message import EmailMessage
+from email.utils import parseaddr
+from google.oauth2.credentials import Credentials as UserCredentials
 from functools import lru_cache
 from urllib.parse import quote, urlsplit
 
@@ -62,7 +65,7 @@ async def sender_verified(request):
 
 def settings():
     names = ['CAPSULE_FIREBASE_SERVICE_ACCOUNT_JSON', 'CAPSULE_ENCRYPTION_KEY',
-             'CAPSULE_RESEND_API_KEY', 'CAPSULE_FROM_EMAIL', 'CAPSULE_PUBLIC_ORIGIN',
+             'CAPSULE_GMAIL_TOKEN_ENCRYPTED', 'CAPSULE_FROM_EMAIL', 'CAPSULE_PUBLIC_ORIGIN',
              'CAPSULE_DISPATCH_SECRET']
     values = {name: os.getenv(name, '').strip() for name in names}
     missing = [name for name, value in values.items() if not value]
@@ -80,9 +83,43 @@ def settings():
             raise ValueError('origin')
         if len(values['CAPSULE_DISPATCH_SECRET']) < 32:
             raise ValueError('secret')
+        sender = values['CAPSULE_FROM_EMAIL']
+        if '\r' in sender or '\n' in sender or not re.fullmatch(r'[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+', parseaddr(sender)[1]):
+            raise ValueError('sender')
+        gmail_token_info(values, Fernet(key))
         return values, account, Fernet(key)
-    except (ValueError, KeyError, TypeError):
+    except Exception:
         raise HTTPException(503, 'capsule/not-configured')
+
+
+GMAIL_SCOPE = 'https://www.googleapis.com/auth/gmail.send'
+
+
+def gmail_token_info(values, cipher):
+    # No plaintext token is accepted from a request or returned to the frontend.
+    info = json.loads(cipher.decrypt(values['CAPSULE_GMAIL_TOKEN_ENCRYPTED'].encode()))
+    if info.get('token_uri') != 'https://oauth2.googleapis.com/token':
+        raise ValueError('token endpoint')
+    if not all(isinstance(info.get(key), str) and info[key] for key in
+               ('refresh_token', 'client_id', 'client_secret')):
+        raise ValueError('credentials')
+    if set(info.get('scopes', [])) != {GMAIL_SCOPE}:
+        raise ValueError('send-only permission required')
+    return info
+
+
+def gmail_access_token(values, cipher):
+    try:
+        info = gmail_token_info(values, cipher)
+        credential = UserCredentials.from_authorized_user_info(info, scopes=[GMAIL_SCOPE])
+        # Reuse only the access token in memory. No token file is written on Render.
+        if not credential.valid:
+            credential.refresh(GoogleRequest())
+        if not credential.token:
+            raise ValueError('missing access token')
+        return credential.token
+    except Exception:
+        raise HTTPException(503, 'capsule/gmail-authorization-required') from None
 
 
 @lru_cache(maxsize=1)
@@ -132,7 +169,7 @@ def unpack(document):
 
 
 def public_meta(record):
-    return {key: record.get(key, '') for key in ('id', 'draftId', 'title', 'email', 'sendAt', 'status')}
+    return {key: record.get(key, '') for key in ('id', 'draftId', 'title', 'email', 'sendAt', 'status', 'errorCode')}
 
 
 def record_path(uid, draft_id):
@@ -294,13 +331,26 @@ async def deliver(record):
             'subject': heading + ' · ' + record['title'],
             'text': heading + '\n' + text + '\n' + link,
             'html': '<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:32px;background:#fff7f8;color:#231a45"><p>KIMKIM CAPSULE</p><h1>' + heading + '</h1><p>' + text + '</p><p>' + html.escape(record['title']) + '</p><a style="display:inline-block;background:#c93f5e;color:white;padding:14px 20px;border-radius:12px;text-decoration:none" href="' + html.escape(link, quote=True) + '">' + label + '</a></div>'}
+    message = EmailMessage()
+    message['From'] = mail['from']
+    message['To'] = record['email']
+    message['Subject'] = mail['subject'].replace('\r', ' ').replace('\n', ' ')
+    message['Message-ID'] = '<kimkim-capsule-' + record['id'] + '@' + parseaddr(mail['from'])[1].split('@')[1] + '>'
+    message.set_content(mail['text'])
+    message.add_alternative(mail['html'], subtype='html')
+    token = await run_in_threadpool(gmail_access_token, values, cipher)
     async with httpx.AsyncClient(timeout=25) as client:
-        response = await client.post('https://api.resend.com/emails',
-            headers={'Authorization': 'Bearer ' + values['CAPSULE_RESEND_API_KEY'],
-                     'Idempotency-Key': 'kimkim-capsule-' + record['id']}, json=mail)
+        response = await client.post('https://gmail.googleapis.com/gmail/v1/users/me/messages/send',
+            headers={'Authorization': 'Bearer ' + token},
+            json={'raw': base64.urlsafe_b64encode(message.as_bytes()).decode()})
+    if response.status_code in (401, 403):
+        raise HTTPException(502, 'capsule/gmail-authorization-required')
+    if 400 <= response.status_code < 500:
+        raise HTTPException(502, 'capsule/gmail-send-rejected')
     if not response.is_success or not response.json().get('id'):
-        raise HTTPException(502, 'capsule/mail-unavailable')
+        raise RuntimeError('capsule/delivery-unknown')
     return response.json()['id']
+
 
 
 async def due_records(status, now):
@@ -323,26 +373,25 @@ async def dispatch(request: Request):
     provided = request.headers.get('x-capsule-secret', '')
     if not secrets.compare_digest(provided, values['CAPSULE_DISPATCH_SECRET']):
         raise HTTPException(401, 'capsule/invalid-scheduler')
+    if os.getenv('CAPSULE_SCHEDULER_ENABLED') != 'true':
+        raise HTTPException(503, 'capsule/scheduler-disabled')
     now = datetime.now(timezone.utc)
     records = await due_records('scheduled', now)
-    # Recover interrupted sends within provider's idempotency retention window.
-    records += await due_records('sending', now)
+    # Gmail has no documented idempotency key. Never re-send a claimed job,
+    # including a timeout or a crash after Google accepted the message.
+    interrupted = await due_records('sending', now)
+    for record in interrupted:
+        if (now - datetime.fromisoformat(record['claimedAt'])).total_seconds() >= 600:
+            try:
+                await update(record, {'status': 'delivery_unknown', 'errorCode': 'capsule/delivery-unknown'})
+            except HTTPException:
+                pass
     count = 0
+    failed = 0
+    unknown = 0
     for record in records:
         if datetime.fromisoformat(record['sendAt']) > now:
             continue
-        if record['status'] == 'sending':
-            since = datetime.fromisoformat(record['claimedAt'])
-            age = (now - since).total_seconds()
-            if age < 120:
-                continue
-            retry_age = (now - datetime.fromisoformat(record.get('retrySince') or record['claimedAt'])).total_seconds()
-            if retry_age > 23 * 3600:
-                try:
-                    await update(record, {'status': 'failed'})
-                except HTTPException:
-                    pass
-                continue
         try:
             claim = {'status': 'sending', 'claimedAt': now.isoformat(), 'attempts': str(int(record['attempts']) + 1),
                      'retrySince': record.get('retrySince') or now.isoformat()}
@@ -355,11 +404,20 @@ async def dispatch(request: Request):
             provider_id = await deliver(record)
             await update(record, {'status': 'sent', 'providerId': provider_id, 'sentAt': now.isoformat()})
             count += 1
-        except Exception:
-            # Keep ambiguous deliveries in sending for safe idempotent retries.
-            # Never recreate a new delivery key after a timeout.
+        except Exception as error:
+            definite = isinstance(error, HTTPException) and error.detail in (
+                'capsule/gmail-authorization-required', 'capsule/gmail-send-rejected')
+            if definite:
+                failed += 1
+            else:
+                unknown += 1
+            try:
+                await update(record, {'status': 'failed' if definite else 'delivery_unknown',
+                    'errorCode': error.detail if definite else 'capsule/delivery-unknown'})
+            except Exception:
+                pass  # A later dispatch quarantines this claim; it never sends it again.
             continue
-    return {'sent': count}
+    return {'sent': count, 'failed': failed, 'deliveryUnknown': unknown}
 
 
 @public_router.get('/capsule/open/{letter_id}', response_class=HTMLResponse)

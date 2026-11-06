@@ -482,3 +482,13 @@
   outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
+
+.personal-form [hidden] {
+  display: none !important;
+}
+.personal-columns {
+  align-items: start;
+}
+.personal-status:empty {
+  display: none;
+}

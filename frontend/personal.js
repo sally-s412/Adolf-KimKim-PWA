@@ -132,7 +132,7 @@
   }
   function modal(title, content) {
     const dialog = document.getElementById("personalDialog");
-    dialog.innerHTML = `<header class="personal-dialog-header"><h2>${esc(title)}</h2><button type="button" data-action="close" aria-label="${tr("Đóng", "Close")}">×</button></header><div class="personal-dialog-body">${content}</div>`;
+    dialog.innerHTML = `<header class="personal-dialog-header"><h2 id="personalDialogTitle">${esc(title)}</h2><button type="button" data-action="close" aria-label="${tr("Đóng", "Close")}">×</button></header><div class="personal-dialog-body">${content}</div>`;
     if (!dialog.open) dialog.showModal();
     return dialog;
   }
@@ -728,6 +728,7 @@
     const dialog = document.createElement("dialog");
     dialog.id = "personalDialog";
     dialog.className = "personal-dialog";
+    dialog.setAttribute("aria-labelledby", "personalDialogTitle");
     document.body.append(dialog);
     document.addEventListener("click", (event) =>
       actions(event).catch((error) => notify(feedback(error))),

@@ -96,8 +96,9 @@
       Light / Dark</button
     ><button
       onclick="
-        lang = lang === 'vi' ? 'en' : 'vi';
+        window.lang = window.lang === 'vi' ? 'en' : 'vi';
         document.dispatchEvent(new Event('akk:languagechange'));
+        document.getElementById('financePreviewButton').textContent = window.lang === 'vi' ? 'KimKim tài chính' : 'KimKim Finance';
       "
     >
       VIE / ENG</button

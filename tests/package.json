@@ -1,0 +1,1 @@
+{"private":true,"scripts":{"test:personal":"node personal-dom.cjs"},"devDependencies":{"jsdom":"^27.0.0"}}

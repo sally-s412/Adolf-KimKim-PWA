@@ -57,6 +57,9 @@ def consume_quota(uid):
 @app.middleware("http")
 async def beta_auth(request: Request, call_next):
     path = request.url.path
+    if (request.method == "POST" and path == "/api/capsules/dispatch"):
+        # This route authenticates the trusted scheduler with its own secret.
+        return await call_next(request)
     if (request.method == "GET" and path == "/api/google-calendar/callback") or request.method == "OPTIONS" or not (path.startswith("/api/") or path == "/transcribe"):
         return await call_next(request)
     header = request.headers.get("authorization", "")
@@ -86,3 +89,4 @@ async def beta_auth(request: Request, call_next):
                    if key.lower().startswith("access-control-") or key.lower() == "vary"}
         return JSONResponse({"detail": message}, status_code=response.status_code, headers=headers)
     return response
+

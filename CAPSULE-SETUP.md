@@ -1,0 +1,38 @@
+# KimKim Capsule deployment
+
+Finance and capsule drafts use the existing authenticated per-user Firestore subcollections. No new client access rules are needed. Scheduled letters are stored in `kimkimCapsules`, which must remain denied to every Firebase client. Do not add a broad read/write grant for this collection.
+
+## Required backend configuration
+
+Set these on the `adolf-kimkim-beta` backend, not on the static site.
+
+| Variable | Purpose |
+| --- | --- |
+| CAPSULE_FIREBASE_SERVICE_ACCOUNT_JSON | Dedicated service account JSON for the `adolfkimkim` Firestore database, with the minimum needed Firestore data access |
+| CAPSULE_ENCRYPTION_KEY | A persistent Fernet key, generated with `Fernet.generate_key()`. Keep this key backed up. Changing it prevents existing letters from being opened. |
+| CAPSULE_RESEND_API_KEY | Resend API key for transactional email |
+| CAPSULE_FROM_EMAIL | Verified sender, for example `KimKim <letters@your-verified-domain>` |
+| CAPSULE_PUBLIC_ORIGIN | Backend public HTTPS origin, currently `https://adolf-kimkim-beta.onrender.com` |
+| CAPSULE_DISPATCH_SECRET | Random secret of at least 32 characters for the trusted scheduler |
+
+Do not put any of these credentials in frontend files, chat messages, or git. The API reports `ready: false` and keeps sealing disabled until all required settings are valid. Draft composition and saving remain available.
+
+## Scheduler
+
+Configure a trusted scheduler to POST `/api/capsules/dispatch` every minute, with header `X-Capsule-Secret` set to the secret above. A request body is not needed. On a sleeping free web service delivery can be late while the service wakes. For a strict minute-level delivery requirement use an always-on backend. A browser timer is never used for delivery.
+
+Configure the Firestore composite index in `firebase/capsules.indexes.json`. The dispatch query requires `status` ascending and `sendAt` ascending.
+
+## Recipient and privacy behavior
+
+The recipient does not need an app account. The email includes a 256-bit random link. Anyone holding that link can read the letter after delivery. Avoid forwarding it. The recipient page sends no-referrer, no-store and restrictive CSP headers. Private text and attached JPEG photos are encrypted in server-owned Firestore records before the scheduled send. Owner-facing endpoints return delivery metadata only. Drafts remain editable in the author's private user collection until sealing.
+
+Cancellation uses Firestore's document version precondition and is allowed only before the worker claims the letter. Sealing reuses a deterministic record ID for a draft so a lost HTTP response cannot create another mail. The worker uses the same provider idempotency key for safe retries and stops retries before the provider's 24-hour idempotency retention expires. An ambiguous delivery after that window is marked failed for manual inspection instead of sending a possible duplicate. Sent means accepted by the mail provider, not confirmed received in the inbox. Closed mailboxes, spam filtering and bounces require checking the provider dashboard.
+
+The first release supports one external recipient and up to three compressed images per letter. The frontend saves the draft before previewing. No test emails are sent during development checks.
+
+## Checks
+
+`python -m unittest discover -s tests -p test_capsules.py -v`
+
+DOM workflow verification is in `tests/personal-dom.cjs`, with the isolated in-memory fixture `tests/fixtures/personal.html`. Install jsdom for that check. This fixture never connects to Firebase or sends email.

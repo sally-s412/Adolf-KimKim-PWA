@@ -27,6 +27,7 @@ from routes.story_bundle import router as story_bundle_router
 from routes.post_bundle import router as post_bundle_router
 from routes.analysis_jobs import router as analysis_jobs_router
 from routes.google_calendar import router as google_calendar_router
+from routes.capsules import router as capsules_router, public_router as capsule_public_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -67,6 +68,8 @@ app.include_router(story_bundle_router)
 app.include_router(post_bundle_router)
 app.include_router(analysis_jobs_router)
 app.include_router(google_calendar_router)
+app.include_router(capsules_router)
+app.include_router(capsule_public_router)
 
 
 @app.get("/health")
@@ -184,4 +187,5 @@ if __name__ == "__main__":
 
     port = int(os.getenv("PORT", 8899))
     uvicorn.run(app, host="0.0.0.0", port=port)
+
 

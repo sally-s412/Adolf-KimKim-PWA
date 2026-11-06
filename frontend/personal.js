@@ -210,7 +210,7 @@
         (e) => (totals[e.category] = (totals[e.category] || 0) + e.amount),
       );
     view.classList.toggle("personal-hidden-finance", state.hideAmounts);
-    view.innerHTML = `<div class="personal-kicker">KIMKIM FINANCE</div><header class="personal-head"><div><h1>${tr("Tiền của mình, KimKim ghi giúp.", "Your money, kept with KimKim.")}</h1><p>${tr("Một chút rõ ràng cho những kế hoạch của bạn.", "A little clarity for the plans that matter to you.")}</p></div>${button(icon("plus") + tr("Thêm giao dịch", "Add transaction"), "entry", true)}</header>
+    view.innerHTML = `<div class="personal-kicker">KIMKIM TÀI CHÍNH</div><header class="personal-head"><div><h1>${tr("Tiền của mình, KimKim ghi giúp.", "Your money, kept with KimKim.")}</h1><p>${tr("Một chút rõ ràng cho những kế hoạch của bạn.", "A little clarity for the plans that matter to you.")}</p></div>${button(icon("plus") + tr("Thêm giao dịch", "Add transaction"), "entry", true)}</header>
       <div class="personal-toolbar"><label><span class="sr-only">${tr("Tháng", "Month")}</span><input aria-label="${tr("Tháng", "Month")}" type="month" id="financeMonth" value="${state.month}"></label><select id="financeWallet" aria-label="${tr("Lọc ví", "Filter wallet")}"><option value="">${tr("Tất cả ví", "All wallets")}</option>${state.wallets.map((w) => `<option value="${w.id}" ${state.wallet === w.id ? "selected" : ""}>${esc(w.name)}</option>`).join("")}</select>${button(tr("Ví của tôi", "My wallets"), "wallets")}${button(state.hideAmounts ? tr("Hiện số tiền", "Show amounts") : tr("Ẩn số tiền", "Hide amounts"), "privacy-amounts")}${button(tr("Xuất CSV", "Export CSV"), "export")}</div>
       <div class="personal-status" id="financeStatus" role="status">${state.ready ? "" : tr("KimKim đang mở sổ…", "KimKim is opening your ledger…")}</div>
       <div class="personal-metrics">${[
@@ -741,7 +741,7 @@
     rail.insertBefore(heading, anchor);
     for (const [id, name, glyph] of [
       ["capsules", "KimKim Capsule", "message"],
-      ["finance", "KimKim Finance", "save"],
+      ["finance", "KimKim tài chính", "save"],
     ]) {
       const nav = document.createElement("button");
       nav.type = "button";

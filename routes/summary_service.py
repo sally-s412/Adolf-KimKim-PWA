@@ -3,6 +3,10 @@
 import os
 import re
 import logging
+import asyncio
+import hashlib
+from collections import OrderedDict
+from routes.long_context import (AIServiceError, estimate_tokens, split_text, relevant_context, overview_question, window, report)
 import httpx
 from dotenv import load_dotenv
 
@@ -87,63 +91,104 @@ def parse_response(content: str) -> dict:
     }
 
 
+
+_summary_cache = OrderedDict()
+
+async def _model_call(prompt, temperature, max_tokens):
+    reservation = estimate_tokens(prompt) + max_tokens
+    if reservation > 6000:
+        raise AIServiceError(413)
+    async with window.lock:
+        for attempt in range(3):
+            entry = await window.reserve(reservation)
+            try:
+                async with httpx.AsyncClient(timeout=45.0) as client:
+                    response = await client.post(GROQ_URL,
+                        json={"model": MODEL, "messages": [{"role": "user", "content": prompt}],
+                              "temperature": temperature, "max_tokens": max_tokens},
+                        headers={"Authorization": f"Bearer {GROQ_API_KEY}", "Content-Type": "application/json"})
+            except httpx.TimeoutException:
+                raise AIServiceError(504)
+            except httpx.HTTPError:
+                raise AIServiceError(503)
+            if response.status_code == 429 and attempt < 2:
+                try:
+                    delay = min(65, max(1, float(response.headers.get("retry-after", "61"))))
+                except ValueError:
+                    delay = 61
+                report("rate_wait", int(delay), 0)
+                await asyncio.sleep(delay)
+                continue
+            if response.status_code != 200:
+                logger.warning("AI upstream returned HTTP %s", response.status_code)
+                raise AIServiceError(response.status_code)
+            try:
+                data = response.json()
+                entry[1] = max(1, int(data.get("usage", {}).get("total_tokens", reservation)))
+                content = data["choices"][0]["message"]["content"].strip()
+            except (ValueError, KeyError, TypeError, IndexError):
+                raise AIServiceError(502)
+            if "</think>" in content:
+                content = content.split("</think>")[-1].strip()
+            if not content:
+                raise AIServiceError(502)
+            return content
+
+async def _summarize_text(text, depth=0, limit=5000):
+    if depth > 8:
+        raise AIServiceError(413)
+    chunks = split_text(text, limit)
+    if len(chunks) == 1:
+        try:
+            return await _model_call(MEETING_SUMMARY_PROMPT.format(transcript=text), 0.3, 800)
+        except AIServiceError as exc:
+            if exc.status == 413 and limit > 640:
+                return await _summarize_text(text, depth + 1, limit // 2)
+            raise
+    partials = []
+    for index, chunk in enumerate(chunks, 1):
+        report("summarizing", index - 1, len(chunks))
+        partials.append(await _summarize_text(chunk, depth + 1, limit))
+        report("summarizing", index, len(chunks))
+    combined = "\n\n".join(partials)
+    if len(combined.encode("utf-8")) >= len(text.encode("utf-8")):
+        # Return every generated section instead of truncating or looping indefinitely.
+        return "\n\n---\n\n".join(partials)
+    report("merging", 0, 0)
+    return await _summarize_text(combined, depth + 1, 5000)
+
 async def summarize_meeting(transcript_segments: list[dict]) -> dict:
-    """
-    Summarize a meeting from its transcript segments.
-
-    Args:
-        transcript_segments: List of dicts with keys: speaker, text, start/t
-
-    Returns:
-        dict with keys: title, key_points, summary
-    """
     transcript_text = format_transcript(transcript_segments)
-
     if not transcript_text.strip():
-        return {
-            "title": "No Content",
-            "key_points": [],
-            "summary": "The transcript was empty or contained no meaningful content.",
-        }
-
-    prompt = MEETING_SUMMARY_PROMPT.format(transcript=transcript_text)
-    logger.info(
-        f"Summarizing: {len(transcript_segments)} segments, {len(transcript_text)} chars"
-    )
-
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        resp = await client.post(
-            GROQ_URL,
-            json={
-                "model": MODEL,
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.3,
-                "max_tokens": 800,
-            },
-            headers={
-                "Authorization": f"Bearer {GROQ_API_KEY}",
-                "Content-Type": "application/json",
-            },
-        )
-
-    if resp.status_code != 200:
-        logger.error(f"Groq API error {resp.status_code}: {resp.text[:200]}")
-        raise RuntimeError(f"Groq API returned {resp.status_code}")
-
-    content = resp.json()["choices"][0]["message"]["content"].strip()
-
-    # Strip <think>...</think> tags if Qwen includes them
-    if "</think>" in content:
-        content = content.split("</think>")[-1].strip()
-
-    result = parse_response(content)
-    logger.info(f"Done: '{result['title']}' — {len(result['key_points'])} key points")
-    return result
-
+        return {"title": "No Content", "key_points": [],
+                "summary": "The transcript was empty or contained no meaningful content."}
+    key = hashlib.sha256(transcript_text.encode()).hexdigest()
+    if key in _summary_cache:
+        _summary_cache.move_to_end(key)
+        return dict(_summary_cache[key])
+    report("preparing", 0, 0)
+    result = parse_response(await _summarize_text(transcript_text))
+    _summary_cache[key] = result
+    while len(_summary_cache) > 20:
+        _summary_cache.popitem(last=False)
+    return dict(result)
 
 async def answer_meeting_question(question: str, transcript_segments: list[dict]) -> str:
-    """Answer questions about the meeting based on transcript context."""
     transcript_text = format_transcript(transcript_segments)
+    if len(question.encode("utf-8")) > 4000:
+        raise AIServiceError(413)
+    if len(transcript_text.encode("utf-8")) > 5000:
+        report("selecting_context", 0, 0)
+        context = "" if overview_question(question) else relevant_context(transcript_text, question)
+        if not context:
+            summary = await summarize_meeting(transcript_segments)
+            context = summary["summary"]
+            # A rare non-compressible summary remains bounded via selection of its sections.
+            if len(context.encode("utf-8")) > 5000:
+                context = await _summarize_text(context, limit=2500)
+                if len(context.encode("utf-8")) > 5000:
+                    raise AIServiceError(413)
+        transcript_text = context
     prompt = f"""You are Adolf KimKim, an intelligent meeting assistant.
 Based on the following meeting transcript, answer the user's question accurately and concisely.
 If the information is not present in the transcript, state that clearly.
@@ -154,27 +199,5 @@ Transcript:
 
 User Question: {question}
 Answer:"""
-
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        resp = await client.post(
-            GROQ_URL,
-            json={
-                "model": MODEL,
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.5,
-                "max_tokens": 600,
-            },
-            headers={
-                "Authorization": f"Bearer {GROQ_API_KEY}",
-                "Content-Type": "application/json",
-            },
-        )
-
-    if resp.status_code != 200:
-        logger.error(f"Groq chat error {resp.status_code}: {resp.text[:200]}")
-        return "Xin lỗi, không thể kết nối tới mô hình AI lúc này."
-
-    content = resp.json()["choices"][0]["message"]["content"].strip()
-    if "</think>" in content:
-        content = content.split("</think>")[-1].strip()
-    return content
+    report("answering", 0, 0)
+    return await _model_call(prompt, 0.5, 600)

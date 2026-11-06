@@ -5,5 +5,5 @@
  */
 window.AKK_CONFIG = Object.freeze({
   apiBaseUrl: '',
-  sttUrl: '',
+  sttUrl: 'wss://nonprofit-configured-sleeve-vic.trycloudflare.com/v1/ws/realtime-speech',
 });

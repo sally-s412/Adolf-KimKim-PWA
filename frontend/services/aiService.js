@@ -72,11 +72,23 @@
     const col = FC.userCol('meetings');
     if (!col || !meetingId) return null;
     const msgCol = col.doc(meetingId).collection('chatMessages');
-    return await msgCol.add({
+    const message = {
       role: role || 'user',
       text: text || '',
       createdAt: FC.serverTimestamp()
-    });
+    };
+    try {
+      return await msgCol.add(message);
+    } catch (err) {
+      if (!isPermissionDenied(err)) throw err;
+      // Existing per-user meeting documents already hold chatHistory. Do not
+      // broaden Firestore permissions just to duplicate the same conversation.
+      return await col.doc(meetingId).update({
+        chatHistory: global.firebase.firestore.FieldValue.arrayUnion({
+          role: message.role, text: message.text
+        })
+      });
+    }
   }
 
   async function sendMeetingChat(meetingId, text) {
@@ -85,13 +97,40 @@
     return { role: 'agent', text: PLACEHOLDER };
   }
 
-  function watchMeetingChat(meetingId, cb) {
+  function isPermissionDenied(err) {
+    return err && (err.code === 'permission-denied' || err.code === 'firestore/permission-denied');
+  }
+
+  function watchMeetingChat(meetingId, cb, onError) {
     const col = FC.userCol('meetings');
     if (!col || !meetingId) { cb([]); return () => {}; }
-    return col.doc(meetingId).collection('chatMessages').orderBy('createdAt', 'asc').limit(100).onSnapshot(
-      snap => cb(snap.docs.map(d => ({ id: d.id, ...d.data() }))),
-      err => { console.warn('meeting chat listener warning:', err); cb([]); }
+    let closed = false;
+    let fallbackUnsub = null;
+    function failed(err) {
+      if (closed) return;
+      if (onError) onError(err);
+      else console.warn('meeting chat history unavailable:', err.code || 'unknown');
+    }
+    const primaryUnsub = col.doc(meetingId).collection('chatMessages').orderBy('createdAt', 'asc').limit(100).onSnapshot(
+      snap => { if (!closed) cb(snap.docs.map(d => ({ id: d.id, ...d.data() }))); },
+      err => {
+        if (closed) return;
+        if (!isPermissionDenied(err)) { failed(err); return; }
+        fallbackUnsub = col.doc(meetingId).onSnapshot(
+          snap => {
+            if (closed) return;
+            const data = snap.exists ? snap.data() : {};
+            cb(Array.isArray(data.chatHistory) ? data.chatHistory : []);
+          },
+          failed
+        );
+      }
     );
+    return () => {
+      closed = true;
+      primaryUnsub();
+      if (fallbackUnsub) fallbackUnsub();
+    };
   }
 
   /* ---- NotebookLM-style generation (slides / mindmap / illustration) ----

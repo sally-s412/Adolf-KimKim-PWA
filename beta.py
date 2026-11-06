@@ -57,7 +57,10 @@ def consume_quota(uid):
 @app.middleware("http")
 async def beta_auth(request: Request, call_next):
     path = request.url.path
-    if request.method == "OPTIONS" or not (path.startswith("/api/") or path == "/transcribe"):
+    if (request.method == "POST" and path == "/api/capsules/dispatch"):
+        # This route authenticates the trusted scheduler with its own secret.
+        return await call_next(request)
+    if (request.method == "GET" and path == "/api/google-calendar/callback") or request.method == "OPTIONS" or not (path.startswith("/api/") or path == "/transcribe"):
         return await call_next(request)
     header = request.headers.get("authorization", "")
     if not header.startswith("Bearer "):
@@ -69,8 +72,21 @@ async def beta_auth(request: Request, call_next):
     except Exception:
         return JSONResponse({"detail": "Sign-in verification is temporarily unavailable."}, status_code=503)
     request.state.uid = claims["sub"]
+    if path.startswith("/api/meet-bot/") and os.getenv("MEET_WORKER_URL"):
+        from routes.meet_dispatch import dispatch
+        return await dispatch(request)
     if path.startswith("/api/meet-bot/"):
         return JSONResponse({"detail": "KimKim Meeting needs a separate meeting worker; it is not deployed on this free beta server."}, status_code=503)
     if request.method != "GET" and not consume_quota(claims["sub"]):
         return JSONResponse({"detail": "Beta request limit reached. Please try again in one minute."}, status_code=429, headers={"Retry-After": "60"})
-    return await call_next(request)
+    response = await call_next(request)
+    if path.rstrip("/") in ("/api/transcribe", "/transcribe") and response.status_code in (502, 503, 504):
+        # Presentation only: preserve the AI engineer's route and request/output contract.
+        message = ("The speech-to-text request timed out. Please try again later."
+                   if response.status_code == 504 else
+                   "The speech-to-text service is temporarily unavailable. Please try again when the AI service is back online.")
+        headers = {key: value for key, value in response.headers.items()
+                   if key.lower().startswith("access-control-") or key.lower() == "vary"}
+        return JSONResponse({"detail": message}, status_code=response.status_code, headers=headers)
+    return response
+

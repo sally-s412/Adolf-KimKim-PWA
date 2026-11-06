@@ -27,16 +27,16 @@ window.I18N.en = {
   forgotBtn: "Send instructions",
   addNew: "+ Add New",
   navHome: "Home",
-  navMeetings: "Meetings",
+  navMeetings: "Files & recordings",
   navNotes: "Notes",
-  navUploads: "Uploads",
+  navUploads: "KimKim Upload",
   navTeam: "Team",
   navPlan: "Plan",
   navRules: "Rules",
   navSettings: "Settings",
   logoutLbl: "Log out",
   searchPh: "Search meetings, notes...",
-  heroTitle: "Hi Sally, Welcome to Adolf KimKim 👋",
+  heroTitle: "Welcome to ADOLF KIMKIM",
   heroSub: "Invite KimKim to your calendar or record live to start capturing your meeting.",
   recordLive: "🔴 Record live meeting",
   scheduleNew: "📆 Schedule new meeting",
@@ -61,11 +61,11 @@ window.I18N.en = {
   speakTime: "Speaking Time",
   notesSub: "All auto-generated and manual notes",
   ntitle: "Community UAT Meeting",
-  ncontent: "Sally provided feedback following the UAT, addressing Sprint 34 features and issues regarding project delays. She sternly criticized PM Luis Bui for neglecting the team and Backend Developer Son Nguyen for his lack of diligence.",
+  ncontent: "Capture your ideas, decisions and next steps.",
   uploadSub: "Upload audio, video, PDF or Word files for AI analysis and transcription",
   dropText: "Drag & drop MP3, WAV, MP4, PDF or DOCX here, or select a file to upload",
   selectFile: "Select File",
-  teamSub: "Manage members with access",
+  teamSub: "Beta invitation list. Email delivery and shared document permissions are not connected yet.",
   inviteBtn: "+ Invite members",
   sAccount: "Account",
   sMeeting: "Meeting",
@@ -198,7 +198,7 @@ window.I18N.en = {
   avatarUploading: "Uploading avatar...",
   avatarUploaded: "Avatar updated.",
   scopedChatNote: "This chatbot only answers using this meeting's recording and uploaded files.",
-  navRecording: "Recording",
+  navRecording: "KimKim Recorder",
   recordingSub: "Record a live meeting and auto-generate a transcript",
   recDesc: "Start recording your live meeting and auto-generate a transcript",
   startRec: "🔴 Start recording",
@@ -207,7 +207,7 @@ window.I18N.en = {
   addNewNoteOpt: "📝 New note",
   addNewUploadOpt: "📤 Upload",
   inviteKimkimLbl: "Invite Adolf KimKim to this meeting",
-  inviteKimkimHint: "KimKim will automatically join and record this meeting",
+  inviteKimkimHint: "Request KimKim when saving. Scheduled auto-join is not available yet.",
   teamInviteTitle: "Invite member",
   teamInviteEmailLbl: "Email",
   teamInviteSendBtn: "Send invite",
@@ -221,3 +221,23 @@ window.I18N.en = {
   notLoggedIn: "Not logged in.",
   errStorageCheckHint: "Check: Cloud Storage is enabled for the project, the storageBucket in config is correct, and storage.rules has been deployed to allow the user to write to avatars/{uid}/.",
 };
+
+Object.assign(window.I18N.en,{"uiAddNote": "+ Add note", "uiNewNote": "New note", "uiNoteTitle": "Title", "uiNoteContent": "Content", "uiNoteTitlePh": "Give your note a title", "uiNoteContentPh": "Write your note here...", "uiNoteTitleRequired": "Enter a title for your note.", "uiNoteSaveFailed": "Your note could not be saved. Please try again.", "uiNoteSaved": "Note saved.", "uiAccountHelp": "Update your display information. Your sign-in account manages your email.", "uiMeetingHelp": "Preferences are saved. Scheduled auto-join is not available in beta.", "uiAIHelp": "Preferences are saved; application depends on the existing AI pipeline.", "uiPasswordHelp": "Enter your current and new passwords to update your account.", "uiAdvancedConnection": "Advanced connection", "uiConfirmTitle": "Confirm action", "uiConfirmAction": "Confirm", "uiCloseMessage": "Dismiss message"});
+
+Object.assign(window.I18N.en,{"uiEmptyNoteTitle": "A space for your ideas", "uiEmptyNoteHelp": "Create a note or choose one from the list.", "uiSaving": "Saving..."});
+
+Object.assign(window.I18N.en,{loginMeetKimKim:"Meet KimKim.",loginKimKimHelp:"Your AI companion for recording, understanding and summarizing content.",loginRecord:"Record",loginRead:"Read files",loginSummarize:"Summarize"});
+
+Object.assign(window.I18N.en,{"studioLoginSub": "Focus on the conversation. Let KimKim remember the details.", "studioRecord": "Record with KimKim", "studioRecordSub": "Capture the important parts of every conversation.", "studioRead": "Read files intelligently", "studioReadSub": "From audio and video to PDF and Word documents.", "studioSummarize": "Get clarity with AI", "studioSummarizeSub": "Find key points, summarize and ask KimKim.", "accountSettingsTitle": "Account settings", "accountSettingsSub": "Manage sign-in, security and application preferences."});
+
+Object.assign(window.I18N.en,{authWelcome:"WELCOME TO<br>ADOLF KIMKIM"});
+
+// Meeting detail UI strings; never translate user-authored content.
+Object.assign(window.I18N.en,{"detailBack": "Back", "detailRecording": "RECORDING", "detailSummarizing": "KimKim is summarizing", "detailBotConnecting": "KimKim is connecting to Google Meet…", "detailStopSummary": "Stop & summarize", "detailProcessing": "Processing with AI…", "detailTranscribing": "Transcribing and summarizing…", "detailMicTitle": "Start / stop live transcription", "detailEndTitle": "Stop recording and summarize", "detailThinking": "KimKim is thinking…", "detailNoReply": "No response was returned. Please try again.", "detailNoResult": "No result yet.", "detailNoTranscript": "No transcript available yet.", "detailNoSpeakerData": "No speaker data available yet.", "detailSpeaking": "speaking…", "detailContentTab": "Document content", "detailTranscriptTab": "Transcript", "detailSummaryDocument": "Summarize document with AI", "detailSummaryMeeting": "Summarize meeting with AI", "detailSummaryNeeded": "Summarize this content first.", "detailTranscriptNeeded": "A transcript is required first.", "detailMindmapWorking": "Creating mind map…", "detailMindmapReady": "Mind map opened in a new tab.", "detailSlidesWorking": "Exporting PowerPoint…", "detailSlidesReady": "PowerPoint downloaded.", "detailImageWorking": "Exporting summary image…", "detailImageReady": "Summary image downloaded.", "detailError": "Error: ", "detailPopupBlocked": "Allow pop-ups to view the mind map.", "detailInvalidExport": "The service did not return a valid file. Please try again.", "detailNotesPlaceholder": "Add your notes…", "detailTranslationSoon": "Translate · Soon", "detailTranslationUnavailable": "Translation is not connected yet. Your original summary is unchanged.", "detailSummaryImage": "Export summary image", "detailPowerPoint": "Export PowerPoint", "detailSendQuestion": "Send question", "detailNoSavedResult": "There is no saved result yet."});
+
+Object.assign(window.I18N.en,{"filesFormat": "File type", "filesAllFormats": "All file types", "filesUnknown": "Unknown", "filesSource": "Source", "filesAllSources": "All sources", "filesUpload": "Uploaded file", "filesRecorder": "KimKim Recorder", "filesMeeting": "KimKim Meeting", "filesManual": "Manual entry", "filesName": "File / recording", "filesAiReady": "AI summary: Result saved", "filesAiMissing": "AI summary: No result saved", "filesAiWorking": "AI summary: Processing…", "filesStatusHelp": "Content status and saved AI results are shown separately.", "filesFilterNote": "Older recordings without original file metadata are shown as Unknown."});
+
+Object.assign(window.I18N.en, {filesNoMatches:"No content matches these filters."});
+
+
+Object.assign(window.I18N.en,{"detailAskSummary": "Ask KimKim to summarize", "detailSummaryDocument": "Ask KimKim to summarize", "detailSummaryMeeting": "Ask KimKim to summarize", "tabChat": "Ask KimKim", "mdNotesLbl": "Notes", "mdChatPh": "Ask KimKim about this content…", "noParticipants": "No participant information.", "detailAIUnavailable": "KimKim is unavailable. Please try again later.", "detailNoResult": "No result yet.", "detailMeetLink": "Google Meet link (optional)", "editMeetingTitle": "Edit details", "tabGenerate": "Create content", "genMindmap": "Mind map", "detailPowerPoint": "Export PowerPoint", "detailSummaryImage": "Export summary image"});

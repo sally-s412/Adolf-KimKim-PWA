@@ -42,6 +42,9 @@ app = FastAPI(title="Adolf KimKim Backend")
 @app.middleware("http")
 async def add_no_cache_header(request: Request, call_next):
     response = await call_next(request)
+    if request.url.path.startswith(("/api/capsules", "/capsule/open/")):
+        response.headers["Cache-Control"] = "private, no-store"
+        response.headers["Referrer-Policy"] = "no-referrer"
     if any(request.url.path.endswith(ext) for ext in [".js", ".css", ".html", ".ico"]) or request.url.path == "/":
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
         response.headers["Pragma"] = "no-cache"

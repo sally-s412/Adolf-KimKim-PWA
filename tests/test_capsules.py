@@ -12,12 +12,21 @@ from fastapi import HTTPException
 
 profile = types.ModuleType('routes.profile_media')
 profile.authenticate = AsyncMock(return_value='owner')
+profile.CERT_REQUEST = object()
 sys.modules['routes.profile_media'] = profile
 spec = importlib.util.spec_from_file_location('routes.capsules', 'routes/capsules.py')
 m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
 
 class CapsuleTests(unittest.IsolatedAsyncioTestCase):
+    async def asyncSetUp(self):
+        self.verified = patch.object(m, 'sender_verified', AsyncMock(return_value=True))
+        self.env = patch.dict(os.environ, {'CAPSULE_SCHEDULER_ENABLED': 'true'})
+        self.env.start()
+        self.addCleanup(self.env.stop)
+        self.verified.start()
+        self.addCleanup(self.verified.stop)
+
     def letter(self, **changes):
         return m.Letter(**dict(id='draft-test-123', title='A letter', body='<script>private</script>',
             email='friend@example.com', sendAt=(datetime.now(timezone.utc)+timedelta(days=1)).isoformat(), **changes))
@@ -69,5 +78,43 @@ class CapsuleTests(unittest.IsolatedAsyncioTestCase):
             result=await m.dispatch(types.SimpleNamespace(headers={'x-capsule-secret':'correct'}))
             self.assertEqual(result['sent'],0)
             deliver.assert_not_called()
+
+    def test_access_log_redacts_private_token(self):
+        import logging
+        record = logging.LogRecord('uvicorn.access', 20, '', 1, '%s %s %s %s %s',
+            ('client', 'GET', '/capsule/open/abc?token=secret', '1.1', 200), None)
+        m.CapsuleAccessLogFilter().filter(record)
+        self.assertNotIn('secret', record.getMessage())
+
+    async def test_unverified_sender_cannot_seal(self):
+        with patch.object(m, 'sender_verified', AsyncMock(return_value=False)), patch.object(m, 'settings', return_value=({}, {}, None)), patch.object(m, 'firestore', AsyncMock()) as db:
+            with self.assertRaises(HTTPException) as caught:
+                await m.seal(self.letter(), object())
+            self.assertEqual(caught.exception.status_code, 403)
+            db.assert_not_called()
+
+    async def test_seal_creates_ciphertext_and_deletes_draft_atomically(self):
+        letter = self.letter()
+        draft = {'name': 'projects/adolfkimkim/databases/(default)/documents/users/owner/capsuleDrafts/' + letter.id,
+                 'updateTime': '2026-01-01T00:00:00Z',
+                 'fields': m.fields({k:getattr(letter,k) for k in ('title','body','email','sendAt')})}
+        db = AsyncMock(side_effect=[None, draft, {}])
+        with patch.object(m,'settings',return_value=({}, {}, Fernet(Fernet.generate_key()))), patch.object(m,'query_records',AsyncMock(return_value=[])), patch.object(m,'firestore',db):
+            result = await m.seal(letter, object())
+            self.assertEqual(result['status'], 'scheduled')
+            args, kwargs = db.call_args
+            self.assertEqual(args, ('POST', ':commit'))
+            writes = kwargs['json']['writes']
+            self.assertEqual(writes[1]['delete'], draft['name'])
+            self.assertEqual(writes[1]['currentDocument']['updateTime'], draft['updateTime'])
+            self.assertNotIn(letter.body, str(writes[0]))
+
+    async def test_changed_draft_cannot_be_sealed(self):
+        db = AsyncMock(side_effect=[None, {'fields': {}, 'name': 'draft', 'updateTime': 'v1'}])
+        with patch.object(m,'settings',return_value=({}, {}, Fernet(Fernet.generate_key()))), patch.object(m,'query_records',AsyncMock(return_value=[])), patch.object(m,'firestore',db):
+            with self.assertRaises(HTTPException) as caught:
+                await m.seal(self.letter(), object())
+            self.assertEqual(caught.exception.status_code, 409)
+            self.assertEqual(db.await_count, 2)
 
 if __name__ == '__main__':unittest.main()

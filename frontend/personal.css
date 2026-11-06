@@ -492,3 +492,7 @@
 .personal-status:empty {
   display: none;
 }
+
+.personal-hidden-finance .personal-bar {
+  visibility: hidden;
+}

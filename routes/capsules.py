@@ -8,6 +8,7 @@ import base64
 import hashlib
 import html
 import json
+import logging
 import os
 import re
 import secrets
@@ -22,14 +23,41 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse, Response
 from google.auth.transport.requests import Request as GoogleRequest
 from google.oauth2.service_account import Credentials
+from google.oauth2 import id_token
 from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
-from .profile_media import authenticate
+from .profile_media import authenticate, CERT_REQUEST
 
 router = APIRouter(prefix='/api/capsules', tags=['capsules'])
 public_router = APIRouter()
 COLLECTION = 'kimkimCapsules'
+
+
+class CapsuleAccessLogFilter(logging.Filter):
+    """Do not put private bearer links into the HTTP access log."""
+    def filter(self, record):
+        if isinstance(record.args, tuple) and len(record.args) >= 3:
+            args = list(record.args)
+            if isinstance(args[2], str) and '/capsule/open/' in args[2]:
+                args[2] = args[2].split('?', 1)[0]
+                record.args = tuple(args)
+        return True
+
+
+logging.getLogger('uvicorn.access').addFilter(CapsuleAccessLogFilter())
+
+
+async def sender_verified(request):
+    project = os.getenv('FIREBASE_PROJECT_ID', 'adolfkimkim')
+    token = request.headers.get('authorization', '')[7:]
+    try:
+        claims = await run_in_threadpool(id_token.verify_firebase_token,
+                                         token, CERT_REQUEST, audience=project)
+        return claims.get('email_verified') is True
+    except Exception:
+        return False
+
 
 
 def settings():
@@ -81,7 +109,7 @@ async def firestore(method, path, **kwargs):
     async with httpx.AsyncClient(timeout=20) as client:
         response = await client.request(method, base_url() + path,
                                         headers={'Authorization': 'Bearer ' + token}, **kwargs)
-    if response.status_code in (409, 412):
+    if response.status_code in (409, 412) or (path == ':commit' and response.status_code == 400 and response.json().get('error', {}).get('status') == 'FAILED_PRECONDITION'):
         raise HTTPException(409, 'capsule/state-changed')
     if response.status_code == 404:
         return None
@@ -159,7 +187,9 @@ async def capabilities(request: Request):
     await authenticate(request)
     try:
         settings()
-        return {'ready': True}
+        if os.getenv('CAPSULE_SCHEDULER_ENABLED') != 'true':
+            return {'ready': False}
+        return {'ready': True, 'emailVerified': await sender_verified(request)}
     except HTTPException:
         return {'ready': False}
 
@@ -168,11 +198,15 @@ async def capabilities(request: Request):
 async def seal(letter: Letter, request: Request):
     uid = await authenticate(request)
     values, _, cipher = settings()
-    send_at = validate_letter(letter)
+    if not await sender_verified(request):
+        raise HTTPException(403, 'capsule/verify-email')
     path = record_path(uid, letter.id)
     previous = unpack(await firestore('GET', path))
     if previous:
         return public_meta(previous)  # Retry after a lost response must never create another mail.
+    if os.getenv('CAPSULE_SCHEDULER_ENABLED') != 'true':
+        raise HTTPException(503, 'capsule/not-configured')
+    send_at = validate_letter(letter)
     # Quota spans all historical letters and is intentionally conservative for beta.
     existing = await query_records('owner', uid, 101)
     if len(existing) >= 100:
@@ -183,14 +217,37 @@ async def seal(letter: Letter, request: Request):
               'sendAt': send_at, 'status': 'scheduled', 'createdAt': datetime.now(timezone.utc).isoformat(),
               'retrySince': '', 'encrypted': cipher.encrypt(json.dumps(payload).encode()).decode(),
               'tokenHash': hashlib.sha256(token.encode()).hexdigest(), 'attempts': '0'}
+    draft_path = '/users/' + quote(uid, safe='') + '/capsuleDrafts/' + letter.id
+    draft = await firestore('GET', draft_path)
+    if not draft:
+        raise HTTPException(409, 'capsule/draft-changed')
+    saved = draft.get('fields', {})
+    # A preview seals exactly the revision it displayed, including images.
+    expected = {'title': letter.title, 'body': letter.body, 'email': letter.email,
+                'sendAt': letter.sendAt}
+    if any(saved.get(key, {}).get('stringValue') != value for key, value in expected.items()):
+        raise HTTPException(409, 'capsule/draft-changed')
+    photos = [value.get('stringValue') for value in
+              saved.get('photos', {}).get('arrayValue', {}).get('values', [])]
+    if photos != letter.photos:
+        raise HTTPException(409, 'capsule/draft-changed')
+    name = base_url().split('/v1/', 1)[1] + path
     try:
-        document = await firestore('PATCH', path, params={'currentDocument.exists': 'false'},
-                                   json={'fields': fields(record)})
+        await firestore('POST', ':commit', json={'writes': [
+            {'update': {'name': name, 'fields': fields(record)},
+             'currentDocument': {'exists': False}},
+            {'delete': draft['name'],
+             'currentDocument': {'updateTime': draft['updateTime']}}
+        ]})
     except HTTPException as error:
         if error.status_code != 409:
             raise
-        document = await firestore('GET', path)
-    return public_meta(unpack(document))
+        previous = unpack(await firestore('GET', path))
+        if previous:
+            return public_meta(previous)
+        raise HTTPException(409, 'capsule/draft-changed')
+    return public_meta({'id': path.rsplit('/', 1)[-1], **record})
+
 
 
 async def query_records(field, value, limit=100):
@@ -318,4 +375,4 @@ async def open_letter(letter_id: str, token: str = ''):
     images = ''.join('<img alt="" src="' + html.escape(photo, quote=True) + '">' for photo in payload['photos'])
     content = '<!doctype html><html lang="' + payload['language'] + '"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>KimKim Capsule</title><style>body{margin:0;padding:40px 18px;background:#ffeff2;color:#231a45;font:16px/1.8 system-ui,sans-serif}main{max-width:680px;margin:auto;background:#fffbfc;padding:clamp(24px,6vw,52px);border-radius:24px}h1{line-height:1.25;overflow-wrap:anywhere}.letter{white-space:pre-wrap;overflow-wrap:anywhere}img{display:block;max-width:100%;border-radius:16px;margin-top:20px}small{color:#6a5e8a}@media(prefers-color-scheme:dark){body{background:#101838;color:#f6f2fa}main{background:#192450}small{color:#a9b0d6}}</style><main><small>KIMKIM CAPSULE</small><h1>' + html.escape(payload['title']) + '</h1><div class="letter">' + html.escape(payload['body']) + '</div>' + images + '</main></html>'
     return HTMLResponse(content, headers={'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer',
-        'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'; img-src data:; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'"})
+        'X-Content-Type-Options': 'nosniff', 'X-Robots-Tag': 'noindex, nofollow, noarchive', 'Content-Security-Policy': "default-src 'none'; img-src data:; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'"})

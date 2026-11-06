@@ -16,6 +16,9 @@
     wallet: "",
     ready: false,
     mailReady: false,
+    configReady: false,
+    emailVerified: false,
+    hideAmounts: false,
   };
   const categories = {
     food: ["Ăn uống", "Food", "heart"],
@@ -43,11 +46,13 @@
     );
   const icon = (name) => HIG.icon(name).outerHTML;
   const money = (amount) =>
-    new Intl.NumberFormat(tr("vi-VN", "en-US"), {
-      style: "currency",
-      currency: "VND",
-      maximumFractionDigits: 0,
-    }).format(amount);
+    state.hideAmounts
+      ? "••••••"
+      : new Intl.NumberFormat(tr("vi-VN", "en-US"), {
+          style: "currency",
+          currency: "VND",
+          maximumFractionDigits: 0,
+        }).format(amount);
   function localDate(date = new Date()) {
     return [
       date.getFullYear(),
@@ -76,6 +81,14 @@
   }
   function feedback(error) {
     const messages = {
+      "capsule/verify-email": tr(
+        "Hãy xác minh email tài khoản trước khi gửi thư.",
+        "Verify your account email before sending letters.",
+      ),
+      "capsule/draft-changed": tr(
+        "Bản nháp đã thay đổi trên thiết bị khác. Hãy mở lại bản nháp và kiểm tra trước khi niêm phong.",
+        "This draft changed on another device. Reopen and review it before sealing.",
+      ),
       "capsule/not-configured": tr(
         "Dịch vụ gửi thư chưa được cấu hình. Bản nháp của bạn đã được giữ lại.",
         "Email delivery is not configured. Your draft is safe.",
@@ -196,8 +209,9 @@
       .forEach(
         (e) => (totals[e.category] = (totals[e.category] || 0) + e.amount),
       );
+    view.classList.toggle("personal-hidden-finance", state.hideAmounts);
     view.innerHTML = `<div class="personal-kicker">KIMKIM FINANCE</div><header class="personal-head"><div><h1>${tr("Tiền của mình, KimKim ghi giúp.", "Your money, kept with KimKim.")}</h1><p>${tr("Một chút rõ ràng cho những kế hoạch của bạn.", "A little clarity for the plans that matter to you.")}</p></div>${button(icon("plus") + tr("Thêm giao dịch", "Add transaction"), "entry", true)}</header>
-      <div class="personal-toolbar"><label><span class="sr-only">${tr("Tháng", "Month")}</span><input aria-label="${tr("Tháng", "Month")}" type="month" id="financeMonth" value="${state.month}"></label><select id="financeWallet" aria-label="${tr("Lọc ví", "Filter wallet")}"><option value="">${tr("Tất cả ví", "All wallets")}</option>${state.wallets.map((w) => `<option value="${w.id}" ${state.wallet === w.id ? "selected" : ""}>${esc(w.name)}</option>`).join("")}</select>${button(tr("Ví của tôi", "My wallets"), "wallets")}${button(tr("Xuất CSV", "Export CSV"), "export")}</div>
+      <div class="personal-toolbar"><label><span class="sr-only">${tr("Tháng", "Month")}</span><input aria-label="${tr("Tháng", "Month")}" type="month" id="financeMonth" value="${state.month}"></label><select id="financeWallet" aria-label="${tr("Lọc ví", "Filter wallet")}"><option value="">${tr("Tất cả ví", "All wallets")}</option>${state.wallets.map((w) => `<option value="${w.id}" ${state.wallet === w.id ? "selected" : ""}>${esc(w.name)}</option>`).join("")}</select>${button(tr("Ví của tôi", "My wallets"), "wallets")}${button(state.hideAmounts ? tr("Hiện số tiền", "Show amounts") : tr("Ẩn số tiền", "Hide amounts"), "privacy-amounts")}${button(tr("Xuất CSV", "Export CSV"), "export")}</div>
       <div class="personal-status" id="financeStatus" role="status">${state.ready ? "" : tr("KimKim đang mở sổ…", "KimKim is opening your ledger…")}</div>
       <div class="personal-metrics">${[
         [tr("Chênh lệch thu chi", "Net cash flow"), income - expense],
@@ -456,7 +470,8 @@
     const view = document.getElementById("view-capsules");
     if (!view) return;
     view.innerHTML = `<div class="personal-kicker">KIMKIM CAPSULE</div><header class="personal-head"><div><h1>${tr("Gửi một chút hôm nay,<br>để KimKim giữ hộ.", "A little of today,<br>kept for tomorrow by KimKim.")}</h1><p>${tr("Những lời nhắn hôm nay, dành cho một ngày mai.", "Today’s words, for a day yet to come.")}</p></div>${button(icon("plus") + tr("Tạo KimKim Capsule", "Create KimKim Capsule"), "capsule", true)}</header>
-    ${!state.mailReady ? `<div class="personal-notice">${tr("Bạn có thể soạn thư và lưu bản nháp. Gửi email hẹn giờ sẽ mở khi dịch vụ gửi thư được cấu hình.", "You can write and save drafts. Scheduled email delivery becomes available when the mail service is configured.")}</div>` : ""}
+    ${!state.configReady ? `<div class="personal-notice">${tr("Bạn có thể soạn thư và lưu bản nháp. Gửi email hẹn giờ sẽ mở khi dịch vụ gửi thư được cấu hình.", "You can write and save drafts. Scheduled email delivery becomes available when the mail service is configured.")}</div>` : ""}
+    ${state.configReady && !state.emailVerified ? `<div class="personal-notice">${tr("Xác minh email tài khoản để gửi Capsule đến người nhận bên ngoài.", "Verify your account email to send a Capsule to an external recipient.")} ${button(tr("Gửi email xác minh", "Send verification email"), "verify-email")}</div>` : ""}
     <div class="personal-toolbar"><div class="personal-tabs">${[
       ["waiting", tr("Đang chờ", "Waiting")],
       ["sent", tr("Đã gửi / Đã hủy", "Sent / Cancelled")],
@@ -475,9 +490,13 @@
     const owner = state.uid;
     if (!owner) return;
     try {
+      await firebase.auth().currentUser.reload();
+      await firebase.auth().currentUser.getIdToken(true);
       const capabilities = await capsuleApi("/capabilities");
       if (owner !== state.uid) return;
-      state.mailReady = capabilities.ready;
+      state.configReady = capabilities.ready;
+      state.emailVerified = capabilities.emailVerified === true;
+      state.mailReady = state.configReady && state.emailVerified;
       if (state.mailReady) {
         const data = await capsuleApi("");
         if (owner !== state.uid) return;
@@ -627,13 +646,6 @@
         });
         if (owner !== state.uid) return;
         state.sent = [result, ...state.sent.filter((c) => c.id !== result.id)];
-        await FC.db
-          .collection("users")
-          .doc(owner)
-          .collection("capsuleDrafts")
-          .doc(data.id)
-          .delete()
-          .catch(() => {});
         state.tab =
           result.status === "sent" || result.status === "cancelled"
             ? "sent"
@@ -670,6 +682,19 @@
       return;
     }
     if (!state.uid) return;
+    if (action === "privacy-amounts") {
+      state.hideAmounts = !state.hideAmounts;
+      renderFinance();
+    }
+    if (action === "verify-email") {
+      await firebase.auth().currentUser.sendEmailVerification();
+      notify(
+        tr(
+          "KimKim đã gửi liên kết xác minh tới email tài khoản của bạn.",
+          "A verification link was sent to your account email.",
+        ),
+      );
+    }
     if (action === "entry") entryForm(id);
     if (action === "wallets") walletForm();
     if (action === "budget") budgetForm();
@@ -761,6 +786,8 @@
       state.uid = user?.uid || null;
       state.ready = false;
       state.mailReady = false;
+      state.configReady = false;
+      state.emailVerified = false;
       for (const name of [
         "entries",
         "wallets",
@@ -772,6 +799,8 @@
         state[name] = [];
       state.wallet = "";
       dialog.close();
+      dialog.replaceChildren();
+      state.hideAmounts = false;
       labels();
       if (!user) return;
       const uid = user.uid;

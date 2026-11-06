@@ -114,7 +114,7 @@
   <script>
     var lang = "vi";
     var authListener;
-    var authenticated = { uid: "test-user" };
+    var authenticated = { uid: "test-user", reload: async()=>{}, getIdToken: async()=>"" };
     var memory = {
         financeWallets: {
           cash: { name: "Tiền mặt", opening: 1000000 },

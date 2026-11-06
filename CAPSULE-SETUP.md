@@ -36,3 +36,13 @@ The first release supports one external recipient and up to three compressed ima
 `python -m unittest discover -s tests -p test_capsules.py -v`
 
 DOM workflow verification is in `tests/personal-dom.cjs`, with the isolated in-memory fixture `tests/fixtures/personal.html`. Install jsdom for that check. This fixture never connects to Firebase or sends email.
+
+## Activation checklist
+
+1. In the backend Render Environment page, enter the credentials above directly; never send them through chat. Use a dedicated Resend sending key and dedicated Firebase service account. Back up the encryption key securely.
+2. Deploy the composite index and verify it is ready. Confirm live Firestore rules restrict each `/users/{uid}` subcollection to that user and deny client access to `kimkimCapsules`.
+3. Configure a trusted cron runner to execute `python scripts/dispatch-capsules.py` every minute with only `CAPSULE_PUBLIC_ORIGIN` and `CAPSULE_DISPATCH_SECRET` supplied securely. Use this branch as its source. Do not expose the dispatch secret to frontend build variables. A Render Cron Job is paid; no paid resource is provisioned by this change.
+4. Run the scheduler manually and confirm success. Only then set `CAPSULE_SCHEDULER_ENABLED=true` on the backend and redeploy. Missing activation keeps new sealing disabled.
+5. Verify the sender account email, seal one test letter to your own inbox, verify no early access, and confirm only one provider message and one inbox delivery after its deadline. Check spam and provider bounce events. Verify cancellation as well.
+
+Sealing requires a verified Firebase email. The server atomically writes ciphertext and deletes the exact previewed draft revision. Concurrent draft changes are rejected. Account switching clears dialogs and account data; Finance includes a session-only amount privacy toggle. Capsule API responses are private/no-store. Application access logs redact recipient query tokens; infrastructure request logs must also be restricted and reviewed before launch. Bearer links are private access credentials, not recipient identity verification. This beta has not undergone an independent security audit.

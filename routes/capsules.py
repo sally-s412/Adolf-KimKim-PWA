@@ -169,7 +169,12 @@ def unpack(document):
 
 
 def public_meta(record):
-    return {key: record.get(key, '') for key in ('id', 'draftId', 'title', 'email', 'sendAt', 'status', 'errorCode')}
+    result = {key: record.get(key, '') for key in ('id', 'draftId', 'title', 'email', 'sendAt', 'status', 'errorCode', 'cover')}
+    # Owner-authenticated endpoints only. Photo covers stay encrypted at rest.
+    if record.get('cover') == 'photo' and record.get('encrypted'):
+        payload = json.loads(settings()[2].decrypt(record['encrypted'].encode()))
+        result['coverPhoto'] = (payload.get('photos') or [''])[0]
+    return result
 
 
 def record_path(uid, draft_id):
@@ -192,6 +197,7 @@ class Letter(BaseModel):
     sendAt: str
     language: str = Field(default='vi', pattern=r'^(vi|en)$')
     photos: list[str] = Field(default_factory=list, max_length=3)
+    cover: str = Field(default='rose', pattern=r'^(rose|midnight|lavender|meadow|sunset|paper|photo)$')
 
 
 def validate_letter(letter):
@@ -205,6 +211,8 @@ def validate_letter(letter):
             raise ValueError('date')
     except (ValueError, OverflowError):
         raise HTTPException(422, 'capsule/invalid-date')
+    if letter.cover == 'photo' and not letter.photos:
+        raise HTTPException(422, 'capsule/cover-photo-required')
     for photo in letter.photos:
         if not photo.startswith('data:image/jpeg;base64,'):
             raise HTTPException(422, 'capsule/invalid-photo')
@@ -253,7 +261,7 @@ async def seal(letter: Letter, request: Request):
     record = {'owner': uid, 'draftId': letter.id, 'title': letter.title.strip(), 'email': letter.email.strip(),
               'sendAt': send_at, 'status': 'scheduled', 'createdAt': datetime.now(timezone.utc).isoformat(),
               'retrySince': '', 'encrypted': cipher.encrypt(json.dumps(payload).encode()).decode(),
-              'tokenHash': hashlib.sha256(token.encode()).hexdigest(), 'attempts': '0'}
+              'tokenHash': hashlib.sha256(token.encode()).hexdigest(), 'attempts': '0', 'cover': letter.cover}
     draft_path = '/users/' + quote(uid, safe='') + '/capsuleDrafts/' + letter.id
     draft = await firestore('GET', draft_path)
     if not draft:
@@ -263,6 +271,8 @@ async def seal(letter: Letter, request: Request):
     expected = {'title': letter.title, 'body': letter.body, 'email': letter.email,
                 'sendAt': letter.sendAt}
     if any(saved.get(key, {}).get('stringValue') != value for key, value in expected.items()):
+        raise HTTPException(409, 'capsule/draft-changed')
+    if saved.get('cover', {}).get('stringValue', 'rose') != letter.cover:
         raise HTTPException(409, 'capsule/draft-changed')
     photos = [value.get('stringValue') for value in
               saved.get('photos', {}).get('arrayValue', {}).get('values', [])]
@@ -439,6 +449,12 @@ async def open_letter(letter_id: str, token: str = ''):
         raise HTTPException(404, 'Letter not available')
     payload = json.loads(settings()[2].decrypt(record['encrypted'].encode()))
     images = ''.join('<img alt="" src="' + html.escape(photo, quote=True) + '">' for photo in payload['photos'])
-    content = '<!doctype html><html lang="' + payload['language'] + '"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>KimKim Capsule</title><style>body{margin:0;padding:40px 18px;background:#ffeff2;color:#231a45;font:16px/1.8 system-ui,sans-serif}main{max-width:680px;margin:auto;background:#fffbfc;padding:clamp(24px,6vw,52px);border-radius:24px}h1{line-height:1.25;overflow-wrap:anywhere}.letter{white-space:pre-wrap;overflow-wrap:anywhere}img{display:block;max-width:100%;border-radius:16px;margin-top:20px}small{color:#6a5e8a}@media(prefers-color-scheme:dark){body{background:#101838;color:#f6f2fa}main{background:#192450}small{color:#a9b0d6}}</style><main><small>KIMKIM CAPSULE</small><h1>' + html.escape(payload['title']) + '</h1><div class="letter">' + html.escape(payload['body']) + '</div>' + images + '</main></html>'
+    palettes = {'rose': ('#f7c4d1','#e3c8ea'), 'midnight': ('#182856','#5b4b83'),
+                'lavender': ('#d8ccf5','#a9bce9'), 'meadow': ('#b6d8cd','#e6e3b8'),
+                'sunset': ('#f4b3a2','#e9c2de'), 'paper': ('#eee1cc','#d5bea2')}
+    cover = payload.get('cover', 'rose')
+    a, b = palettes.get(cover, palettes['rose'])
+    cover_html = ('<div class="cover"><img alt="" src="' + html.escape(payload['photos'][0], quote=True) + '"></div>') if cover == 'photo' and payload.get('photos') else ('<div class="cover" style="background:linear-gradient(125deg,' + a + ',' + b + ')"><span class="envelope">K</span><span class="cover-brand">KIMKIM · CAPSULE</span></div>')
+    content = '<!doctype html><html lang="' + payload['language'] + '"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>KimKim Capsule</title><style>body{margin:0;padding:40px 18px;background:#ffeff2;color:#231a45;font:16px/1.8 system-ui,sans-serif}main{max-width:680px;margin:auto;background:#fffbfc;padding:clamp(24px,6vw,52px);border-radius:24px}h1{line-height:1.25;overflow-wrap:anywhere}.letter{white-space:pre-wrap;overflow-wrap:anywhere}img{display:block;max-width:100%;border-radius:16px;margin-top:20px}small{color:#6a5e8a}.cover{height:220px;position:relative;display:grid;place-items:center;overflow:hidden;border-radius:18px;margin-bottom:32px}.cover img{height:100%;width:100%;object-fit:cover;margin:0;border-radius:0}.envelope{display:grid;place-items:center;width:116px;height:78px;background:#ffffffc9;border:1px solid #ffffffb3;border-radius:10px;box-shadow:0 14px 30px #10183820;color:#98415d;font:italic 32px Georgia}.cover-brand{position:absolute;bottom:18px;color:#231a45;background:#ffffffcc;padding:3px 12px;border-radius:20px;font-size:10px;letter-spacing:2px}@media(prefers-color-scheme:dark){body{background:#101838;color:#f6f2fa}main{background:#192450}small{color:#a9b0d6}}</style><main>' + cover_html + '<small>KIMKIM CAPSULE</small><h1>' + html.escape(payload['title']) + '</h1><div class="letter">' + html.escape(payload['body']) + '</div>' + images + '</main></html>'
     return HTMLResponse(content, headers={'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer',
         'X-Content-Type-Options': 'nosniff', 'X-Robots-Tag': 'noindex, nofollow, noarchive', 'Content-Security-Policy': "default-src 'none'; img-src data:; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'"})

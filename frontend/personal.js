@@ -485,7 +485,7 @@
       .join(
         "",
       )}</div>${button(tr("Làm mới", "Refresh"), "refresh-capsules")}</div><div class="personal-status" id="capsuleStatus" role="status"></div>
-    <div class="personal-grid">${items.map((c) => `<button type="button" class="personal-card capsule-card" data-action="${c.status === "draft" ? "capsule" : "capsule-detail"}" data-id="${c.id}"><div class="capsule-cover">${c.photos?.[0] ? `<img src="${esc(c.photos[0])}" alt="">` : icon("message")}</div><div class="capsule-card-body"><span class="personal-badge">${esc(capsuleStatus(c))}</span><h2>${esc(c.title)}</h2><p class="personal-muted">${esc(c.email || "")}<br>${c.sendAt ? esc(new Date(c.sendAt).toLocaleString(tr("vi-VN", "en-US"))) : tr("Chưa chọn ngày gửi", "Choose a delivery date")}</p></div></button>`).join("")}</div>${items.length ? "" : `<div class="personal-empty">${icon("message")}<p>${tr("Có điều gì bạn muốn gửi đến tương lai?<br>KimKim sẽ giữ giúp bạn từ lời nhắn đầu tiên.", "Something you want to send into the future?<br>Start with a letter, kept by KimKim.")}</p>${button(tr("Viết lá thư đầu tiên", "Write your first letter"), "capsule", true)}</div>`}`;
+    <div class="personal-grid">${items.map((c) => `<button type="button" class="personal-card capsule-card" data-action="${c.status === "draft" ? "capsule" : "capsule-detail"}" data-id="${c.id}">${coverMarkup(c)}<div class="capsule-card-body"><span class="personal-badge">${esc(capsuleStatus(c))}</span><h2>${esc(c.title)}</h2><p class="personal-muted">${esc(c.email || "")}<br>${c.sendAt ? esc(new Date(c.sendAt).toLocaleString(tr("vi-VN", "en-US"))) : tr("Chưa chọn ngày gửi", "Choose a delivery date")}</p></div></button>`).join("")}</div>${items.length ? "" : `<div class="personal-empty">${icon("message")}<p>${tr("Có điều gì bạn muốn gửi đến tương lai?<br>KimKim sẽ giữ giúp bạn từ lời nhắn đầu tiên.", "Something you want to send into the future?<br>Start with a letter, kept by KimKim.")}</p>${button(tr("Viết lá thư đầu tiên", "Write your first letter"), "capsule", true)}</div>`}`;
   }
   async function refreshCapsules() {
     const owner = state.uid;
@@ -546,20 +546,40 @@
       }),
     );
   }
+  const capsuleCovers = {
+    rose: ["Hồng thư", "Rose letter"],
+    midnight: ["Đêm sao", "Midnight"],
+    lavender: ["Mây tím", "Lavender"],
+    meadow: ["Vườn xanh", "Meadow"],
+    sunset: ["Hoàng hôn", "Sunset"],
+    paper: ["Thư tay", "Paper letter"],
+    photo: ["Ảnh của bạn", "Your photo"],
+  };
+  function coverMarkup(item) {
+    const selected = Object.hasOwn(capsuleCovers, item.cover) ? item.cover : "rose";
+    const photo = item.photos?.[0] || item.coverPhoto;
+    return `<div class="capsule-cover capsule-cover-${selected}">${selected === "photo" && photo ? `<img src="${esc(photo)}" alt="${tr("Bìa thư", "Letter cover")}">` : `<span class="capsule-cover-orbit" aria-hidden="true"></span><span class="capsule-envelope" aria-hidden="true"><span class="capsule-seal">K</span></span><span class="capsule-cover-brand">KIMKIM · ${tr("GỬI ĐẾN TƯƠNG LAI", "TO THE FUTURE")}</span>`}</div>`;
+  }
   function capsuleForm(id) {
     const old = state.drafts.find((d) => d.id === id) || {},
       draftId = old.id || crypto.randomUUID();
     let photos = old.photos || [];
+    let cover = Object.hasOwn(capsuleCovers, old.cover) ? old.cover : "rose";
     modal(
       tr("Gửi cùng KimKim", "Send with KimKim"),
-      `<form id="personalCapsule" class="personal-form" data-id="${draftId}"><label>${tr("Tiêu đề", "Title")}<input name="title" maxlength="100" required value="${esc(old.title || "")}" placeholder="${tr("Gửi tôi của một năm sau", "To me, a year from now")}"></label><label>${tr("Lời nhắn của bạn", "Your letter")}<textarea name="body" maxlength="12000" required placeholder="${tr("Hôm nay bạn muốn kể điều gì?", "What would you like to remember about today?")}">${esc(old.body || "")}</textarea></label><label>${tr("Ảnh đính kèm (tối đa 3)", "Photos (up to 3)")}<input id="capsulePhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple></label><div class="capsule-photo-strip" id="capsulePhotoPreview">${photos.map((p) => `<img src="${esc(p)}" alt="">`).join("")}</div><div class="personal-form-grid"><label>${tr("Email người nhận", "Recipient email")}<input name="email" type="email" maxlength="254" value="${esc(old.email || "")}" placeholder="sally@example.com"></label><label>${tr("Ngày KimKim gửi", "Delivery date")}<input name="sendAt" type="datetime-local" value="${old.sendAt ? localDate(new Date(old.sendAt)) + "T" + new Date(old.sendAt).toTimeString().slice(0, 5) : ""}"></label></div><p class="personal-muted">${tr("Gửi tới email bên ngoài. Người nhận mở thư qua liên kết riêng, không cần tài khoản KimKim. Giờ gửi theo múi giờ của thiết bị.", "Send to any email. The recipient opens a private link without a KimKim account. Delivery time uses your device timezone.")}</p><p class="personal-error" role="alert"></p><div class="personal-actions">${id ? button(tr("Xóa nháp", "Delete draft"), "delete-draft") : ""}<button type="submit" class="personal-btn" name="mode" value="draft">${tr("Lưu nháp", "Save draft")}</button><button type="submit" class="personal-btn primary" name="mode" value="preview">${tr("Xem trước", "Preview")}</button></div></form>`,
+      `<form id="personalCapsule" class="personal-form" data-id="${draftId}"><fieldset class="capsule-cover-picker"><legend>${tr("Chọn bìa thư", "Choose a cover")}</legend><div id="capsuleCoverLive">${coverMarkup({cover, photos})}</div><div class="capsule-cover-options">${Object.entries(capsuleCovers).map(([key, labels]) => `<label class="capsule-cover-option"><input type="radio" name="cover" value="${key}" ${cover === key ? "checked" : ""}><span class="capsule-cover-swatch capsule-cover-${key}" aria-hidden="true">${key === "photo" ? icon("upload") : "K"}</span><span>${labels[tr("0", "1")]}</span></label>`).join("")}</div><p class="personal-muted">${tr("Chọn Ảnh của bạn để dùng ảnh đính kèm đầu tiên làm bìa.", "Choose Your photo to use your first attached photo as the cover.")}</p></fieldset><label>${tr("Tiêu đề", "Title")}<input name="title" maxlength="100" required value="${esc(old.title || "")}" placeholder="${tr("Gửi tôi của một năm sau", "To me, a year from now")}"></label><label>${tr("Lời nhắn của bạn", "Your letter")}<textarea name="body" maxlength="12000" required placeholder="${tr("Hôm nay bạn muốn kể điều gì?", "What would you like to remember about today?")}">${esc(old.body || "")}</textarea></label><label>${tr("Ảnh đính kèm (tối đa 3)", "Photos (up to 3)")}<input id="capsulePhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple></label><div class="capsule-photo-strip" id="capsulePhotoPreview">${photos.map((p) => `<img src="${esc(p)}" alt="">`).join("")}</div><div class="personal-form-grid"><label>${tr("Email người nhận", "Recipient email")}<input name="email" type="email" maxlength="254" value="${esc(old.email || "")}" placeholder="sally@example.com"></label><label>${tr("Ngày KimKim gửi", "Delivery date")}<input name="sendAt" type="datetime-local" value="${old.sendAt ? localDate(new Date(old.sendAt)) + "T" + new Date(old.sendAt).toTimeString().slice(0, 5) : ""}"></label></div><p class="personal-muted">${tr("Gửi tới email bên ngoài. Người nhận mở thư qua liên kết riêng, không cần tài khoản KimKim. Giờ gửi theo múi giờ của thiết bị.", "Send to any email. The recipient opens a private link without a KimKim account. Delivery time uses your device timezone.")}</p><p class="personal-error" role="alert"></p><div class="personal-actions">${id ? button(tr("Xóa nháp", "Delete draft"), "delete-draft") : ""}<button type="submit" class="personal-btn" name="mode" value="draft">${tr("Lưu nháp", "Save draft")}</button><button type="submit" class="personal-btn primary" name="mode" value="preview">${tr("Xem trước", "Preview")}</button></div></form>`,
     );
     const form = document.getElementById("personalCapsule");
+    form.querySelectorAll('input[name="cover"]').forEach(input => input.onchange = () => {
+      cover = input.value;
+      document.getElementById("capsuleCoverLive").innerHTML = coverMarkup({cover, photos});
+    });
     let photosReady = Promise.resolve();
     document.getElementById("capsulePhotos").onchange = (e) => {
       photosReady = compressPhotos(e.target.files)
         .then((result) => {
           photos = result;
+          document.getElementById("capsuleCoverLive").innerHTML = coverMarkup({cover, photos});
           document.getElementById("capsulePhotoPreview").innerHTML = photos
             .map((p) => `<img src="${esc(p)}" alt="">`)
             .join("");
@@ -583,6 +603,8 @@
         data.title = data.title.trim();
         data.body = data.body.trim();
         data.photos = photos;
+        data.cover = cover;
+        if (cover === "photo" && !photos.length) throw Error(tr("Thêm ít nhất một ảnh để dùng làm bìa.", "Add a photo to use as your cover."));
         delete data.mode;
         data.sendAt = data.sendAt ? new Date(data.sendAt).toISOString() : "";
         if (!data.title || !data.body)
@@ -633,7 +655,7 @@
   function capsulePreview(data) {
     modal(
       tr("Xem trước cùng KimKim", "Preview with KimKim"),
-      `<span class="personal-badge">${tr("Bản xem trước", "Preview")}</span><h2>${esc(data.title)}</h2><p class="personal-muted">${esc(data.email)} · ${esc(new Date(data.sendAt).toLocaleString(tr("vi-VN", "en-US")))}</p><div class="capsule-letter">${esc(data.body)}</div><div class="capsule-photo-strip">${data.photos.map((p) => `<img src="${esc(p)}" alt="">`).join("")}</div><form id="capsuleSeal" class="personal-form"><p class="personal-muted">${tr("Sau khi niêm phong, nội dung và người nhận được chốt. Bạn có thể hủy lịch gửi trước khi KimKim bắt đầu gửi.", "Sealing fixes the letter and recipient. You can cancel before KimKim starts delivery.")}</p><p class="personal-error" role="alert"></p><div class="personal-actions">${button(tr("Sửa bản nháp", "Edit draft"), "capsule-back")}<button class="personal-btn primary" type="submit" ${state.mailReady ? "" : "disabled"}>${tr("Nhờ KimKim giữ hộ", "Let KimKim keep it")}</button></div></form>`,
+      `<div class="capsule-preview-cover">${coverMarkup(data)}</div><span class="personal-badge">${tr("Bản xem trước", "Preview")}</span><h2>${esc(data.title)}</h2><p class="personal-muted">${esc(data.email)} · ${esc(new Date(data.sendAt).toLocaleString(tr("vi-VN", "en-US")))}</p><div class="capsule-letter">${esc(data.body)}</div><div class="capsule-photo-strip">${data.photos.map((p) => `<img src="${esc(p)}" alt="">`).join("")}</div><form id="capsuleSeal" class="personal-form"><p class="personal-muted">${tr("Sau khi niêm phong, nội dung và người nhận được chốt. Bạn có thể hủy lịch gửi trước khi KimKim bắt đầu gửi.", "Sealing fixes the letter and recipient. You can cancel before KimKim starts delivery.")}</p><p class="personal-error" role="alert"></p><div class="personal-actions">${button(tr("Sửa bản nháp", "Edit draft"), "capsule-back")}<button class="personal-btn primary" type="submit" ${state.mailReady ? "" : "disabled"}>${tr("Nhờ KimKim giữ hộ", "Let KimKim keep it")}</button></div></form>`,
     );
     const form = document.getElementById("capsuleSeal");
     form.querySelector("[data-action=capsule-back]").onclick = () =>
@@ -660,7 +682,7 @@
     if (!c) return;
     modal(
       c.title,
-      `<span class="personal-badge">${esc(capsuleStatus(c))}</span><div class="personal-row"><div class="personal-row-copy"><b>${tr("Email người nhận", "Recipient email")}</b><small>${esc(c.email)}</small></div></div><div class="personal-row"><div class="personal-row-copy"><b>${tr("Ngày KimKim gửi", "Delivery date")}</b><small>${esc(new Date(c.sendAt).toLocaleString(tr("vi-VN", "en-US")))}</small></div></div><p class="personal-muted">${tr("KimKim giữ nội dung thư đến thời điểm đã hẹn.", "KimKim keeps the letter until its scheduled delivery.")}</p>${["failed", "delivery_unknown"].includes(c.status) ? `<p class="personal-notice">${c.errorCode === "capsule/gmail-authorization-required" ? tr("Tài khoản gửi cần được kết nối lại. Vui lòng liên hệ hỗ trợ KimKim.", "The sender account needs to be reconnected. Please contact KimKim support.") : tr("KimKim chưa xác nhận được việc gửi thư. Vui lòng liên hệ hỗ trợ; thư sẽ không tự gửi lại để tránh trùng.", "KimKim could not confirm delivery. Please contact support; this letter will not be sent again automatically to avoid duplicates.")}</p>` : ""}${c.status === "scheduled" ? `<form id="capsuleCancel" class="personal-form"><p class="personal-error" role="alert"></p><button class="personal-btn" type="submit">${tr("Hủy lịch gửi", "Cancel delivery")}</button></form>` : ""}`,
+      `<div class="capsule-preview-cover">${coverMarkup(c)}</div><span class="personal-badge">${esc(capsuleStatus(c))}</span><div class="personal-row"><div class="personal-row-copy"><b>${tr("Email người nhận", "Recipient email")}</b><small>${esc(c.email)}</small></div></div><div class="personal-row"><div class="personal-row-copy"><b>${tr("Ngày KimKim gửi", "Delivery date")}</b><small>${esc(new Date(c.sendAt).toLocaleString(tr("vi-VN", "en-US")))}</small></div></div><p class="personal-muted">${tr("KimKim giữ nội dung thư đến thời điểm đã hẹn.", "KimKim keeps the letter until its scheduled delivery.")}</p>${["failed", "delivery_unknown"].includes(c.status) ? `<p class="personal-notice">${c.errorCode === "capsule/gmail-authorization-required" ? tr("Tài khoản gửi cần được kết nối lại. Vui lòng liên hệ hỗ trợ KimKim.", "The sender account needs to be reconnected. Please contact KimKim support.") : tr("KimKim chưa xác nhận được việc gửi thư. Vui lòng liên hệ hỗ trợ; thư sẽ không tự gửi lại để tránh trùng.", "KimKim could not confirm delivery. Please contact support; this letter will not be sent again automatically to avoid duplicates.")}</p>` : ""}${c.status === "scheduled" ? `<form id="capsuleCancel" class="personal-form"><p class="personal-error" role="alert"></p><button class="personal-btn" type="submit">${tr("Hủy lịch gửi", "Cancel delivery")}</button></form>` : ""}`,
     );
     const form = document.getElementById("capsuleCancel");
     if (form)

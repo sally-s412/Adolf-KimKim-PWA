@@ -68,6 +68,9 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
   await tick();
   assert.match($("#view-finance").textContent, /Đà Lạt/);
   click("[data-action=capsule]");
+  assert.equal(w.document.querySelectorAll(".capsule-cover-option").length, 7);
+  click('#personalCapsule input[name=cover][value=midnight]');
+  assert.ok($("#capsuleCoverLive .capsule-cover-midnight"));
   field("#personalCapsule [name=title]", "Một lá thư");
   field("#personalCapsule [name=body]", "<img src=x onerror=alert(1)>");
   field("#personalCapsule [name=email]", "sally@example.com");
@@ -75,7 +78,9 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
   await tick();
   assert.equal(w.eval("Object.keys(memory.capsuleDrafts).length"), 1);
   assert.equal($("#view-capsules .capsule-card h2").textContent, "Một lá thư");
+  assert.ok($(".capsule-card .capsule-cover-midnight"));
   click(".capsule-card");
+  assert.equal($('#personalCapsule input[name=cover]:checked').value, "midnight");
   assert.equal(
     $("#personalCapsule [name=body]").value,
     "<img src=x onerror=alert(1)>",

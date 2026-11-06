@@ -196,5 +196,36 @@ class SchedulerPreflightTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(caught.exception.status_code,401)
             refresh.assert_not_called()
 
+class CoverTests(unittest.IsolatedAsyncioTestCase):
+    def test_invalid_cover_and_missing_photo_rejected(self):
+        from pydantic import ValidationError
+        base=dict(id='draft-test-123',title='A',body='B',email='a@b.com',sendAt=(datetime.now(timezone.utc)+timedelta(days=1)).isoformat())
+        with self.assertRaises(ValidationError):m.Letter(**base,cover='url(https://evil.example)')
+        with self.assertRaises(HTTPException):m.validate_letter(m.Letter(**base,cover='photo'))
+        self.assertEqual(m.Letter(**base).cover,'rose')
+
+    def test_owner_photo_cover_remains_encrypted_at_rest(self):
+        import json
+        cipher=Fernet(Fernet.generate_key())
+        record={'id':'a'*64,'cover':'photo','encrypted':cipher.encrypt(json.dumps({'photos':['data:image/jpeg;base64,/9j/']}).encode()).decode()}
+        with patch.object(m,'settings',return_value=({},None,cipher)):
+            meta=m.public_meta(record)
+            self.assertEqual(meta['coverPhoto'],'data:image/jpeg;base64,/9j/')
+            self.assertNotIn('encrypted',meta)
+
+    async def test_recipient_cover_and_escaped_body(self):
+        import json,hashlib
+        cipher=Fernet(Fernet.generate_key());token='x'*40
+        payload={'cover':'midnight','title':'<script>','body':'<b>secret</b>','language':'vi','photos':[]}
+        record={'status':'sent','sendAt':(datetime.now(timezone.utc)-timedelta(days=1)).isoformat(),'tokenHash':hashlib.sha256(token.encode()).hexdigest(),'encrypted':cipher.encrypt(json.dumps(payload).encode()).decode()}
+        with patch.object(m,'firestore',AsyncMock()),patch.object(m,'unpack',return_value=record),patch.object(m,'settings',return_value=({},None,cipher)):
+            response=await m.open_letter('a'*64,token)
+            page=response.body.decode()
+            self.assertIn('#182856',page)
+            self.assertIn('&lt;b&gt;secret&lt;/b&gt;',page)
+            self.assertNotIn('<script>',page)
+            self.assertEqual(response.headers['cache-control'],'no-store')
+
 if __name__ == '__main__':unittest.main()
+
 

@@ -496,3 +496,34 @@
 .personal-hidden-finance .personal-bar {
   visibility: hidden;
 }
+
+/* Capsule stationery: fixed presets, no arbitrary CSS or external image URLs. */
+.capsule-cover-rose{--cover-a:#f7c4d1;--cover-b:#e3c8ea;--cover-ink:#9e3f61}
+.capsule-cover-midnight{--cover-a:#182856;--cover-b:#5b4b83;--cover-ink:#f6d9b8}
+.capsule-cover-lavender{--cover-a:#d8ccf5;--cover-b:#a9bce9;--cover-ink:#67518a}
+.capsule-cover-meadow{--cover-a:#b6d8cd;--cover-b:#e6e3b8;--cover-ink:#41635d}
+.capsule-cover-sunset{--cover-a:#f4b3a2;--cover-b:#e9c2de;--cover-ink:#a05262}
+.capsule-cover-paper{--cover-a:#eee1cc;--cover-b:#d5bea2;--cover-ink:#796047}
+.capsule-cover-photo{--cover-a:#d8ccf5;--cover-b:#f7c4d1;--cover-ink:#67518a}
+.capsule-cover[class*="capsule-cover-"],.capsule-cover-swatch{background:linear-gradient(125deg,var(--cover-a),var(--cover-b));color:var(--cover-ink)}
+.capsule-cover-orbit{position:absolute;width:280px;height:280px;border:1px solid #ffffff70;border-radius:50%;transform:translate(48%,-25%)}
+.capsule-cover-orbit:after{content:"";position:absolute;inset:24px;border:1px solid #ffffff40;border-radius:50%}
+.capsule-cover-midnight .capsule-cover-orbit{background:radial-gradient(circle at 20% 40%,#fff 0 1px,transparent 2px),radial-gradient(circle at 50% 60%,#fff 0 1px,transparent 2px),radial-gradient(circle at 35% 20%,#fff 0 1px,transparent 2px)}
+.capsule-cover-paper .capsule-cover-orbit{border-radius:0;transform:rotate(-15deg);opacity:.5}
+.capsule-envelope{position:relative;width:110px;height:72px;border:1px solid #ffffffd0;border-radius:8px;background:linear-gradient(155deg,#ffffffd9,#ffffff80);box-shadow:0 12px 24px #10183818;display:grid;place-items:center;transform:rotate(-7deg)}
+.capsule-envelope:before{content:"";position:absolute;width:72px;height:72px;border-right:1px solid #b8869d55;border-bottom:1px solid #b8869d55;transform:translateY(-32px) rotate(45deg);border-radius:0 0 8px 0}
+.capsule-seal{position:relative;z-index:1;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--cover-ink);color:#fff7f8;font:italic 17px Georgia,serif;box-shadow:0 2px 5px #10183825}
+.capsule-cover-midnight .capsule-seal{color:#182856}
+.capsule-cover-brand{position:absolute;bottom:13px;font-size:9px;letter-spacing:1.5px;font-weight:700;color:var(--cover-ink)}
+.capsule-cover-picker{margin:0 0 8px;padding:0;border:0;min-width:0}
+.capsule-cover-picker legend{font-weight:650;margin-bottom:14px;color:var(--text-0)}
+#capsuleCoverLive .capsule-cover{height:170px;border-radius:16px;margin-bottom:14px}
+.capsule-cover-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.personal-form .capsule-cover-option{position:relative;display:flex;flex-direction:column;gap:7px;padding:7px;border:1px solid var(--border);border-radius:12px;cursor:pointer;font-size:11px;text-align:center;min-width:0}
+.capsule-cover-option input[type=radio]{position:absolute;opacity:0;width:1px;height:1px;margin:0}
+.capsule-cover-option:has(input:checked){border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.capsule-cover-option:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:3px}
+.capsule-cover-swatch{height:50px;border-radius:8px;display:grid;place-items:center;font:italic 22px Georgia,serif}
+.capsule-cover-swatch svg{width:22px;height:22px}
+.capsule-preview-cover{margin-bottom:20px;border-radius:16px;overflow:hidden}
+@media(max-width:420px){.capsule-cover-options{grid-template-columns:repeat(3,minmax(0,1fr))}.capsule-cover-brand{font-size:8px;letter-spacing:1px}}

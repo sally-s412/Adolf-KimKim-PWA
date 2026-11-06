@@ -108,3 +108,7 @@ python -m unittest discover -s tests -p test_capsules.py -v
 ```
 
 Luồng giao diện: `tests/personal-dom.cjs`, dùng dữ liệu giả trong `tests/fixtures/personal.html`, cần cài jsdom. Các kiểm thử này không gửi email hoặc kết nối Firebase thật.
+
+## Phương án lịch gửi miễn phí
+
+Xem hướng dẫn từng bước trong [CAPSULE-SCHEDULER-VI.md](CAPSULE-SCHEDULER-VI.md). Có thể dùng cron-job.org gọi API trực tiếp, không cần chạy Python trên máy cá nhân hoặc tạo Render Cron Job. Hãy dùng chế độ kiểm tra `?dry_run=true` trước; chế độ này kiểm tra token Google và Firestore nhưng không gửi thư, kể cả đang có thư tới hạn. Dịch vụ lịch bên ngoài chưa được tạo/bật vì cần tài khoản của bạn và dispatch secret nhập trực tiếp.

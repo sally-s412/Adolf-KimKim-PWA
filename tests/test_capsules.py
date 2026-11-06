@@ -179,4 +179,22 @@ class GmailTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(caught.exception.detail,'capsule/scheduler-disabled')
             query.assert_not_called()
 
+class SchedulerPreflightTests(unittest.IsolatedAsyncioTestCase):
+    async def test_preflight_while_disabled_never_claims_or_sends(self):
+        request=types.SimpleNamespace(headers={'x-capsule-secret':'correct'},query_params={'dry_run':'true'})
+        with patch.dict(os.environ,{'CAPSULE_SCHEDULER_ENABLED':'false'}),patch.object(m,'settings',return_value=({'CAPSULE_DISPATCH_SECRET':'correct'},None,None)),patch.object(m,'gmail_access_token',return_value='private-token'),patch.object(m,'due_records',AsyncMock(return_value=[{'id':'due-letter'}])) as query,patch.object(m,'update',AsyncMock()) as update,patch.object(m,'deliver',AsyncMock()) as send:
+            result=await m.dispatch(request)
+            self.assertEqual(result,{'ready':True,'dryRun':True,'sent':0,'schedulerEnabled':False})
+            self.assertEqual(query.await_count,2)
+            update.assert_not_called();send.assert_not_called()
+            self.assertNotIn('private-token',str(result))
+
+    async def test_preflight_requires_scheduler_secret(self):
+        request=types.SimpleNamespace(headers={'x-capsule-secret':'wrong'},query_params={'dry_run':'true'})
+        with patch.object(m,'settings',return_value=({'CAPSULE_DISPATCH_SECRET':'correct'},None,None)),patch.object(m,'gmail_access_token') as refresh:
+            with self.assertRaises(HTTPException) as caught:await m.dispatch(request)
+            self.assertEqual(caught.exception.status_code,401)
+            refresh.assert_not_called()
+
 if __name__ == '__main__':unittest.main()
+

@@ -369,10 +369,18 @@ async def due_records(status, now):
 
 @router.post('/dispatch')
 async def dispatch(request: Request):
-    values, _, _ = settings()
+    values, _, cipher = settings()
     provided = request.headers.get('x-capsule-secret', '')
     if not secrets.compare_digest(provided, values['CAPSULE_DISPATCH_SECRET']):
         raise HTTPException(401, 'capsule/invalid-scheduler')
+    # Authenticated preflight never claims jobs or sends mail, even with due letters.
+    if getattr(request, 'query_params', {}).get('dry_run') == 'true':
+        await run_in_threadpool(gmail_access_token, values, cipher)
+        now = datetime.now(timezone.utc)
+        await due_records('scheduled', now)
+        await due_records('sending', now)
+        return {'ready': True, 'dryRun': True, 'sent': 0,
+                'schedulerEnabled': os.getenv('CAPSULE_SCHEDULER_ENABLED') == 'true'}
     if os.getenv('CAPSULE_SCHEDULER_ENABLED') != 'true':
         raise HTTPException(503, 'capsule/scheduler-disabled')
     now = datetime.now(timezone.utc)

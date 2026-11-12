@@ -203,32 +203,34 @@ class CoverTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(ValidationError):m.Letter(**base,cover='url(https://evil.example)')
         with self.assertRaises(ValidationError):m.Letter(**base,paper='url(https://evil.example)')
         with self.assertRaises(ValidationError):m.Letter(**base,seal='<img>')
+        with self.assertRaises(ValidationError):m.Letter(**base,font='url(https://evil.example)')
         with self.assertRaises(HTTPException):m.validate_letter(m.Letter(**base,cover='photo'))
         m.validate_letter(m.Letter(**base,cover='photo',coverPhoto='data:image/jpeg;base64,/9j/'))
-        self.assertEqual(m.Letter(**base).cover,'rose')
+        self.assertEqual(m.Letter(**base).cover,'ivory')
 
     def test_owner_photo_cover_remains_encrypted_at_rest(self):
         import json
         cipher=Fernet(Fernet.generate_key())
-        record={'id':'a'*64,'cover':'photo','paper':'aged','seal':'rose','encrypted':cipher.encrypt(json.dumps({'photos':[],'coverPhoto':'data:image/jpeg;base64,/9j/'}).encode()).decode()}
+        record={'id':'a'*64,'cover':'photo','paper':'aged','seal':'rose','font':'dancing','encrypted':cipher.encrypt(json.dumps({'photos':[],'coverPhoto':'data:image/jpeg;base64,/9j/'}).encode()).decode()}
         with patch.object(m,'settings',return_value=({},None,cipher)):
             meta=m.public_meta(record)
             self.assertEqual(meta['coverPhoto'],'data:image/jpeg;base64,/9j/')
             self.assertEqual(meta['paper'],'aged')
             self.assertEqual(meta['seal'],'rose')
+            self.assertEqual(meta['font'],'dancing')
             self.assertNotIn('encrypted',meta)
 
     async def test_recipient_cover_and_escaped_body(self):
         import json,hashlib
         cipher=Fernet(Fernet.generate_key());token='x'*40
-        payload={'cover':'midnight','paper':'night','seal':'rose','title':'<script>','body':'<b>secret</b>','language':'vi','photos':[]}
+        payload={'cover':'navy','paper':'night','seal':'rose','font':'dancing','title':'<script>','body':'<b>secret</b>','language':'vi','photos':[]}
         record={'status':'sent','sendAt':(datetime.now(timezone.utc)-timedelta(days=1)).isoformat(),'tokenHash':hashlib.sha256(token.encode()).hexdigest(),'encrypted':cipher.encrypt(json.dumps(payload).encode()).decode()}
         with patch.object(m,'firestore',AsyncMock()),patch.object(m,'unpack',return_value=record),patch.object(m,'settings',return_value=({},None,cipher)):
             response=await m.open_letter('a'*64,token)
             page=response.body.decode()
-            self.assertIn('#182856',page)
-            self.assertIn('#25304b',page)
-            self.assertIn('✿',page)
+            self.assertIn('cover-navy',page)
+            self.assertIn('paper-night font-dancing',page)
+            self.assertIn('seal-rose',page)
             self.assertIn('&lt;b&gt;secret&lt;/b&gt;',page)
             self.assertNotIn('<script>',page)
             self.assertEqual(response.headers['cache-control'],'no-store')
@@ -245,8 +247,14 @@ class CoverTests(unittest.IsolatedAsyncioTestCase):
             response=await m.open_letter('a'*64,token)
             page=response.body.decode()
             self.assertIn('src="data:image/jpeg;base64,/9j/"',page)
-            self.assertIn('#e4cfab',page)
-            self.assertIn('♥',page)
+            self.assertIn('paper-aged',page)
+            self.assertIn('seal-heart',page)
+
+    async def test_public_assets_are_whitelisted(self):
+        with self.assertRaises(HTTPException):
+            await m.capsule_asset('private.txt')
+        response = await m.capsule_asset('seals.webp')
+        self.assertEqual(response.media_type, 'image/webp')
 
 if __name__ == '__main__':unittest.main()
 

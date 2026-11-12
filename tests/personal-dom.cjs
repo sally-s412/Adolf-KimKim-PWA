@@ -68,14 +68,17 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
   await tick();
   assert.match($("#view-finance").textContent, /Đà Lạt/);
   click("[data-action=capsule]");
-  assert.equal(w.document.querySelectorAll(".capsule-cover-option").length, 13);
+  assert.equal(w.document.querySelectorAll(".capsule-cover-option").length, 7);
   assert.equal(w.document.querySelectorAll(".capsule-seal-options input").length, 8);
   assert.equal(w.document.querySelectorAll(".capsule-paper-swatch").length, 6);
-  click('#personalCapsule input[name=cover][value=midnight]');
+  assert.equal(w.document.querySelectorAll(".capsule-font-option").length, 3);
+  click('#personalCapsule input[name=cover][value=navy]');
   click('#personalCapsule input[name=paper][value=aged]');
   click('#personalCapsule input[name=seal][value=rose]');
-  assert.ok($("#capsuleCoverLive .capsule-cover-midnight"));
-  assert.match($("#capsuleCoverLive .capsule-seal").textContent, /✿/);
+  click('#personalCapsule input[name=font][value=dancing]');
+  assert.ok($("#capsuleCoverLive .capsule-cover-navy"));
+  assert.ok($("#capsuleCoverLive .capsule-seal-rose"));
+  assert.ok($("#capsuleLetterLive.capsule-font-dancing"));
   field("#personalCapsule [name=title]", "Một lá thư");
   field("#personalCapsule [name=body]", "<img src=x onerror=alert(1)>");
   field("#personalCapsule [name=email]", "sally@example.com");
@@ -84,12 +87,14 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
   assert.equal(w.eval("Object.keys(memory.capsuleDrafts).length"), 1);
   assert.equal(w.eval("Object.values(memory.capsuleDrafts)[0].paper"), "aged");
   assert.equal(w.eval("Object.values(memory.capsuleDrafts)[0].seal"), "rose");
+  assert.equal(w.eval("Object.values(memory.capsuleDrafts)[0].font"), "dancing");
   assert.equal($("#view-capsules .capsule-card h2").textContent, "Một lá thư");
-  assert.ok($(".capsule-card .capsule-cover-midnight"));
+  assert.ok($(".capsule-card .capsule-cover-navy"));
   click(".capsule-card");
-  assert.equal($('#personalCapsule input[name=cover]:checked').value, "midnight");
+  assert.equal($('#personalCapsule input[name=cover]:checked').value, "navy");
   assert.equal($('#personalCapsule input[name=paper]:checked').value, "aged");
   assert.equal($('#personalCapsule input[name=seal]:checked').value, "rose");
+  assert.equal($('#personalCapsule input[name=font]:checked').value, "dancing");
   assert.equal(
     $("#personalCapsule [name=body]").value,
     "<img src=x onerror=alert(1)>",

@@ -13,6 +13,7 @@ import os
 import re
 import secrets
 import time
+from pathlib import Path
 from datetime import datetime, timezone
 from email.message import EmailMessage
 from email.utils import parseaddr
@@ -23,7 +24,7 @@ from urllib.parse import quote, urlsplit
 import httpx
 from cryptography.fernet import Fernet
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import HTMLResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from google.auth.transport.requests import Request as GoogleRequest
 from google.oauth2.service_account import Credentials
 from google.oauth2 import id_token
@@ -35,6 +36,18 @@ from .profile_media import authenticate, CERT_REQUEST
 router = APIRouter(prefix='/api/capsules', tags=['capsules'])
 public_router = APIRouter()
 COLLECTION = 'kimkimCapsules'
+ASSET_ROOT = Path(__file__).resolve().parent.parent / 'frontend' / 'assets' / 'capsule'
+PUBLIC_ASSETS = {'envelopes.webp', 'papers.webp', 'seals.webp',
+                 'Mali.ttf', 'PatrickHand.ttf', 'DancingScript.ttf'}
+
+
+@public_router.get('/capsule/assets/{asset}')
+async def capsule_asset(asset: str):
+    if asset not in PUBLIC_ASSETS:
+        raise HTTPException(404, 'Asset not found')
+    filename = ASSET_ROOT / ('fonts' if asset.endswith('.ttf') else '') / asset
+    return FileResponse(filename, media_type='font/ttf' if asset.endswith('.ttf') else 'image/webp',
+                        headers={'Cache-Control': 'public, max-age=86400', 'X-Content-Type-Options': 'nosniff'})
 
 
 class CapsuleAccessLogFilter(logging.Filter):
@@ -169,7 +182,7 @@ def unpack(document):
 
 
 def public_meta(record):
-    result = {key: record.get(key, '') for key in ('id', 'draftId', 'title', 'email', 'sendAt', 'status', 'errorCode', 'cover', 'paper', 'seal')}
+    result = {key: record.get(key, '') for key in ('id', 'draftId', 'title', 'email', 'sendAt', 'status', 'errorCode', 'cover', 'paper', 'seal', 'font')}
     # Owner-authenticated endpoints only. Photo covers stay encrypted at rest.
     if record.get('cover') == 'photo' and record.get('encrypted'):
         payload = json.loads(settings()[2].decrypt(record['encrypted'].encode()))
@@ -197,10 +210,11 @@ class Letter(BaseModel):
     sendAt: str
     language: str = Field(default='vi', pattern=r'^(vi|en)$')
     photos: list[str] = Field(default_factory=list, max_length=3)
-    cover: str = Field(default='rose', pattern=r'^(rose|midnight|lavender|meadow|sunset|paper|photo|parchment|botanical|postcard|sepia|blueprint|lace)$')
+    cover: str = Field(default='ivory', pattern=r'^(rose|midnight|lavender|meadow|sunset|paper|photo|parchment|botanical|postcard|sepia|blueprint|lace|navy|burgundy|ivory|sage|vintageLavender|celestial)$')
     coverPhoto: str = ''
     paper: str = Field(default='ivory', pattern=r'^(ivory|linen|aged|rose|sage|night)$')
-    seal: str = Field(default='k', pattern=r'^(k|rose|heart|star|moon|leaf|sun|initial)$')
+    seal: str = Field(default='rose', pattern=r'^(k|rose|heart|star|moon|leaf|sun|initial|butterfly|flower|dove|wreath)$')
+    font: str = Field(default='mali', pattern=r'^(mali|patrick|dancing)$')
 
 
 def validate_letter(letter):
@@ -265,7 +279,7 @@ async def seal(letter: Letter, request: Request):
               'sendAt': send_at, 'status': 'scheduled', 'createdAt': datetime.now(timezone.utc).isoformat(),
               'retrySince': '', 'encrypted': cipher.encrypt(json.dumps(payload).encode()).decode(),
               'tokenHash': hashlib.sha256(token.encode()).hexdigest(), 'attempts': '0',
-              'cover': letter.cover, 'paper': letter.paper, 'seal': letter.seal}
+              'cover': letter.cover, 'paper': letter.paper, 'seal': letter.seal, 'font': letter.font}
     draft_path = '/users/' + quote(uid, safe='') + '/capsuleDrafts/' + letter.id
     draft = await firestore('GET', draft_path)
     if not draft:
@@ -276,9 +290,9 @@ async def seal(letter: Letter, request: Request):
                 'sendAt': letter.sendAt}
     if any(saved.get(key, {}).get('stringValue') != value for key, value in expected.items()):
         raise HTTPException(409, 'capsule/draft-changed')
-    if saved.get('cover', {}).get('stringValue', 'rose') != letter.cover:
+    if saved.get('cover', {}).get('stringValue', 'ivory') != letter.cover:
         raise HTTPException(409, 'capsule/draft-changed')
-    for key, default in (('paper', 'ivory'), ('seal', 'k'), ('coverPhoto', '')):
+    for key, default in (('paper', 'ivory'), ('seal', 'rose'), ('font', 'mali'), ('coverPhoto', '')):
         if saved.get(key, {}).get('stringValue', default) != getattr(letter, key):
             raise HTTPException(409, 'capsule/draft-changed')
     photos = [value.get('stringValue') for value in
@@ -456,23 +470,40 @@ async def open_letter(letter_id: str, token: str = ''):
         raise HTTPException(404, 'Letter not available')
     payload = json.loads(settings()[2].decrypt(record['encrypted'].encode()))
     images = ''.join('<img alt="" src="' + html.escape(photo, quote=True) + '">' for photo in payload['photos'])
-    palettes = {'rose': ('#f7c4d1','#e3c8ea'), 'midnight': ('#182856','#5b4b83'),
-                'lavender': ('#d8ccf5','#a9bce9'), 'meadow': ('#b6d8cd','#e6e3b8'),
-                'sunset': ('#f4b3a2','#e9c2de'), 'paper': ('#eee1cc','#d5bea2'),
-                'parchment': ('#d7bc8c','#f6e8c7'), 'botanical': ('#71826b','#d5c9a5'),
-                'postcard': ('#d89b7b','#f5d5b7'), 'sepia': ('#645048','#c9a47f'),
-                'blueprint': ('#38475f','#a7b7b9'), 'lace': ('#e8c8bd','#f8e9d4')}
-    cover = payload.get('cover', 'rose')
-    a, b = palettes.get(cover, palettes['rose'])
-    seal_icons = {'k':'K','rose':'✿','heart':'♥','star':'✦','moon':'☾','leaf':'❧','sun':'☼','initial':'K'}
-    seal = seal_icons.get(payload.get('seal', 'k'), 'K')
+    cover_map = {'rose':'ivory','midnight':'navy','lavender':'vintageLavender','meadow':'sage',
+                 'sunset':'burgundy','paper':'ivory','parchment':'ivory','botanical':'sage',
+                 'postcard':'burgundy','sepia':'burgundy','blueprint':'navy','lace':'vintageLavender'}
+    covers = {'navy','burgundy','ivory','sage','vintageLavender','celestial','photo'}
+    cover = payload.get('cover', 'ivory')
+    cover = cover if cover in covers else cover_map.get(cover, 'ivory')
+    papers = {'ivory','linen','aged','rose','sage','night'}
+    paper = payload.get('paper', 'ivory') if payload.get('paper', 'ivory') in papers else 'ivory'
+    seals = {'rose','moon','leaf','butterfly','flower','dove','heart','wreath'}
+    seal = payload.get('seal', 'rose') if payload.get('seal', 'rose') in seals else 'rose'
+    fonts = {'mali','patrick','dancing'}
+    font = payload.get('font', 'mali') if payload.get('font', 'mali') in fonts else 'mali'
     cover_photo = payload.get('coverPhoto') or (payload.get('photos') or [''])[0]
-    photo_html = '<img alt="" src="' + html.escape(cover_photo, quote=True) + '">' if cover == 'photo' and cover_photo else ''
-    cover_html = '<div class="cover" style="background:linear-gradient(125deg,' + a + ',' + b + ')">' + photo_html + '<span class="envelope"><span class="seal">' + seal + '</span></span><span class="cover-brand">KIMKIM · CAPSULE</span></div>'
-    paper_colors = {'ivory':'#fffaf0','linen':'#eee4cf','aged':'#e4cfab','rose':'#f5dfdc','sage':'#dce6d7','night':'#25304b'}
-    paper = payload.get('paper', 'ivory')
-    paper_color = paper_colors.get(paper, paper_colors['ivory'])
-    ink = '#f8ebd7' if paper == 'night' else '#49382f'
-    content = '<!doctype html><html lang="' + payload['language'] + '"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>KimKim Capsule</title><style>body{margin:0;padding:40px 18px;background:#2b2730;color:#49382f;font:16px/1.8 Georgia,serif}main{max-width:680px;margin:auto;background:' + paper_color + ';color:' + ink + ';padding:clamp(24px,6vw,52px);box-shadow:0 20px 80px #100f1238;border:1px solid #bfa97b;border-radius:6px}h1{line-height:1.25;overflow-wrap:anywhere}.letter{white-space:pre-wrap;overflow-wrap:anywhere;line-height:2;font-size:18px;margin:32px 0}img{display:block;max-width:100%;border-radius:8px;margin-top:20px}small{opacity:.68;letter-spacing:.16em}.cover{height:220px;position:relative;display:grid;place-items:center;overflow:hidden;border-radius:6px;margin-bottom:32px}.cover>img{position:absolute;height:100%;width:100%;object-fit:cover;margin:0;border-radius:0}.envelope{z-index:1;display:grid;place-items:center;width:116px;height:78px;background:#f6ecdbc9;border:1px solid #fff7e6;border-radius:4px;box-shadow:0 14px 30px #10183836}.seal{display:grid;place-items:center;border-radius:50%;width:32px;height:32px;background:#913e50;color:#ffead5;font:22px Georgia}.cover-brand{z-index:1;position:absolute;bottom:18px;color:#372b2d;background:#f8eddbdc;padding:3px 12px;border-radius:20px;font-size:10px;letter-spacing:2px}</style><main>' + cover_html + '<small>KIMKIM CAPSULE</small><h1>' + html.escape(payload['title']) + '</h1><div class="letter">' + html.escape(payload['body']) + '</div>' + images + '</main></html>'
+    photo_html = '<img class="cover-photo" alt="" src="' + html.escape(cover_photo, quote=True) + '">' if cover == 'photo' and cover_photo else ''
+    cover_html = '<div class="cover cover-' + cover + '">' + photo_html + '<span class="seal seal-' + seal + '" aria-hidden="true"></span></div>'
+    style = """
+    @font-face{font-family:Mali;src:url('/capsule/assets/Mali.ttf') format('truetype');font-display:swap}
+    @font-face{font-family:Patrick;src:url('/capsule/assets/PatrickHand.ttf') format('truetype');font-display:swap}
+    @font-face{font-family:Dancing;src:url('/capsule/assets/DancingScript.ttf') format('truetype');font-display:swap}
+    *{box-sizing:border-box}body{margin:0;padding:clamp(16px,5vw,56px);background:#282735;color:#49382f;font:16px/1.7 Georgia,serif}
+    main{max-width:760px;margin:auto}.cover{height:clamp(220px,48vw,400px);position:relative;background-image:url('/capsule/assets/envelopes.webp');background-size:300% auto;background-repeat:no-repeat;border-radius:8px;box-shadow:0 25px 55px #100d1760;overflow:hidden}
+    .cover-navy{background-position:0% 0%}.cover-burgundy{background-position:50% 0%}.cover-ivory{background-position:100% 0%}
+    .cover-sage{background-position:0% 100%}.cover-vintageLavender{background-position:50% 100%}.cover-celestial{background-position:100% 100%}
+    .cover-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;margin:0}.cover-photo~.seal{filter:drop-shadow(0 4px 8px #0007)}
+    .seal{position:absolute;left:50%;top:57%;transform:translate(-50%,-50%);width:clamp(64px,11vw,96px);aspect-ratio:1;background-image:url('/capsule/assets/seals.webp');background-size:400% 200%;background-repeat:no-repeat}
+    .seal-rose{background-position:0% 0%}.seal-moon{background-position:33.333% 0%}.seal-leaf{background-position:66.667% 0%}.seal-butterfly{background-position:100% 0%}
+    .seal-flower{background-position:0% 100%}.seal-dove{background-position:33.333% 100%}.seal-heart{background-position:66.667% 100%}.seal-wreath{background-position:100% 100%}
+    article{margin:24px auto 0;min-height:480px;padding:clamp(36px,8vw,90px);background-image:url('/capsule/assets/papers.webp');background-size:300% 200%;background-repeat:no-repeat;box-shadow:0 20px 65px #0b091650;border-radius:5px;overflow-wrap:anywhere}
+    .paper-ivory{background-color:#fff4db;background-position:0% 0%}.paper-linen{background-color:#eaddc4;background-position:50% 0%}
+    .paper-aged{background-color:#edcea8;background-position:100% 0%}.paper-rose{background-color:#eec3b5;background-position:0% 100%}
+    .paper-sage{background-color:#e5e2c9;background-position:50% 100%}.paper-night{background-color:#15233b;background-position:100% 100%;color:#f5e6cd}
+    h1{font-size:clamp(27px,5vw,44px);line-height:1.2;font-weight:500;margin:8px 0 28px}.letter{white-space:pre-wrap;font-size:clamp(22px,3vw,30px);line-height:1.65;overflow-wrap:anywhere}.font-mali .letter{font-family:Mali,cursive}.font-patrick .letter{font-family:Patrick,cursive}.font-dancing .letter{font-family:Dancing,cursive}
+    small{opacity:.7;letter-spacing:.18em;font:11px system-ui,sans-serif}.photos{margin-top:28px}.photos img{display:block;max-width:100%;border-radius:6px;margin:18px 0}
+    """
+    content = ('<!doctype html><html lang="' + payload['language'] + '"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>KimKim Capsule</title><style>' + style + '</style><main>' + cover_html + '<article class="paper-' + paper + ' font-' + font + '"><small>KIMKIM CAPSULE</small><h1>' + html.escape(payload['title']) + '</h1><div class="letter">' + html.escape(payload['body']) + '</div><div class="photos">' + images + '</div></article></main></html>')
     return HTMLResponse(content, headers={'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer',
-        'X-Content-Type-Options': 'nosniff', 'X-Robots-Tag': 'noindex, nofollow, noarchive', 'Content-Security-Policy': "default-src 'none'; img-src data:; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'"})
+        'X-Content-Type-Options': 'nosniff', 'X-Robots-Tag': 'noindex, nofollow, noarchive', 'Content-Security-Policy': "default-src 'none'; img-src 'self' data:; font-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'"})

@@ -566,3 +566,52 @@
 .capsule-paper-night{background:#25304b;color:#f8ebd7}
 .capsule-letter-paper{padding:clamp(20px,4vw,38px);border:1px solid #9c7f5555;border-radius:5px;box-shadow:inset 0 0 35px #765c3a12,0 10px 24px #00000018;font:17px/1.9 Georgia,serif}
 @media(max-width:550px){.capsule-choice-options,.capsule-cover-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+@font-face{font-family:CapsuleMali;src:url("assets/capsule/fonts/Mali.ttf") format("truetype");font-display:swap}
+@font-face{font-family:CapsulePatrick;src:url("assets/capsule/fonts/PatrickHand.ttf") format("truetype");font-display:swap}
+@font-face{font-family:CapsuleDancing;src:url("assets/capsule/fonts/DancingScript.ttf") format("truetype");font-display:swap}
+.capsule-font-mali{font-family:CapsuleMali,"Comic Sans MS",cursive}
+.capsule-font-patrick{font-family:CapsulePatrick,"Comic Sans MS",cursive}
+.capsule-font-dancing{font-family:CapsuleDancing,Georgia,cursive}
+.capsule-cover.capsule-cover-navy,.capsule-cover.capsule-cover-burgundy,.capsule-cover.capsule-cover-ivory,.capsule-cover.capsule-cover-sage,.capsule-cover.capsule-cover-vintageLavender,.capsule-cover.capsule-cover-celestial,
+.capsule-cover-swatch.capsule-cover-navy,.capsule-cover-swatch.capsule-cover-burgundy,.capsule-cover-swatch.capsule-cover-ivory,.capsule-cover-swatch.capsule-cover-sage,.capsule-cover-swatch.capsule-cover-vintageLavender,.capsule-cover-swatch.capsule-cover-celestial{
+  background-image:url("assets/capsule/envelopes.webp");background-size:300% auto;background-repeat:no-repeat;
+}
+.capsule-cover.capsule-cover-navy,.capsule-cover-swatch.capsule-cover-navy{background-position:0% 0%}
+.capsule-cover.capsule-cover-burgundy,.capsule-cover-swatch.capsule-cover-burgundy{background-position:50% 0%}
+.capsule-cover.capsule-cover-ivory,.capsule-cover-swatch.capsule-cover-ivory{background-position:100% 0%}
+.capsule-cover.capsule-cover-sage,.capsule-cover-swatch.capsule-cover-sage{background-position:0% 100%}
+.capsule-cover.capsule-cover-vintageLavender,.capsule-cover-swatch.capsule-cover-vintageLavender{background-position:50% 100%}
+.capsule-cover.capsule-cover-celestial,.capsule-cover-swatch.capsule-cover-celestial{background-position:100% 100%}
+.capsule-cover:before,.capsule-cover-orbit{display:none}
+.capsule-cover .capsule-envelope{position:absolute;inset:0;width:100%;height:100%;background:none;border:0;box-shadow:none;transform:none}
+.capsule-cover .capsule-envelope:before{display:none}
+.capsule-cover .capsule-seal,.capsule-seal-swatch{
+  background-image:url("assets/capsule/seals.webp");background-color:transparent;border:0;border-radius:0;
+  background-size:400% 200%;background-repeat:no-repeat;box-shadow:none;font-size:0;
+}
+.capsule-cover .capsule-seal{position:absolute;width:clamp(38px,13%,62px);height:auto;aspect-ratio:1;left:50%;top:57%;transform:translate(-50%,-50%)}
+.capsule-seal-swatch{width:44px;height:44px;flex:none}
+.capsule-seal-rose{background-position:0% 0%}.capsule-seal-moon{background-position:33.333% 0%}
+.capsule-seal-leaf{background-position:66.667% 0%}.capsule-seal-butterfly{background-position:100% 0%}
+.capsule-seal-flower{background-position:0% 100%}.capsule-seal-dove{background-position:33.333% 100%}
+.capsule-seal-heart{background-position:66.667% 100%}.capsule-seal-wreath{background-position:100% 100%}
+.capsule-cover-brand{z-index:2;bottom:9px;border-radius:12px;background:#f4ead6c9;color:#3e3035;padding:2px 8px;font-family:Georgia,serif}
+.capsule-cover-photo .capsule-cover-image{filter:sepia(.1)}
+#capsuleCoverLive .capsule-cover{height:auto;aspect-ratio:1.65;max-height:320px}
+.capsule-cover-swatch{height:auto;aspect-ratio:1.6}
+.capsule-paper-swatch,.capsule-letter-paper{
+  background-image:url("assets/capsule/papers.webp");background-size:300% 200%;background-repeat:no-repeat;
+}
+.capsule-paper-ivory{background-position:0% 0%}.capsule-paper-linen{background-position:50% 0%}
+.capsule-paper-aged{background-position:100% 0%}.capsule-paper-rose{background-position:0% 100%}
+.capsule-paper-sage{background-position:50% 100%}.capsule-paper-night{background-position:100% 100%}
+.capsule-paper-swatch{width:52px;height:62px;font-size:0}
+.capsule-letter-paper{min-height:180px;padding:clamp(28px,6vw,60px);line-height:1.7;font-size:24px;white-space:pre-wrap}
+.capsule-font-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.personal-form .capsule-font-option{display:flex;flex-direction:column;gap:3px;position:relative;border:1px solid var(--border);border-radius:12px;padding:10px;cursor:pointer;font-size:11px}
+.capsule-font-option input{position:absolute;opacity:0;width:1px;height:1px}
+.capsule-font-option:has(input:checked){border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.capsule-font-option:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:3px}
+.capsule-font-sample{font-size:25px;color:var(--text-0)}
+@media(max-width:550px){.capsule-font-options{grid-template-columns:1fr}.capsule-letter-paper{font-size:21px;padding:32px}}

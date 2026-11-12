@@ -212,7 +212,7 @@ class Letter(BaseModel):
     photos: list[str] = Field(default_factory=list, max_length=3)
     cover: str = Field(default='ivory', pattern=r'^(rose|midnight|lavender|meadow|sunset|paper|photo|parchment|botanical|postcard|sepia|blueprint|lace|navy|burgundy|ivory|sage|vintageLavender|celestial)$')
     coverPhoto: str = ''
-    paper: str = Field(default='ivory', pattern=r'^(ivory|linen|aged|rose|sage|night)$')
+    paper: str = Field(default='ivory', pattern=r'^(ivory|linen|aged|rose|sage|night|white|dotted|ruled)$')
     seal: str = Field(default='rose', pattern=r'^(k|rose|heart|star|moon|leaf|sun|initial|butterfly|flower|dove|wreath)$')
     font: str = Field(default='mali', pattern=r'^(mali|patrick|dancing)$')
 
@@ -476,7 +476,7 @@ async def open_letter(letter_id: str, token: str = ''):
     covers = {'navy','burgundy','ivory','sage','vintageLavender','celestial','photo'}
     cover = payload.get('cover', 'ivory')
     cover = cover if cover in covers else cover_map.get(cover, 'ivory')
-    papers = {'ivory','linen','aged','rose','sage','night'}
+    papers = {'ivory','linen','aged','rose','sage','night','white','dotted','ruled'}
     paper = payload.get('paper', 'ivory') if payload.get('paper', 'ivory') in papers else 'ivory'
     seals = {'rose','moon','leaf','butterfly','flower','dove','heart','wreath'}
     seal = payload.get('seal', 'rose') if payload.get('seal', 'rose') in seals else 'rose'
@@ -489,20 +489,24 @@ async def open_letter(letter_id: str, token: str = ''):
     @font-face{font-family:Mali;src:url('/capsule/assets/Mali.ttf') format('truetype');font-display:swap}
     @font-face{font-family:Patrick;src:url('/capsule/assets/PatrickHand.ttf') format('truetype');font-display:swap}
     @font-face{font-family:Dancing;src:url('/capsule/assets/DancingScript.ttf') format('truetype');font-display:swap}
-    *{box-sizing:border-box}body{margin:0;padding:clamp(16px,5vw,56px);background:#282735;color:#49382f;font:16px/1.7 Georgia,serif}
-    main{max-width:760px;margin:auto}.cover{height:clamp(220px,48vw,400px);position:relative;background-image:url('/capsule/assets/envelopes.webp');background-size:300% auto;background-repeat:no-repeat;border-radius:8px;box-shadow:0 25px 55px #100d1760;overflow:hidden}
+    *{box-sizing:border-box}body{margin:0;padding:clamp(18px,4vw,48px);background:radial-gradient(ellipse at 50% 0%,#625b65 0%,#38343e 48%,#292934 100%);color:#3e3430;font:16px/1.7 Georgia,serif}
+    main{max-width:840px;margin:auto;padding:clamp(12px,4vw,42px);background:#ffffff0a;border:1px solid #ffffff18;border-radius:18px}
+    .cover{width:min(82%,560px);aspect-ratio:1.65;margin:0 auto -15px;position:relative;z-index:1;background-image:url('/capsule/assets/envelopes.webp');background-size:300% auto;background-repeat:no-repeat;border-radius:7px;box-shadow:0 16px 32px #100d1760;overflow:hidden}
     .cover-navy{background-position:0% 0%}.cover-burgundy{background-position:50% 0%}.cover-ivory{background-position:100% 0%}
     .cover-sage{background-position:0% 100%}.cover-vintageLavender{background-position:50% 100%}.cover-celestial{background-position:100% 100%}
     .cover-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;margin:0}.cover-photo~.seal{filter:drop-shadow(0 4px 8px #0007)}
-    .seal{position:absolute;left:50%;top:57%;transform:translate(-50%,-50%);width:clamp(64px,11vw,96px);aspect-ratio:1;background-image:url('/capsule/assets/seals.webp');background-size:400% 200%;background-repeat:no-repeat}
+    .seal{position:absolute;left:50%;top:57%;transform:translate(-50%,-50%);width:clamp(48px,8vw,78px);aspect-ratio:1;background-image:url('/capsule/assets/seals.webp');background-size:400% 200%;background-repeat:no-repeat}
     .seal-rose{background-position:0% 0%}.seal-moon{background-position:33.333% 0%}.seal-leaf{background-position:66.667% 0%}.seal-butterfly{background-position:100% 0%}
     .seal-flower{background-position:0% 100%}.seal-dove{background-position:33.333% 100%}.seal-heart{background-position:66.667% 100%}.seal-wreath{background-position:100% 100%}
-    article{margin:24px auto 0;min-height:480px;padding:clamp(36px,8vw,90px);background-image:url('/capsule/assets/papers.webp');background-size:300% 200%;background-repeat:no-repeat;box-shadow:0 20px 65px #0b091650;border-radius:5px;overflow-wrap:anywhere}
-    .paper-ivory{background-color:#fff4db;background-position:0% 0%}.paper-linen{background-color:#eaddc4;background-position:50% 0%}
-    .paper-aged{background-color:#edcea8;background-position:100% 0%}.paper-rose{background-color:#eec3b5;background-position:0% 100%}
-    .paper-sage{background-color:#e5e2c9;background-position:50% 100%}.paper-night{background-color:#15233b;background-position:100% 100%;color:#f5e6cd}
-    h1{font-size:clamp(27px,5vw,44px);line-height:1.2;font-weight:500;margin:8px 0 28px}.letter{white-space:pre-wrap;font-size:clamp(22px,3vw,30px);line-height:1.65;overflow-wrap:anywhere}.font-mali .letter{font-family:Mali,cursive}.font-patrick .letter{font-family:Patrick,cursive}.font-dancing .letter{font-family:Dancing,cursive}
-    small{opacity:.7;letter-spacing:.18em;font:11px system-ui,sans-serif}.photos{margin-top:28px}.photos img{display:block;max-width:100%;border-radius:6px;margin:18px 0}
+    article{position:relative;max-width:640px;min-height:360px;margin:0 auto;padding:clamp(42px,8vw,78px);background:#fff7e8;box-shadow:0 2px 4px #20172518,0 24px 50px #17131d66;border:1px solid #c7b8a08c;border-radius:3px;overflow-wrap:anywhere}
+    article:before{content:'';position:absolute;inset:14px;border:1px solid #937c5b3c;pointer-events:none}
+    .paper-ivory{background:#fff7e8}.paper-linen{background:#f5efe0}.paper-aged{background:#ecdcbf}.paper-rose{background:#f9eeeb}.paper-sage{background:#edf1e7}.paper-night{background:#263247;color:#f7efde}
+    .paper-white{background:linear-gradient(130deg,#fffefa,#f8f5ed)}.paper-dotted{background:radial-gradient(#b6aa99 1px,transparent 1px) 0 0/19px 19px,#fffdf8}.paper-ruled{background:repeating-linear-gradient(to bottom,transparent 0 37px,#aec0c0 38px,transparent 39px),#fffdf8}
+    .font-mali{font-family:Mali,cursive}.font-patrick{font-family:Patrick,cursive}.font-dancing{font-family:Dancing,cursive}
+    h1{font:inherit;font-size:clamp(24px,4vw,36px);line-height:1.35;margin:12px 0 28px}.letter{white-space:pre-wrap;font:inherit;font-size:clamp(19px,2.5vw,24px);line-height:1.75;overflow-wrap:anywhere}
+    small{color:#8b7565;letter-spacing:.22em;font:10px/1.4 system-ui,sans-serif}.paper-night small{color:#d4c9b6}
+    .photos{display:flex;flex-wrap:wrap;gap:18px;margin-top:36px}.photos img{display:block;max-width:min(100%,220px);height:auto;object-fit:contain;padding:7px 7px 22px;background:#fffdf8;box-shadow:0 6px 18px #30271930;transform:rotate(-2deg)}
+    @media(max-width:550px){body{padding:12px}main{padding:12px}.cover{width:94%}article{padding:42px 34px}article:before{inset:8px}}
     """
     content = ('<!doctype html><html lang="' + payload['language'] + '"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>KimKim Capsule</title><style>' + style + '</style><main>' + cover_html + '<article class="paper-' + paper + ' font-' + font + '"><small>KIMKIM CAPSULE</small><h1>' + html.escape(payload['title']) + '</h1><div class="letter">' + html.escape(payload['body']) + '</div><div class="photos">' + images + '</div></article></main></html>')
     return HTMLResponse(content, headers={'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer',

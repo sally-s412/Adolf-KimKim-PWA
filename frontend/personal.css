@@ -615,3 +615,27 @@
 .capsule-font-option:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:3px}
 .capsule-font-sample{font-size:25px;color:var(--text-0)}
 @media(max-width:550px){.capsule-font-options{grid-template-columns:1fr}.capsule-letter-paper{font-size:21px;padding:32px}}
+
+/* The stationery stays readable as the letter grows; only the selector uses the texture atlas. */
+.capsule-paper-white,.capsule-paper-dotted,.capsule-paper-ruled{color:#3d342d;background-color:#faf8f2}
+.capsule-paper-swatch.capsule-paper-white{background-image:linear-gradient(135deg,#fffefa,#efe9dc);background-size:auto}
+.capsule-paper-swatch.capsule-paper-dotted{background-image:radial-gradient(#b4a28b 1px,transparent 1px),linear-gradient(#fffdf8,#f3eee5);background-size:11px 11px,auto}
+.capsule-paper-swatch.capsule-paper-ruled{background-image:repeating-linear-gradient(to bottom,transparent 0 11px,#b9bbba 12px,transparent 13px),linear-gradient(#fffdf8,#f3eee5);background-size:auto}
+.capsule-letter-scene{padding:clamp(20px,4vw,42px);border-radius:18px;background:radial-gradient(ellipse at 50% 5%,#665c63 0%,#34313d 52%,#292834 100%);}
+.capsule-letter-scene .capsule-preview-cover{max-width:500px;margin:0 auto -16px;position:relative;z-index:1;box-shadow:0 20px 32px #14111b54}
+.capsule-letter-scene .capsule-preview-cover .capsule-cover{aspect-ratio:1.65}
+.capsule-letter-paper{position:relative;max-width:640px;margin:0 auto;background-image:none;background-color:#faf6ed;color:#3e3430;border:1px solid #c7b8a08c;border-radius:3px;box-shadow:0 2px 4px #20172518,0 24px 50px #17131d66;min-height:250px;padding:clamp(38px,7vw,78px);font-size:22px;line-height:1.72;white-space:normal;overflow-wrap:anywhere}
+.capsule-letter-paper:before{content:"";position:absolute;inset:14px;border:1px solid #937c5b3c;pointer-events:none}
+.capsule-letter-paper .capsule-letter{white-space:pre-wrap;font:inherit;line-height:1.75}
+.capsule-letter-paper h2{font:inherit;font-size:clamp(24px,3vw,34px);line-height:1.35;margin:12px 0 28px;color:inherit}
+.capsule-letter-kicker{font:10px/1.4 system-ui,sans-serif;letter-spacing:.22em;color:#8b7565}
+.capsule-letter-paper.capsule-paper-ivory{background:#fff7e8}.capsule-letter-paper.capsule-paper-linen{background:#f5efe0}
+.capsule-letter-paper.capsule-paper-aged{background:#ecdcbf}.capsule-letter-paper.capsule-paper-rose{background:#f9eeeb}
+.capsule-letter-paper.capsule-paper-sage{background:#edf1e7}.capsule-letter-paper.capsule-paper-night{background:#263247;color:#f7efde}
+.capsule-letter-paper.capsule-paper-white{background:linear-gradient(130deg,#fffefa,#f8f5ed)}
+.capsule-letter-paper.capsule-paper-dotted{background:radial-gradient(#b6aa99 1px,transparent 1px) 0 0/19px 19px,#fffdf8}
+.capsule-letter-paper.capsule-paper-ruled{background:repeating-linear-gradient(to bottom,transparent 0 37px,#aec0c0 38px,transparent 39px),#fffdf8}
+.capsule-letter-paper.capsule-paper-night .capsule-letter-kicker{color:#d4c9b6}
+.capsule-letter-scene .capsule-photo-strip{display:flex;flex-wrap:wrap;gap:18px;margin-top:36px}
+.capsule-letter-scene .capsule-photo-strip img{max-width:min(100%,220px);height:auto;object-fit:contain;padding:7px 7px 22px;background:#fffdf8;box-shadow:0 6px 18px #30271930;transform:rotate(-2deg)}
+@media(max-width:550px){.capsule-letter-scene{padding:14px}.capsule-letter-paper{padding:42px 34px;font-size:19px}.capsule-letter-paper:before{inset:8px}}

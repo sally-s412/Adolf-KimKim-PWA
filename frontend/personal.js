@@ -567,6 +567,7 @@
     ivory: ["Ngà hoa văn", "Ornate ivory"], linen: ["Vải lanh", "Ruled linen"],
     aged: ["Giấy da", "Aged parchment"], rose: ["Hoa hồng", "Pressed flowers"],
     sage: ["Thảo mộc", "Botanical sage"], night: ["Đêm sao", "Midnight stars"],
+    white: ["Trắng vintage", "Vintage white"], dotted: ["Giấy chấm", "Dotted paper"], ruled: ["Giấy kẻ", "Ruled paper"],
   };
   const capsuleSeals = {
     rose: ["Hoa hồng", "Rose"], moon: ["Trăng sao", "Moon and stars"],
@@ -718,7 +719,7 @@
   function capsulePreview(data) {
     modal(
       tr("Xem trước cùng KimKim", "Preview with KimKim"),
-      `<div class="capsule-preview-cover">${coverMarkup(data)}</div><span class="personal-badge">${tr("Bản xem trước", "Preview")}</span><h2>${esc(data.title)}</h2><p class="personal-muted">${esc(data.email)} · ${esc(new Date(data.sendAt).toLocaleString(tr("vi-VN", "en-US")))}</p><div class="capsule-letter capsule-letter-paper capsule-paper-${Object.hasOwn(capsulePapers, data.paper) ? data.paper : "ivory"} capsule-font-${Object.hasOwn(capsuleFonts, data.font) ? data.font : "mali"}">${esc(data.body)}</div><div class="capsule-photo-strip">${data.photos.map((p) => `<img src="${esc(p)}" alt="">`).join("")}</div><form id="capsuleSeal" class="personal-form"><p class="personal-muted">${tr("Sau khi niêm phong, nội dung và người nhận được chốt. Bạn có thể hủy lịch gửi trước khi KimKim bắt đầu gửi.", "Sealing fixes the letter and recipient. You can cancel before KimKim starts delivery.")}</p><p class="personal-error" role="alert"></p><div class="personal-actions">${button(tr("Sửa bản nháp", "Edit draft"), "capsule-back")}<button class="personal-btn primary" type="submit" ${state.mailReady ? "" : "disabled"}>${tr("Nhờ KimKim giữ hộ", "Let KimKim keep it")}</button></div></form>`,
+      `<div class="capsule-letter-scene"><div class="capsule-preview-cover">${coverMarkup(data)}</div><article class="capsule-letter-paper capsule-paper-${Object.hasOwn(capsulePapers, data.paper) ? data.paper : "ivory"} capsule-font-${Object.hasOwn(capsuleFonts, data.font) ? data.font : "mali"}"><div class="capsule-letter-kicker">KIMKIM CAPSULE</div><h2>${esc(data.title)}</h2><div class="capsule-letter">${esc(data.body)}</div><div class="capsule-photo-strip">${data.photos.map((p) => `<img src="${esc(p)}" alt="">`).join("")}</div></article></div><p class="personal-muted">${esc(data.email)} · ${esc(new Date(data.sendAt).toLocaleString(tr("vi-VN", "en-US")))}</p><form id="capsuleSeal" class="personal-form"><p class="personal-muted">${tr("Sau khi niêm phong, nội dung và người nhận được chốt. Bạn có thể hủy lịch gửi trước khi KimKim bắt đầu gửi.", "Sealing fixes the letter and recipient. You can cancel before KimKim starts delivery.")}</p><p class="personal-error" role="alert"></p><div class="personal-actions">${button(tr("Sửa bản nháp", "Edit draft"), "capsule-back")}<button class="personal-btn primary" type="submit" ${state.mailReady ? "" : "disabled"}>${tr("Nhờ KimKim giữ hộ", "Let KimKim keep it")}</button></div></form>`,
     );
     const form = document.getElementById("capsuleSeal");
     form.querySelector("[data-action=capsule-back]").onclick = () =>

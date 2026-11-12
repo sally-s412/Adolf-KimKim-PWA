@@ -153,9 +153,12 @@ class GmailTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(args[0],'https://gmail.googleapis.com/gmail/v1/users/me/messages/send')
         raw=base64.urlsafe_b64decode(kw['json']['raw'])
         msg=BytesParser(policy=policy.default).parsebytes(raw)
-        self.assertEqual(str(msg['Subject']),'KimKim mang thư đến cho bạn · Thư tiếng Việt')
+        self.assertEqual(str(msg['Subject']),'Bạn có một lá thư từ KimKim Capsule')
+        self.assertEqual(str(msg['From']),'KimKim Capsule <sender@gmail.com>')
         self.assertEqual(msg['To'],'recipient@example.com')
         self.assertNotIn(b'PRIVATE_BODY',raw)
+        self.assertNotIn('Thư tiếng Việt',str(msg['Subject']))
+        self.assertIn('Nếu không mong đợi',msg.get_body(preferencelist=('plain',)).get_content())
 
     async def test_timeout_never_retries(self):
         now=datetime.now(timezone.utc)

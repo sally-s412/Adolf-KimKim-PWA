@@ -52,12 +52,14 @@
 <link rel="stylesheet" href="chat-widget.css?v=1">
 <link rel="stylesheet" href="design-tokens.css?v=rose-dusk-3">
 <link rel="stylesheet" href="hig-components.css?v=rose-dusk-3">
-<link rel="stylesheet" href="hig-screens.css?v=files-flow-1">
+<link rel="stylesheet" href="hig-screens.css?v=extracted-reader-2">
+<link rel="stylesheet" href="personal.css?v=2">
+<link rel="stylesheet" href="pwa-update.css?v=1">
 </head>
 <body>
 
 <div id="connectionStatus" class="connection-status" role="status" hidden></div>
-<div class="pwa-actions"><button id="installApp" class="btn btn-ghost" data-i18n="installApp" hidden>Cài ứng dụng</button><button id="updateApp" class="btn btn-ghost" data-i18n="updateApp" hidden>Cập nhật</button></div>
+<div class="pwa-actions"><button id="installApp" class="btn btn-ghost" data-i18n="installApp" hidden>Cài ứng dụng</button><button id="updateApp" hidden aria-hidden="true" tabindex="-1"></button></div>
 <div id="authScreen"><nav class="auth-language lang-switch" aria-label="Language"><button data-auth-lang="vi" onclick="setLang('vi')">VIE</button><button data-auth-lang="en" onclick="setLang('en')">ENG</button></nav><div class="card auth-card" id="authSignin">
   <div class="auth-wordmark">ADOLF KIMKIM</div>
   <p class="auth-welcome" data-i18n="authWelcome">WELCOME TO<br>ADOLF KIMKIM</p>
@@ -188,7 +190,7 @@
       <div class="view-sub"></div>
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
           <span id="recordingStatusBadge" class="badge red hidden"><span class="live-dot"></span><span data-i18n="detailRecording">ĐANG GHI ÂM</span></span>
-          <span id="summaryStatusBadge" class="badge amber hidden" data-i18n="detailSummarizing">Đang tóm tắt với AI…</span>
+          <span id="summaryStatusBadge" class="badge amber hidden" data-i18n="detailSummarizing">KimKim đang tóm tắt</span>
           <div id="mdMeetBotBar" class="hidden" style="display:flex;align-items:center;gap:10px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.4);padding:6px 12px;border-radius:8px;font-size:12px;">
             <span class="live-dot"></span>
             <span id="mdMeetBotStatusText" data-i18n="detailBotConnecting">KimKim đang kết nối vào Google Meet…</span>
@@ -197,10 +199,6 @@
         </div>
       <div id="meetingDetailBody" class="detail-split">
         <div class="video-col">
-          <div class="video-controls" style="display:flex;gap:8px;margin-bottom:10px;">
-            <div class="vbtn" id="btnMicToggle" onclick="toggleMeetingMic()" title="Bật / tắt phiên âm trực tiếp" data-i18n-title="detailMicTitle" data-i18n-aria="detailMicTitle" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleMeetingMic()}">🎙️</div>
-            <div class="vbtn end" id="btnEndMeeting" onclick="endMeetingAndSummarize()" title="Dừng ghi âm và tóm tắt" data-i18n-title="detailEndTitle" data-i18n-aria="detailEndTitle" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();endMeetingAndSummarize()}">☎</div>
-          </div>
           <button class="btn btn-primary" id="btnQuickSummarize" onclick="generateSummaryFromCurrentTranscript()" style="width:100%;margin-bottom:12px;">⚡ Tóm tắt cuộc họp với AI</button>
 
           <div class="card keypoints">
@@ -540,8 +538,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="localizations/vi-vn.js?v=copy-restore-1"></script>
-<script src="localizations/eng-en.js?v=copy-restore-1"></script>
+<script src="localizations/vi-vn.js?v=summary-label-1"></script>
+<script src="localizations/eng-en.js?v=summary-label-1"></script>
 <script src="services/firebaseClient.js?v=3"></script>
 <script src="services/profileMedia.js?v=1"></script>
 <script src="imageCropper.js?v=1"></script>
@@ -558,7 +556,7 @@
 <script src="hig-ui.js?v=1"></script>
 <script src="layout.js"></script>
 <script src="ui-feedback.js"></script>
-<script src="app.js?v=copy-restore-1"></script>
+<script src="app.js?v=extracted-reader-2"></script>
 <script src="home.js?v=4"></script>
 <script src="notes-studio.js?v=3"></script>
 <script src="services/communityService.js?v=4"></script>
@@ -575,8 +573,10 @@
 <script src="ux-completeness.js?v=1"></script>
 <script src="chat-widget.js?v=1"></script>
 <script src="account-social-settings.js?v=1"></script>
-<script src="shell-refinement.js?v=5"></script>
+<script src="shell-refinement.js?v=6"></script>
+<script src="personal.js?v=2"></script>
 <script src="pwa.js"></script>
+<script defer src="pwa-update.js?v=1"></script>
 <script>
 // Recover only a failed app boot; a working app keeps the normal update prompt.
 if(typeof signInWithEmail !== 'function' && 'serviceWorker' in navigator){
@@ -595,11 +595,21 @@ if(typeof signInWithEmail !== 'function' && 'serviceWorker' in navigator){
 }
 </script>
 <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="false"></div>
+<dialog id="appUpdateDialog" class="app-update-dialog" aria-labelledby="appUpdateTitle" aria-describedby="appUpdateDescription">
+  <div class="app-update-mark" aria-hidden="true">✦</div>
+  <p class="app-update-eyebrow">ADOLF KIMKIM</p>
+  <h2 id="appUpdateTitle"></h2>
+  <p id="appUpdateDescription"></p>
+  <p id="appUpdateStatus" class="app-update-status" role="status" aria-live="polite"></p>
+  <button id="appUpdateConfirm" type="button" class="btn btn-primary"></button>
+</dialog>
 <dialog id="confirmDialog" class="confirm-dialog" aria-labelledby="confirmHeading" aria-describedby="confirmMessage">
   <form method="dialog"><h2 id="confirmHeading"></h2><p id="confirmMessage"></p><div class="form-actions"><button class="btn btn-ghost" value="cancel" id="confirmCancel"></button><button class="btn btn-danger" value="confirm" id="confirmAccept"></button></div></form>
 </dialog>
 </body>
 </html>
+
+
 
 
 

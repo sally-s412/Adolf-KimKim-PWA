@@ -1,0 +1,12 @@
+#updateApp{display:none!important}
+.app-update-dialog{width:min(420px,calc(100vw - 32px));max-width:none;max-height:calc(100dvh - 32px);box-sizing:border-box;overflow:auto;padding:32px;border:1px solid var(--border,#ffffff33);border-radius:24px;background:var(--panel,#1b254e);color:var(--text-0,#fff);box-shadow:0 24px 80px #090d2e88;text-align:center;font-family:var(--font,Inter,system-ui,sans-serif)}
+.app-update-dialog::backdrop{background:#080e2ac9;backdrop-filter:blur(8px)}
+.app-update-mark{display:grid;place-items:center;width:56px;height:56px;margin:0 auto 18px;border-radius:18px;background:var(--accent-soft,#dca1c540);color:var(--accent,#e898b6);font-size:30px}
+.app-update-eyebrow{margin:0 0 10px;color:var(--text-2,#aeb8d4);font-size:11px;font-weight:800;letter-spacing:.18em}
+.app-update-dialog h2{margin:0 0 12px;font-size:24px;line-height:1.25;letter-spacing:-.02em}
+.app-update-dialog p:not(.app-update-eyebrow){line-height:1.6}
+.app-update-dialog #appUpdateDescription{margin:0;color:var(--text-1,#c9d0e6);font-size:14px}
+.app-update-status{min-height:20px;margin:12px 0;color:var(--text-2,#aeb8d4);font-size:12px}
+.app-update-dialog #appUpdateConfirm{width:100%;min-height:48px;margin-top:4px;font-size:14px}
+.app-update-dialog #appUpdateConfirm:disabled{opacity:.7;cursor:wait}
+@media(max-width:480px){.app-update-dialog{padding:26px 22px;border-radius:20px}.app-update-dialog h2{font-size:21px}}

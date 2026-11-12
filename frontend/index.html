@@ -53,11 +53,12 @@
 <link rel="stylesheet" href="hig-components.css?v=rose-dusk-3">
 <link rel="stylesheet" href="hig-screens.css?v=extracted-reader-2">
 <link rel="stylesheet" href="personal.css?v=2">
+<link rel="stylesheet" href="pwa-update.css?v=1">
 </head>
 <body>
 
 <div id="connectionStatus" class="connection-status" role="status" hidden></div>
-<div class="pwa-actions"><button id="installApp" class="btn btn-ghost" data-i18n="installApp" hidden>Cài ứng dụng</button><button id="updateApp" class="btn btn-ghost" data-i18n="updateApp" hidden>Cập nhật</button></div>
+<div class="pwa-actions"><button id="installApp" class="btn btn-ghost" data-i18n="installApp" hidden>Cài ứng dụng</button><button id="updateApp" hidden aria-hidden="true" tabindex="-1"></button></div>
 <div id="authScreen"><nav class="auth-language lang-switch" aria-label="Language"><button data-auth-lang="vi" onclick="setLang('vi')">VIE</button><button data-auth-lang="en" onclick="setLang('en')">ENG</button></nav><div class="card auth-card" id="authSignin">
   <div class="auth-wordmark">ADOLF KIMKIM</div>
   <p class="auth-welcome" data-i18n="authWelcome">WELCOME TO<br>ADOLF KIMKIM</p>
@@ -574,6 +575,7 @@
 <script src="shell-refinement.js?v=6"></script>
 <script src="personal.js?v=2"></script>
 <script src="pwa.js"></script>
+<script defer src="pwa-update.js?v=1"></script>
 <script>
 // Recover only a failed app boot; a working app keeps the normal update prompt.
 if(typeof signInWithEmail !== 'function' && 'serviceWorker' in navigator){
@@ -592,6 +594,14 @@ if(typeof signInWithEmail !== 'function' && 'serviceWorker' in navigator){
 }
 </script>
 <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="false"></div>
+<dialog id="appUpdateDialog" class="app-update-dialog" aria-labelledby="appUpdateTitle" aria-describedby="appUpdateDescription">
+  <div class="app-update-mark" aria-hidden="true">✦</div>
+  <p class="app-update-eyebrow">ADOLF KIMKIM</p>
+  <h2 id="appUpdateTitle"></h2>
+  <p id="appUpdateDescription"></p>
+  <p id="appUpdateStatus" class="app-update-status" role="status" aria-live="polite"></p>
+  <button id="appUpdateConfirm" type="button" class="btn btn-primary"></button>
+</dialog>
 <dialog id="confirmDialog" class="confirm-dialog" aria-labelledby="confirmHeading" aria-describedby="confirmMessage">
   <form method="dialog"><h2 id="confirmHeading"></h2><p id="confirmMessage"></p><div class="form-actions"><button class="btn btn-ghost" value="cancel" id="confirmCancel"></button><button class="btn btn-danger" value="confirm" id="confirmAccept"></button></div></form>
 </dialog>

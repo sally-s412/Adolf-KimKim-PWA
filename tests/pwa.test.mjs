@@ -49,6 +49,27 @@ test('offline navigation returns the explanatory offline page', async () => {
   assert.equal(await (await result).text(),'offline fallback');
 });
 
+test('a waiting update blocks the app until activation and reloads after acceptance', async () => {
+  const html=readFileSync('frontend/index.html','utf8');
+  assert(html.includes('<script defer src="pwa-update.js?v=1"></script>'));
+  const elements=new Map(['appUpdateDialog','appUpdateTitle','appUpdateDescription','appUpdateStatus','appUpdateConfirm'].map(id=>[id,{open:false,disabled:false,textContent:'',listeners:{},addEventListener(name,fn){this.listeners[name]=fn},showModal(){this.open=true}}]));
+  const listeners={};
+  const waiting={messages:[],postMessage(value){this.messages.push(value)}};
+  const registration={waiting,addEventListener(name,fn){listeners['reg:'+name]=fn},update:async()=>{}};
+  let reloads=0;
+  const context={navigator:{onLine:true,serviceWorker:{controller:{},register:async()=>registration,addEventListener(name,fn){listeners['sw:'+name]=fn}}},window:{isSecureContext:true,location:{reload(){reloads++}},addEventListener(name,fn){listeners['window:'+name]=fn}},document:{documentElement:{lang:'vi'},hidden:false,getElementById:id=>elements.get(id),addEventListener(name,fn){listeners['doc:'+name]=fn}},setInterval(){},setTimeout(){}};
+  vm.runInNewContext(readFileSync('frontend/pwa-update.js','utf8'),context);
+  await listeners['window:load']();
+  const dialog=elements.get('appUpdateDialog'),button=elements.get('appUpdateConfirm');
+  assert.equal(dialog.open,true);
+  assert.equal(button.textContent,'Cập nhật ngay');
+  let prevented=false;dialog.listeners.cancel({preventDefault(){prevented=true}});assert.equal(prevented,true);
+  button.listeners.click();
+  assert.deepEqual(Array.from(waiting.messages, x=>x.type),['SKIP_WAITING']);
+  listeners['sw:controllerchange']();
+  assert.equal(reloads,1);
+});
+
 test('endpoint configuration respects the deployment and explicit user override', () => {
   const source=readFileSync('frontend/app.js','utf8');
   const section=source.slice(source.indexOf('function storedEndpoint'),source.indexOf('function getMeetingLang'));

@@ -527,3 +527,42 @@
 .capsule-cover-swatch svg{width:22px;height:22px}
 .capsule-preview-cover{margin-bottom:20px;border-radius:16px;overflow:hidden}
 @media(max-width:420px){.capsule-cover-options{grid-template-columns:repeat(3,minmax(0,1fr))}.capsule-cover-brand{font-size:8px;letter-spacing:1px}}
+
+/* Vintage stationery. All decorative options are fixed local styles. */
+.capsule-cover-parchment{--cover-a:#d7bc8c;--cover-b:#f6e8c7;--cover-ink:#674634}
+.capsule-cover-botanical{--cover-a:#71826b;--cover-b:#d5c9a5;--cover-ink:#355b46}
+.capsule-cover-postcard{--cover-a:#d89b7b;--cover-b:#f5d5b7;--cover-ink:#8d4c37}
+.capsule-cover-sepia{--cover-a:#645048;--cover-b:#c9a47f;--cover-ink:#f8deae}
+.capsule-cover-blueprint{--cover-a:#38475f;--cover-b:#a7b7b9;--cover-ink:#e8e0ca}
+.capsule-cover-lace{--cover-a:#e8c8bd;--cover-b:#f8e9d4;--cover-ink:#8e6170}
+.capsule-cover[class*="capsule-cover-"]{background:linear-gradient(125deg,var(--cover-a),var(--cover-b))}
+.capsule-cover-postcard:before,.capsule-cover-parchment:before,.capsule-cover-lace:before,.capsule-cover-botanical:before,.capsule-cover-sepia:before,.capsule-cover-blueprint:before{
+  content:"";position:absolute;inset:12px;border:1px solid currentColor;opacity:.24;pointer-events:none;
+}
+.capsule-cover-postcard:before{border-style:dashed}
+.capsule-cover-lace:before{border-style:double;border-width:4px}
+.capsule-cover-botanical:before{border-radius:50% 0 50% 0;transform:rotate(-5deg)}
+.capsule-cover-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:sepia(.13)}
+.capsule-cover-photo .capsule-envelope{background:#fff9e5e3}
+.capsule-cover-photo .capsule-cover-brand{background:#fff9e5e8;padding:4px 10px;border-radius:12px;color:#49382f}
+.capsule-seal{background:radial-gradient(circle at 35% 25%,#b96975,#813446 72%);border:2px ridge #dca4a0;color:#ffead5;font-style:normal}
+.capsule-cover-options{grid-template-columns:repeat(3,minmax(0,1fr))}
+.capsule-cover-swatch[class*="capsule-cover-"]{background:linear-gradient(125deg,var(--cover-a),var(--cover-b))}
+.capsule-cover-upload{margin-top:12px}
+.capsule-choice-picker{border:0;padding:0;margin:18px 0 24px;min-width:0}
+.capsule-choice-picker legend{font-weight:650;color:var(--text-0);margin-bottom:12px}
+.capsule-choice-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.personal-form .capsule-choice-option{position:relative;display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--border);border-radius:12px;cursor:pointer;min-width:0;font-size:11px;line-height:1.25}
+.capsule-choice-option input[type=radio]{position:absolute;width:1px;height:1px;opacity:0}
+.capsule-choice-option:has(input:checked){border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.capsule-choice-option:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:3px}
+.capsule-paper-swatch{display:grid;place-items:center;flex:none;width:38px;height:38px;border:1px solid #8c725557;border-radius:3px;color:#49382f;font:italic 15px Georgia,serif;box-shadow:inset 0 0 14px #8c72551c}
+.capsule-seal-swatch{display:grid;place-items:center;flex:none;width:36px;height:36px;border-radius:50%;background:radial-gradient(circle at 30% 20%,#bd7580,#813446 70%);border:2px ridge #dca4a0;color:#ffead5;font:20px Georgia,serif}
+.capsule-paper-ivory{background:#fffaf0;color:#49382f}
+.capsule-paper-linen{background:#eee4cf;color:#49382f}
+.capsule-paper-aged{background:#e4cfab;color:#49382f}
+.capsule-paper-rose{background:#f5dfdc;color:#49382f}
+.capsule-paper-sage{background:#dce6d7;color:#364939}
+.capsule-paper-night{background:#25304b;color:#f8ebd7}
+.capsule-letter-paper{padding:clamp(20px,4vw,38px);border:1px solid #9c7f5555;border-radius:5px;box-shadow:inset 0 0 35px #765c3a12,0 10px 24px #00000018;font:17px/1.9 Georgia,serif}
+@media(max-width:550px){.capsule-choice-options,.capsule-cover-options{grid-template-columns:repeat(2,minmax(0,1fr))}}

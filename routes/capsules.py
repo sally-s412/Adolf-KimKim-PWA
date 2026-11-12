@@ -169,11 +169,11 @@ def unpack(document):
 
 
 def public_meta(record):
-    result = {key: record.get(key, '') for key in ('id', 'draftId', 'title', 'email', 'sendAt', 'status', 'errorCode', 'cover')}
+    result = {key: record.get(key, '') for key in ('id', 'draftId', 'title', 'email', 'sendAt', 'status', 'errorCode', 'cover', 'paper', 'seal')}
     # Owner-authenticated endpoints only. Photo covers stay encrypted at rest.
     if record.get('cover') == 'photo' and record.get('encrypted'):
         payload = json.loads(settings()[2].decrypt(record['encrypted'].encode()))
-        result['coverPhoto'] = (payload.get('photos') or [''])[0]
+        result['coverPhoto'] = payload.get('coverPhoto') or (payload.get('photos') or [''])[0]
     return result
 
 
@@ -197,7 +197,10 @@ class Letter(BaseModel):
     sendAt: str
     language: str = Field(default='vi', pattern=r'^(vi|en)$')
     photos: list[str] = Field(default_factory=list, max_length=3)
-    cover: str = Field(default='rose', pattern=r'^(rose|midnight|lavender|meadow|sunset|paper|photo)$')
+    cover: str = Field(default='rose', pattern=r'^(rose|midnight|lavender|meadow|sunset|paper|photo|parchment|botanical|postcard|sepia|blueprint|lace)$')
+    coverPhoto: str = ''
+    paper: str = Field(default='ivory', pattern=r'^(ivory|linen|aged|rose|sage|night)$')
+    seal: str = Field(default='k', pattern=r'^(k|rose|heart|star|moon|leaf|sun|initial)$')
 
 
 def validate_letter(letter):
@@ -211,9 +214,9 @@ def validate_letter(letter):
             raise ValueError('date')
     except (ValueError, OverflowError):
         raise HTTPException(422, 'capsule/invalid-date')
-    if letter.cover == 'photo' and not letter.photos:
+    if letter.cover == 'photo' and not (letter.coverPhoto or letter.photos):
         raise HTTPException(422, 'capsule/cover-photo-required')
-    for photo in letter.photos:
+    for photo in [*letter.photos, *([letter.coverPhoto] if letter.coverPhoto else [])]:
         if not photo.startswith('data:image/jpeg;base64,'):
             raise HTTPException(422, 'capsule/invalid-photo')
         try:
@@ -261,7 +264,8 @@ async def seal(letter: Letter, request: Request):
     record = {'owner': uid, 'draftId': letter.id, 'title': letter.title.strip(), 'email': letter.email.strip(),
               'sendAt': send_at, 'status': 'scheduled', 'createdAt': datetime.now(timezone.utc).isoformat(),
               'retrySince': '', 'encrypted': cipher.encrypt(json.dumps(payload).encode()).decode(),
-              'tokenHash': hashlib.sha256(token.encode()).hexdigest(), 'attempts': '0', 'cover': letter.cover}
+              'tokenHash': hashlib.sha256(token.encode()).hexdigest(), 'attempts': '0',
+              'cover': letter.cover, 'paper': letter.paper, 'seal': letter.seal}
     draft_path = '/users/' + quote(uid, safe='') + '/capsuleDrafts/' + letter.id
     draft = await firestore('GET', draft_path)
     if not draft:
@@ -274,6 +278,9 @@ async def seal(letter: Letter, request: Request):
         raise HTTPException(409, 'capsule/draft-changed')
     if saved.get('cover', {}).get('stringValue', 'rose') != letter.cover:
         raise HTTPException(409, 'capsule/draft-changed')
+    for key, default in (('paper', 'ivory'), ('seal', 'k'), ('coverPhoto', '')):
+        if saved.get(key, {}).get('stringValue', default) != getattr(letter, key):
+            raise HTTPException(409, 'capsule/draft-changed')
     photos = [value.get('stringValue') for value in
               saved.get('photos', {}).get('arrayValue', {}).get('values', [])]
     if photos != letter.photos:
@@ -451,10 +458,21 @@ async def open_letter(letter_id: str, token: str = ''):
     images = ''.join('<img alt="" src="' + html.escape(photo, quote=True) + '">' for photo in payload['photos'])
     palettes = {'rose': ('#f7c4d1','#e3c8ea'), 'midnight': ('#182856','#5b4b83'),
                 'lavender': ('#d8ccf5','#a9bce9'), 'meadow': ('#b6d8cd','#e6e3b8'),
-                'sunset': ('#f4b3a2','#e9c2de'), 'paper': ('#eee1cc','#d5bea2')}
+                'sunset': ('#f4b3a2','#e9c2de'), 'paper': ('#eee1cc','#d5bea2'),
+                'parchment': ('#d7bc8c','#f6e8c7'), 'botanical': ('#71826b','#d5c9a5'),
+                'postcard': ('#d89b7b','#f5d5b7'), 'sepia': ('#645048','#c9a47f'),
+                'blueprint': ('#38475f','#a7b7b9'), 'lace': ('#e8c8bd','#f8e9d4')}
     cover = payload.get('cover', 'rose')
     a, b = palettes.get(cover, palettes['rose'])
-    cover_html = ('<div class="cover"><img alt="" src="' + html.escape(payload['photos'][0], quote=True) + '"></div>') if cover == 'photo' and payload.get('photos') else ('<div class="cover" style="background:linear-gradient(125deg,' + a + ',' + b + ')"><span class="envelope">K</span><span class="cover-brand">KIMKIM · CAPSULE</span></div>')
-    content = '<!doctype html><html lang="' + payload['language'] + '"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>KimKim Capsule</title><style>body{margin:0;padding:40px 18px;background:#ffeff2;color:#231a45;font:16px/1.8 system-ui,sans-serif}main{max-width:680px;margin:auto;background:#fffbfc;padding:clamp(24px,6vw,52px);border-radius:24px}h1{line-height:1.25;overflow-wrap:anywhere}.letter{white-space:pre-wrap;overflow-wrap:anywhere}img{display:block;max-width:100%;border-radius:16px;margin-top:20px}small{color:#6a5e8a}.cover{height:220px;position:relative;display:grid;place-items:center;overflow:hidden;border-radius:18px;margin-bottom:32px}.cover img{height:100%;width:100%;object-fit:cover;margin:0;border-radius:0}.envelope{display:grid;place-items:center;width:116px;height:78px;background:#ffffffc9;border:1px solid #ffffffb3;border-radius:10px;box-shadow:0 14px 30px #10183820;color:#98415d;font:italic 32px Georgia}.cover-brand{position:absolute;bottom:18px;color:#231a45;background:#ffffffcc;padding:3px 12px;border-radius:20px;font-size:10px;letter-spacing:2px}@media(prefers-color-scheme:dark){body{background:#101838;color:#f6f2fa}main{background:#192450}small{color:#a9b0d6}}</style><main>' + cover_html + '<small>KIMKIM CAPSULE</small><h1>' + html.escape(payload['title']) + '</h1><div class="letter">' + html.escape(payload['body']) + '</div>' + images + '</main></html>'
+    seal_icons = {'k':'K','rose':'✿','heart':'♥','star':'✦','moon':'☾','leaf':'❧','sun':'☼','initial':'K'}
+    seal = seal_icons.get(payload.get('seal', 'k'), 'K')
+    cover_photo = payload.get('coverPhoto') or (payload.get('photos') or [''])[0]
+    photo_html = '<img alt="" src="' + html.escape(cover_photo, quote=True) + '">' if cover == 'photo' and cover_photo else ''
+    cover_html = '<div class="cover" style="background:linear-gradient(125deg,' + a + ',' + b + ')">' + photo_html + '<span class="envelope"><span class="seal">' + seal + '</span></span><span class="cover-brand">KIMKIM · CAPSULE</span></div>'
+    paper_colors = {'ivory':'#fffaf0','linen':'#eee4cf','aged':'#e4cfab','rose':'#f5dfdc','sage':'#dce6d7','night':'#25304b'}
+    paper = payload.get('paper', 'ivory')
+    paper_color = paper_colors.get(paper, paper_colors['ivory'])
+    ink = '#f8ebd7' if paper == 'night' else '#49382f'
+    content = '<!doctype html><html lang="' + payload['language'] + '"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>KimKim Capsule</title><style>body{margin:0;padding:40px 18px;background:#2b2730;color:#49382f;font:16px/1.8 Georgia,serif}main{max-width:680px;margin:auto;background:' + paper_color + ';color:' + ink + ';padding:clamp(24px,6vw,52px);box-shadow:0 20px 80px #100f1238;border:1px solid #bfa97b;border-radius:6px}h1{line-height:1.25;overflow-wrap:anywhere}.letter{white-space:pre-wrap;overflow-wrap:anywhere;line-height:2;font-size:18px;margin:32px 0}img{display:block;max-width:100%;border-radius:8px;margin-top:20px}small{opacity:.68;letter-spacing:.16em}.cover{height:220px;position:relative;display:grid;place-items:center;overflow:hidden;border-radius:6px;margin-bottom:32px}.cover>img{position:absolute;height:100%;width:100%;object-fit:cover;margin:0;border-radius:0}.envelope{z-index:1;display:grid;place-items:center;width:116px;height:78px;background:#f6ecdbc9;border:1px solid #fff7e6;border-radius:4px;box-shadow:0 14px 30px #10183836}.seal{display:grid;place-items:center;border-radius:50%;width:32px;height:32px;background:#913e50;color:#ffead5;font:22px Georgia}.cover-brand{z-index:1;position:absolute;bottom:18px;color:#372b2d;background:#f8eddbdc;padding:3px 12px;border-radius:20px;font-size:10px;letter-spacing:2px}</style><main>' + cover_html + '<small>KIMKIM CAPSULE</small><h1>' + html.escape(payload['title']) + '</h1><div class="letter">' + html.escape(payload['body']) + '</div>' + images + '</main></html>'
     return HTMLResponse(content, headers={'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer',
         'X-Content-Type-Options': 'nosniff', 'X-Robots-Tag': 'noindex, nofollow, noarchive', 'Content-Security-Policy': "default-src 'none'; img-src data:; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'"})

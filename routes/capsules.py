@@ -354,18 +354,16 @@ async def deliver(record):
     payload = json.loads(cipher.decrypt(record['encrypted'].encode()))
     link = values['CAPSULE_PUBLIC_ORIGIN'].rstrip('/') + '/capsule/open/' + record['id'] + '?token=' + quote(payload['token'])
     vi = payload['language'] == 'vi'
-    heading = 'Bạn có một lá thư từ KimKim Capsule' if vi else 'A letter from KimKim Capsule is here'
-    label = 'Mở lá thư' if vi else 'Open your letter'
-    text = ('Một người đã hẹn KimKim gửi lá thư này đến bạn hôm nay. Nội dung thư chỉ hiển thị khi bạn mở liên kết riêng bên dưới.'
-            if vi else 'Someone asked KimKim to deliver this letter to you today. Its contents are only shown when you open the private link below.')
-    footer = ('Nếu không mong đợi lá thư này, bạn có thể bỏ qua email.'
-              if vi else 'If you were not expecting this letter, you can ignore this email.')
+    heading = 'KimKim mang thư đến cho bạn' if vi else 'KimKim has a letter for you'
+    label = 'Mở thư' if vi else 'Open letter'
+    text = ('Một lá thư đã được KimKim du hành thời gian từ quá khứ mang đến cho bạn. Hãy bấm “Mở thư” để đọc nội dung nhé'
+            if vi else 'KimKim has brought you a letter through time from the past. Select “Open letter” to read it.')
     sender = parseaddr(values['CAPSULE_FROM_EMAIL'])[1]
     # Private letter body and photographs are only revealed on the recipient page.
     mail = {'from': formataddr(('KimKim Capsule', sender)),
             'subject': heading,
-            'text': heading + '\n\n' + text + '\n\n' + label + ': ' + link + '\n\n' + footer,
-            'html': '<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:28px;color:#29243a"><p style="font-size:12px;letter-spacing:2px">KIMKIM CAPSULE</p><h1 style="font-size:26px">' + heading + '</h1><p style="line-height:1.6">' + text + '</p><p><a style="display:inline-block;background:#593f78;color:#ffffff;padding:12px 20px;text-decoration:none" href="' + html.escape(link, quote=True) + '">' + label + '</a></p><p style="font-size:13px;color:#686378">' + footer + '</p></div>'}
+            'text': heading + '\n\n' + text + '\n\n' + label + ': ' + link,
+            'html': '<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:32px;background:#fff7f8;color:#231a45"><p>KIMKIM CAPSULE</p><h1>' + heading + '</h1><p>' + text + '</p><a style="display:inline-block;background:#c93f5e;color:white;padding:14px 20px;border-radius:12px;text-decoration:none" href="' + html.escape(link, quote=True) + '">' + label + '</a></div>'}
     message = EmailMessage()
     message['From'] = mail['from']
     message['To'] = record['email']

@@ -153,12 +153,16 @@ class GmailTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(args[0],'https://gmail.googleapis.com/gmail/v1/users/me/messages/send')
         raw=base64.urlsafe_b64decode(kw['json']['raw'])
         msg=BytesParser(policy=policy.default).parsebytes(raw)
-        self.assertEqual(str(msg['Subject']),'Bạn có một lá thư từ KimKim Capsule')
+        self.assertEqual(str(msg['Subject']),'KimKim mang thư đến cho bạn')
         self.assertEqual(str(msg['From']),'KimKim Capsule <sender@gmail.com>')
         self.assertEqual(msg['To'],'recipient@example.com')
         self.assertNotIn(b'PRIVATE_BODY',raw)
         self.assertNotIn('Thư tiếng Việt',str(msg['Subject']))
-        self.assertIn('Nếu không mong đợi',msg.get_body(preferencelist=('plain',)).get_content())
+        self.assertIn('Một lá thư đã được KimKim du hành thời gian từ quá khứ mang đến cho bạn. Hãy bấm “Mở thư” để đọc nội dung nhé',msg.get_body(preferencelist=('plain',)).get_content())
+        html_body=msg.get_body(preferencelist=('html',)).get_content()
+        self.assertIn('background:#fff7f8',html_body)
+        self.assertIn('background:#c93f5e',html_body)
+        self.assertIn('>Mở thư</a>',html_body)
 
     async def test_timeout_never_retries(self):
         now=datetime.now(timezone.utc)

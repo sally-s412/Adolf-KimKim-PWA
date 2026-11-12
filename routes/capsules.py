@@ -491,11 +491,12 @@ async def open_letter(letter_id: str, token: str = ''):
     @font-face{font-family:Dancing;src:url('/capsule/assets/DancingScript.ttf') format('truetype');font-display:swap}
     *{box-sizing:border-box}body{margin:0;padding:clamp(18px,4vw,48px);background:radial-gradient(ellipse at 50% 0%,#625b65 0%,#38343e 48%,#292934 100%);color:#3e3430;font:16px/1.7 Georgia,serif}
     main{max-width:840px;margin:auto;padding:clamp(12px,4vw,42px);background:#ffffff0a;border:1px solid #ffffff18;border-radius:18px}
-    .cover{width:min(82%,560px);aspect-ratio:1.65;margin:0 auto -15px;position:relative;z-index:1;background-image:url('/capsule/assets/envelopes.webp');background-size:300% auto;background-repeat:no-repeat;border-radius:7px;box-shadow:0 16px 32px #100d1760;overflow:hidden}
+    .cover{width:min(82%,560px);aspect-ratio:1.65;margin:0 auto -15px;position:relative;z-index:1;background-image:url('/capsule/assets/envelopes.webp');background-size:300% 200%;background-repeat:no-repeat;border-radius:7px;box-shadow:0 16px 32px #100d1760;overflow:hidden}
     .cover-navy{background-position:0% 0%}.cover-burgundy{background-position:50% 0%}.cover-ivory{background-position:100% 0%}
     .cover-sage{background-position:0% 100%}.cover-vintageLavender{background-position:50% 100%}.cover-celestial{background-position:100% 100%}
     .cover-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;margin:0}.cover-photo~.seal{filter:drop-shadow(0 4px 8px #0007)}
-    .seal{position:absolute;left:50%;top:57%;transform:translate(-50%,-50%);width:clamp(48px,8vw,78px);aspect-ratio:1;background-image:url('/capsule/assets/seals.webp');background-size:400% 200%;background-repeat:no-repeat}
+    .seal{position:absolute;left:50%;top:61%;transform:translate(-50%,-50%);width:clamp(48px,9vw,78px);aspect-ratio:1;background-image:url('/capsule/assets/seals.webp');background-size:400% 200%;background-repeat:no-repeat;filter:drop-shadow(0 3px 3px #120d174d)}
+    .cover-burgundy .seal{top:59%}.cover-photo .seal{top:62%}
     .seal-rose{background-position:0% 0%}.seal-moon{background-position:33.333% 0%}.seal-leaf{background-position:66.667% 0%}.seal-butterfly{background-position:100% 0%}
     .seal-flower{background-position:0% 100%}.seal-dove{background-position:33.333% 100%}.seal-heart{background-position:66.667% 100%}.seal-wreath{background-position:100% 100%}
     article{position:relative;max-width:640px;min-height:360px;margin:0 auto;padding:clamp(42px,8vw,78px);background:#fff7e8;box-shadow:0 2px 4px #20172518,0 24px 50px #17131d66;border:1px solid #c7b8a08c;border-radius:3px;overflow-wrap:anywhere}

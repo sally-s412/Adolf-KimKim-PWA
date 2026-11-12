@@ -575,7 +575,7 @@
 .capsule-font-dancing{font-family:CapsuleDancing,Georgia,cursive}
 .capsule-cover.capsule-cover-navy,.capsule-cover.capsule-cover-burgundy,.capsule-cover.capsule-cover-ivory,.capsule-cover.capsule-cover-sage,.capsule-cover.capsule-cover-vintageLavender,.capsule-cover.capsule-cover-celestial,
 .capsule-cover-swatch.capsule-cover-navy,.capsule-cover-swatch.capsule-cover-burgundy,.capsule-cover-swatch.capsule-cover-ivory,.capsule-cover-swatch.capsule-cover-sage,.capsule-cover-swatch.capsule-cover-vintageLavender,.capsule-cover-swatch.capsule-cover-celestial{
-  background-image:url("assets/capsule/envelopes.webp");background-size:300% auto;background-repeat:no-repeat;
+  background-image:url("assets/capsule/envelopes.webp");background-size:300% 200%;background-repeat:no-repeat;
 }
 .capsule-cover.capsule-cover-navy,.capsule-cover-swatch.capsule-cover-navy{background-position:0% 0%}
 .capsule-cover.capsule-cover-burgundy,.capsule-cover-swatch.capsule-cover-burgundy{background-position:50% 0%}
@@ -590,13 +590,15 @@
   background-image:url("assets/capsule/seals.webp");background-color:transparent;border:0;border-radius:0;
   background-size:400% 200%;background-repeat:no-repeat;box-shadow:none;font-size:0;
 }
-.capsule-cover .capsule-seal{position:absolute;width:clamp(38px,13%,62px);height:auto;aspect-ratio:1;left:50%;top:57%;transform:translate(-50%,-50%)}
+.capsule-cover .capsule-seal{position:absolute;width:clamp(42px,12%,86px);height:auto;aspect-ratio:1;left:50%;top:61%;transform:translate(-50%,-50%);filter:drop-shadow(0 3px 3px #120d174d)}
+.capsule-cover-burgundy .capsule-seal{top:59%}
+.capsule-cover-photo .capsule-seal{top:62%}
 .capsule-seal-swatch{width:44px;height:44px;flex:none}
 .capsule-seal-rose{background-position:0% 0%}.capsule-seal-moon{background-position:33.333% 0%}
 .capsule-seal-leaf{background-position:66.667% 0%}.capsule-seal-butterfly{background-position:100% 0%}
 .capsule-seal-flower{background-position:0% 100%}.capsule-seal-dove{background-position:33.333% 100%}
 .capsule-seal-heart{background-position:66.667% 100%}.capsule-seal-wreath{background-position:100% 100%}
-.capsule-cover-brand{z-index:2;bottom:9px;border-radius:12px;background:#f4ead6c9;color:#3e3035;padding:2px 8px;font-family:Georgia,serif}
+.capsule-cover-brand{display:none}
 .capsule-cover-photo .capsule-cover-image{filter:sepia(.1)}
 #capsuleCoverLive .capsule-cover{height:auto;aspect-ratio:1.65;max-height:320px}
 .capsule-cover-swatch{height:auto;aspect-ratio:1.6}

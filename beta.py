@@ -79,6 +79,14 @@ async def presence_lookup(peer: str, request: Request):
     return {'online': _presence.get(peer, 0) > time.monotonic()}
 
 
+# app.py mounts the static PWA at "/". Keep beta-only API routes ahead of that
+# catch-all mount so authenticated requests reach these handlers.
+_presence_routes = app.router.routes[-2:]
+del app.router.routes[-2:]
+_static_mount = next(i for i, route in enumerate(app.router.routes) if type(route).__name__ == 'Mount' and getattr(route, 'path', None) == '')
+app.router.routes[_static_mount:_static_mount] = _presence_routes
+
+
 def verify_token(token):
     claims = id_token.verify_firebase_token(token, CERT_REQUEST, audience=PROJECT)
     now = time.time()

@@ -32,6 +32,16 @@ const CACHE = 'akk-shell-${version}';
 const ASSETS = ${JSON.stringify(precache)};
 const BASE = new URL('./', self.location.href);
 const allowed = new Set(ASSETS.map(path => new URL(path, BASE).pathname));
+const badgeStateUrl = new URL('kimkim-badge-state', BASE).href;
+async function badge(count) {
+  if (count > 0 && self.navigator.setAppBadge) await self.navigator.setAppBadge(count).catch(() => {});
+  else if (!count && self.navigator.clearAppBadge) await self.navigator.clearAppBadge().catch(() => {});
+}
+async function saveBadgeState(state) {
+  const cache = await caches.open('kimkim-badge-state');
+  await cache.put(badgeStateUrl, new Response(JSON.stringify(state)));
+  await badge(state.count);
+}
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS.map(path => new Request(new URL(path, BASE).href, {cache: 'reload'})))));
 });
@@ -45,6 +55,10 @@ self.addEventListener('activate', event => {
 });
 self.addEventListener('message', event => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
+  if (event.data?.type === 'KIMKIM_UNREAD_COUNT') {
+    const count = Math.max(0, Math.min(99, Number(event.data.count) || 0));
+    event.waitUntil(saveBadgeState({count,threads:[]}));
+  }
 });
 self.addEventListener('push', event => {
   event.waitUntil((async () => {
@@ -56,6 +70,16 @@ self.addEventListener('push', event => {
     await Promise.all(clients.map(client => client.postMessage({type:'kimkim-message',threadId:data.threadId,messageId:data.messageId,title:data.title})));
     // A visible page handles its own notice and chime via the Firestore listener.
     if (clients.some(client => client.visibilityState === 'visible')) return;
+    // Until a page synchronizes the exact unread count, count each distinct conversation once.
+    const cache = await caches.open('kimkim-badge-state');
+    const previous = await cache.match(badgeStateUrl);
+    const state = previous ? await previous.json().catch(() => ({})) : {};
+    const threads = Array.isArray(state.threads) ? state.threads : [];
+    const threadId = String(data.threadId || '');
+    if (threadId && !threads.includes(threadId)) {
+      threads.push(threadId);
+      await saveBadgeState({count:Math.min(99, Math.max(0, Number(state.count) || 0) + 1),threads:threads.slice(-99)});
+    }
     const url = new URL('./#messages/' + encodeURIComponent(data.threadId || ''), BASE).href;
     await self.registration.showNotification(data.title || 'KimKim', {
       body: data.body || 'Bạn có tin nhắn mới / You have a new message',

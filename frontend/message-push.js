@@ -11,6 +11,7 @@
   let currentId = null;
   let currentToken = null;
   let chime;
+  let voice;
   const baseTitle = document.title;
   const favicon = document.querySelector('link[rel="icon"][sizes="32x32"]');
   const originalFavicon = favicon?.getAttribute('href');
@@ -42,16 +43,9 @@
   async function sound() {
     if (tone() === 'chime') return soundChime();
     if (tone() === 'double') return doubleTone();
-    if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) return soundChime();
-    const utterance = new SpeechSynthesisUtterance('KimKim');
-    utterance.lang = 'vi-VN'; utterance.rate = 1.12; utterance.pitch = 1.45; utterance.volume = 1;
-    const voices = speechSynthesis.getVoices();
-    utterance.voice = voices.find(v => v.lang?.toLowerCase().startsWith('vi') && /female|woman|nữ/i.test(v.name)) || voices.find(v => v.lang?.toLowerCase().startsWith('vi')) || null;
-    speechSynthesis.cancel();
-    return new Promise((resolve, reject) => {
-      utterance.onend = resolve; utterance.onerror = event => soundChime().then(resolve, reject);
-      speechSynthesis.speak(utterance);
-    });
+    voice ||= new Audio(new URL('assets/sounds/kimkim-voice.wav', location.href).href);
+    voice.pause(); voice.currentTime = 0; voice.volume = 1;
+    return voice.play();
   }
   function setUnread(count) {
     count = Math.max(0, Number(count) || 0);
@@ -76,6 +70,7 @@
     }
     if (navigator.setAppBadge && count) navigator.setAppBadge(count).catch(() => {});
     else if (navigator.clearAppBadge && !count) navigator.clearAppBadge().catch(() => {});
+    navigator.serviceWorker?.controller?.postMessage({type:'KIMKIM_UNREAD_COUNT',count});
   }
   const tokenRef = (uid, id) => FC.db.collection('communityPushTokens').doc(uid).collection('devices').doc(id);
   async function enable() {
@@ -168,7 +163,7 @@
       <div class="message-settings-row"><div><strong>${tr('Thông báo đẩy', 'Push notifications')}</strong><p>${tr('Hiện thông báo khi có tin nhắn mới, kể cả khi đóng app.', 'Show new messages even when the app is closed.')}</p></div><button type="button" class="message-settings-switch ${enabled?'on':''}" role="switch" aria-checked="${enabled}" id="messagePushSwitch" ${!supported()?'disabled':''} aria-label="${tr('Thông báo đẩy', 'Push notifications')}"><i></i></button></div>
       <p class="message-settings-status" id="messagePushStatus" role="status">${status}</p>
       <div class="message-settings-row"><div><strong>${tr('Âm thanh trong app', 'In-app sound')}</strong><p>${tr('Phát âm thanh khi tab KimKim đang chạy. Tiếng thông báo hệ thống do thiết bị quản lý.', 'Play sound while the KimKim tab is running. The device controls system notification sounds.')}</p></div><button type="button" class="message-settings-switch ${soundEnabled()?'on':''}" role="switch" aria-checked="${soundEnabled()}" id="messageSoundSwitch" aria-label="${tr('Âm thanh trong app', 'In-app sound')}"><i></i></button></div>
-      <fieldset class="message-tone-options"><legend>${tr('Chọn âm báo', 'Choose alert sound')}</legend>${[['voice',tr('KimKim gọi bạn', 'KimKim voice'),tr('Giọng đọc dễ thương của thiết bị', 'A playful device voice')],['chime',tr('Chuông dịu', 'Soft chime'),tr('Tiếng chuông nhẹ nhàng', 'A gentle chime')],['double',tr('Hai nốt vui', 'Two bright notes'),tr('Âm báo ngắn, tươi vui', 'Short bright tones')]].map(([value,label,help])=>`<label class="message-tone-choice"><input type="radio" name="messageTone" value="${value}" ${tone()===value?'checked':''}><span><strong>${label}</strong><small>${help}</small></span></label>`).join('')}</fieldset>
+      <fieldset class="message-tone-options"><legend>${tr('Chọn âm báo', 'Choose alert sound')}</legend>${[['voice',tr('KimKim gọi bạn', 'KimKim voice'),tr('Giọng Khánh Vy tươi vui, hơi hoạt hình', 'A bright, playful Khánh Vy voice')],['chime',tr('Chuông dịu', 'Soft chime'),tr('Tiếng chuông nhẹ nhàng', 'A gentle chime')],['double',tr('Hai nốt vui', 'Two bright notes'),tr('Âm báo ngắn, tươi vui', 'Short bright tones')]].map(([value,label,help])=>`<label class="message-tone-choice"><input type="radio" name="messageTone" value="${value}" ${tone()===value?'checked':''}><span><strong>${label}</strong><small>${help}</small></span></label>`).join('')}</fieldset>
       <button type="button" class="btn btn-ghost message-sound-preview" id="messageSoundPreview">${tr('Nghe thử âm báo', 'Preview sound')}</button><p class="message-sound-feedback" id="messageSoundFeedback" role="status" aria-live="polite"></p>`;
     pane.querySelector('#messagePushSwitch').addEventListener('click', async event => {
       const button = event.currentTarget, label = pane.querySelector('#messagePushStatus');

@@ -1,0 +1,4 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),G=require('../frontend/storyGeometry.js');
+test('one finger translates and snaps to canvas center',()=>{assert.deepEqual(G.transform([{x:0,y:0}],[{x:10,y:10}],{x:.39,y:.39,scale:1,rotation:0},{width:100,height:100}),{x:.5,y:.5,scale:1,rotation:0});});
+test('two fingers resize and rotate around their midpoint',()=>{const r=G.transform([{x:0,y:0},{x:100,y:0}],[{x:0,y:0},{x:200,y:200}],{x:.5,y:.5,scale:1,rotation:0},{width:1000,height:1000});assert(Math.abs(r.scale-Math.sqrt(8))<.001);assert.equal(r.rotation,45);assert.equal(r.x,.55);assert.equal(r.y,.6);});
+test('off-screen drags and oversized gestures stay in safe bounds',()=>{const r=G.transform([{x:0,y:0},{x:1,y:0}],[{x:-1000,y:-1000},{x:1000,y:-1000}],{x:.5,y:.5,scale:1,rotation:0},{width:100,height:100});assert.equal(r.scale,3);assert.equal(r.y,.08);});

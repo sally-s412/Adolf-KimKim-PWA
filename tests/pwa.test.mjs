@@ -49,6 +49,47 @@ test('offline navigation returns the explanatory offline page', async () => {
   assert.equal(await (await result).text(),'offline fallback');
 });
 
+test('private message push shows a generic notification and opens its thread', async () => {
+  const listeners = new Map(), notices = [];
+  const page = {url:'https://example.test/',visibilityState:'hidden',focused:false,messages:[],postMessage(data){this.messages.push(data)},navigate:async url=>{page.url=url},focus:async()=>{}};
+  const self = {location:{href:'https://example.test/sw.js'},addEventListener:(name,fn)=>listeners.set(name,fn),clients:{matchAll:async()=>[page]},registration:{showNotification:async(title,options)=>notices.push({title,options})}};
+  const badgeStore = new Map(), badges = [];
+  self.navigator = {setAppBadge:async count=>badges.push(count)};
+  vm.runInNewContext(readFileSync('frontend/sw.js','utf8'),{self,URL,Response,caches:{open:async()=>({match:async key=>badgeStore.get(key),put:async(key,value)=>badgeStore.set(key,value)})},fetch:async()=>{}});
+  let work;
+  listeners.get('push')({data:{json:()=>({data:{type:'kimkim-message',threadId:'thread-1',messageId:'12345678901234567890',title:'Sally',body:'Bạn có tin nhắn mới'}})},waitUntil:promise=>{work=promise}});
+  await work;
+  assert.equal(notices.length,1);
+  assert.equal(page.messages[0].messageId,'12345678901234567890');
+  assert.equal(notices[0].options.body,'Bạn có tin nhắn mới');
+  assert.equal(notices[0].options.data.url,'https://example.test/#messages/thread-1');
+  assert.equal(badges.at(-1),1);
+  listeners.get('notificationclick')({notification:{data:notices[0].options.data,close(){}},waitUntil:promise=>{work=promise}});
+  await work;
+  assert.equal(page.url,'https://example.test/#messages/thread-1');
+});
+
+test('a waiting update blocks the app until activation and reloads after acceptance', async () => {
+  const html=readFileSync('frontend/index.html','utf8');
+  assert(html.includes('<script defer src="pwa-update.js?v=1"></script>'));
+  const elements=new Map(['appUpdateDialog','appUpdateTitle','appUpdateDescription','appUpdateStatus','appUpdateConfirm'].map(id=>[id,{open:false,disabled:false,textContent:'',listeners:{},addEventListener(name,fn){this.listeners[name]=fn},showModal(){this.open=true}}]));
+  const listeners={};
+  const waiting={messages:[],postMessage(value){this.messages.push(value)}};
+  const registration={waiting,addEventListener(name,fn){listeners['reg:'+name]=fn},update:async()=>{}};
+  let reloads=0;
+  const context={navigator:{onLine:true,serviceWorker:{controller:{},register:async()=>registration,addEventListener(name,fn){listeners['sw:'+name]=fn}}},window:{isSecureContext:true,location:{reload(){reloads++}},addEventListener(name,fn){listeners['window:'+name]=fn}},document:{documentElement:{lang:'vi'},hidden:false,getElementById:id=>elements.get(id),addEventListener(name,fn){listeners['doc:'+name]=fn}},setInterval(){},setTimeout(){}};
+  vm.runInNewContext(readFileSync('frontend/pwa-update.js','utf8'),context);
+  await listeners['window:load']();
+  const dialog=elements.get('appUpdateDialog'),button=elements.get('appUpdateConfirm');
+  assert.equal(dialog.open,true);
+  assert.equal(button.textContent,'Cập nhật ngay');
+  let prevented=false;dialog.listeners.cancel({preventDefault(){prevented=true}});assert.equal(prevented,true);
+  button.listeners.click();
+  assert.deepEqual(Array.from(waiting.messages, x=>x.type),['SKIP_WAITING']);
+  listeners['sw:controllerchange']();
+  assert.equal(reloads,1);
+});
+
 test('endpoint configuration respects the deployment and explicit user override', () => {
   const source=readFileSync('frontend/app.js','utf8');
   const section=source.slice(source.indexOf('function storedEndpoint'),source.indexOf('function getMeetingLang'));
@@ -70,12 +111,12 @@ test('deployment includes FINAL Figma shell, responsive theme and navigation',()
  assert(html.includes('href="design-system.css"'));
  assert(html.includes('src="layout.js"'));
  const css=readFileSync('frontend/design-system.css','utf8');
- assert(css.includes('#091e4c'));assert(css.includes('data-theme=light'));assert(css.includes('232px'));assert(readFileSync('frontend/layout.js','utf8').includes("menu.className='mobile-menu-btn'"));
+ assert(css.includes('--canvas:'));assert(css.includes('data-theme=light'));assert(css.includes('grid-template-columns:')); assert(readFileSync('frontend/layout.js','utf8').includes("menu.className='mobile-menu-btn'"));
 });
 
 test('Recording includes localized KimKim Meeting invite without robot icons',()=>{
  const html=readFileSync('frontend/index.html','utf8');
- assert(html.includes('KimKim Meeting'));assert(html.includes('Mời KimKim vào Google Meet'));assert(html.includes('Dán link Google Meet để mời KimKim vào họp'));
+ assert(html.includes('KimKim Meeting'));assert(html.includes('Mời KimKim vào Google Meet'));assert(html.includes('Dán link Google Meet của bạn hoặc người khác. Chủ phòng có thể cần duyệt KimKim vào họp.'));
  assert(!html.includes('🤖'));assert(!html.includes('Google Meet Bot (Adolf KimKim)'));
  for(const file of ['vi-vn.js','eng-en.js']){const s=readFileSync('frontend/localizations/'+file,'utf8');assert(s.includes('inviteKimkimMeet:'));assert(s.includes('kimkimMeetingDescription:'));}
 });

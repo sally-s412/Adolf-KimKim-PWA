@@ -26,7 +26,11 @@ function setLang(l){
   document.getElementById('btnEn').classList.toggle('active',l==='en');
   document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n; if(I18N[l][k]) el.innerHTML=I18N[l][k];});
   document.querySelectorAll('[data-i18n-ph]').forEach(el=>{const k=el.dataset.i18nPh; if(I18N[l][k]) el.placeholder=I18N[l][k];});
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>el.title=t(el.dataset.i18nTitle));
+  document.querySelectorAll('[data-i18n-aria]').forEach(el=>el.setAttribute('aria-label',t(el.dataset.i18nAria)));
   renderAll();
+  updateMeetingDetailLocale();
+  updateMeetingFormLocale();
   if(currentUser) updateUserUI(currentUser);
   if(typeof RecordingRefreshLang==='function') RecordingRefreshLang();
   document.dispatchEvent(new Event('akk:languagechange'));
@@ -43,7 +47,7 @@ function clearAuthErrors(){
 }
 function requireFirebase(){
   if(!firebaseReadyCheck()){
-    alert(t('needFirebaseConfig'));
+    notify(t('needFirebaseConfig'));
     return false;
   }
   return true;
@@ -85,7 +89,7 @@ async function sendPasswordReset(){
     document.getElementById('resetError').style.color='var(--green)';
     document.getElementById('resetError').textContent='Đã gửi email đặt lại mật khẩu. Hãy kiểm tra hộp thư.';
   }catch(err){
-    document.getElementById('resetError').style.color='#fca5a5';
+    document.getElementById('resetError').style.color='var(--color-danger)';
     document.getElementById('resetError').textContent=err.message;
   }
 }
@@ -113,11 +117,20 @@ function updateUserUI(user){
   const name=user.displayName || (user.email ? user.email.split('@')[0] : 'User');
   const initialsText=initials(name);
   applyAvatar(document.getElementById('sideAvatar'),user,initialsText);
+  if(window.KimKimShell) KimKimShell.updateAccount(user);
   applyAvatar(document.getElementById('profileAvatar'),user,initialsText);
+  if(typeof renderHome==='function') renderHome();
   const sideName=document.getElementById('sideUserName');
   const hero=document.querySelector('[data-i18n="heroTitle"]');
   if(sideName)sideName.textContent=name;
-  if(hero){hero.textContent=lang==='vi'?`Hi ${name}, chào mừng đến với Adolf KimKim 💙`:`Hi ${name}, Welcome to Adolf KimKim 💙`;}
+  if(hero){
+    const greeting=document.createElement('span');greeting.className='hero-greeting';greeting.textContent=`Hi ${name},`;
+    const welcome=document.createElement('span');welcome.className='hero-welcome';
+    const prefix=document.createElement('span');prefix.className='welcome-phrase';prefix.textContent=lang==='vi'?'chào mừng đến với':'Welcome to';
+    welcome.append(prefix,document.createTextNode(' '));
+    const brand=document.createElement('span');brand.className='brand-phrase';brand.textContent='Adolf KimKim 💙';welcome.append(brand);
+    hero.replaceChildren(greeting,document.createTextNode(' '),welcome);
+  }
   const nameInput=document.querySelector('#settingsAccount .field input');
   const emailInput=document.querySelectorAll('#settingsAccount .field input')[1];
   if(nameInput)nameInput.value=name;
@@ -131,9 +144,9 @@ async function saveProfileName(){
   if(!currentUser) return;
   const el=document.getElementById('profileNameInput');
   const newName=el ? el.value.trim() : '';
-  if(!newName){ alert(t('pleaseEnterName')); return; }
-  try{ await AuthService.updateProfileName(newName); updateUserUI(firebase.auth().currentUser); alert(t('savedMsg')); }
-  catch(err){ alert(err.message); }
+  if(!newName){ notify(t('pleaseEnterName')); return; }
+  try{ await AuthService.updateProfileName(newName); updateUserUI(firebase.auth().currentUser); notify(t('savedMsg')); }
+  catch(err){ notify(err.message); }
 }
 async function handleAvatarSelected(input){
   const file=input.files[0];
@@ -141,7 +154,8 @@ async function handleAvatarSelected(input){
   const statusEl=document.getElementById('avatarUploadStatus');
   if(statusEl) statusEl.textContent=t('avatarUploading');
   try{
-    await AvatarService.uploadAvatar(file);
+    const url=await AvatarService.uploadAvatar(file);
+    if(!url){if(statusEl)statusEl.textContent='';input.value='';return;}
     updateUserUI(firebase.auth().currentUser);
     if(statusEl) statusEl.textContent=t('avatarUploaded');
   }catch(err){
@@ -167,7 +181,7 @@ function logout(){
   currentUser=null;
   if(firebaseReadyCheck()){AuthService.signOut();return;}
   document.getElementById('app').classList.remove('active');
-  document.getElementById('authScreen').style.display='flex';
+  document.getElementById('authScreen').style.display='';
   showAuth('signin');
 }
 function initAuth(){
@@ -177,7 +191,7 @@ function initAuth(){
       detachListeners();
       currentUser=null;
       document.getElementById('app').classList.remove('active');
-      document.getElementById('authScreen').style.display='flex';
+      document.getElementById('authScreen').style.display='';
       showAuth('signin');
     }
   });
@@ -196,6 +210,7 @@ function closeMobileMenu(){
 function toggleAddNewMenu(e){
   if(e) e.stopPropagation();
   const m = document.getElementById('addNewMenu');
+  if(!m) return;
   m.classList.toggle('hidden');
   if(!m.classList.contains('hidden')){
     document.addEventListener('click', closeAddNewMenu, {once:true});
@@ -206,6 +221,7 @@ function closeAddNewMenu(){
   if(m) m.classList.add('hidden');
 }
 function showView(v,el){
+  if(v==='rules'){v='home';el=document.querySelector('[data-view=home]');}
   closeMobileMenu();
   if (v !== 'meetingDetail') {
     if (isMeetingRecording) stopMeetingRecording();
@@ -224,13 +240,21 @@ function showView(v,el){
   document.querySelectorAll('.view').forEach(x=>x.classList.add('hidden'));
   const target=document.getElementById('view-'+v);
   if(target) target.classList.remove('hidden');
+  if(v==='meetings') renderMeetingsTable();
   if(el){ document.querySelectorAll('.nav-item[data-view]').forEach(n=>n.classList.remove('active')); el.classList.add('active'); }
+  document.dispatchEvent(new CustomEvent('akk:viewchange',{detail:{view:v}}));
 }
-function showSettings(s,el){
-  ['account','meeting','ai','password'].forEach(k=>document.getElementById('settings'+k[0].toUpperCase()+k.slice(1)).classList.add('hidden'));
-  document.getElementById('settings'+s[0].toUpperCase()+s.slice(1)).classList.remove('hidden');
-  el.parentNode.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  el.classList.add('active');
+function showSettings(section, element){
+  const ids={account:'settingsAccount',meeting:'settingsMeeting',ai:'settingsAI',notifications:'settingsNotifications',password:'settingsPassword'};
+  if(!ids[section]) return;
+  for(const [key,id] of Object.entries(ids)) document.getElementById(id)?.classList.toggle('hidden',key!==section);
+  for(const tab of document.querySelectorAll('.settings-tabs [data-s]')){
+    const selected=tab.dataset.s===section;
+    tab.classList.toggle('active',selected);tab.setAttribute('aria-selected',String(selected));
+  }
+}
+function toggleSettingSwitch(button){
+  button.classList.toggle('on');button.setAttribute('aria-checked',String(button.classList.contains('on')));
 }
 
 /* ---------------- Data & render — all reads/writes go through the *Service layer ---------------- */
@@ -253,7 +277,7 @@ let isMeetingRecording = false;
 let sttWs = null, audioCtx = null, processor = null, micStream = null;
 let recordingTimer = null, recordingSeconds = 0;
 let livePartialText = "";
-let livePartialSpeaker = "Sally";
+let livePartialSpeaker = "UNKNOWN";
 let lastFinalText = "";
 
 function escapeHtml(text) {
@@ -287,7 +311,8 @@ function loadUserSettings(){
     if(styleSel) styleSel.value = s.speechStyle==='casual' ? I18N[lang].styleCasual : I18N[lang].styleFormal;
     const aiToggle=document.querySelector('#settingsAI .switch');
     if(aiToggle) aiToggle.classList.toggle('on', !!s.vocabDetect);
-  });
+    document.querySelectorAll('.settings-pane .switch').forEach(button=>button.setAttribute('aria-checked',String(button.classList.contains('on'))));
+  }).catch(err=>notify(err.message));
 }
 function saveMeetingSettings(){
   const langSel=document.querySelector('#settingsMeeting select');
@@ -296,7 +321,7 @@ function saveMeetingSettings(){
     meetingLang: langSel && langSel.value==='English' ? 'en' : 'vi',
     autoJoin: toggles[0] ? toggles[0].classList.contains('on') : true,
     autoRecord: toggles[1] ? toggles[1].classList.contains('on') : false
-  }).then(()=>alert(t('savedMsg')));
+  }).then(()=>notify(t('savedMsg'))).catch(err=>notify(err.message));
 }
 function saveAISettings(){
   const styleSel=document.querySelector('#settingsAI select');
@@ -304,30 +329,30 @@ function saveAISettings(){
   SettingsService.saveAISettings({
     speechStyle: styleSel && styleSel.value===I18N[lang].styleCasual ? 'casual' : 'formal',
     vocabDetect: aiToggle ? aiToggle.classList.contains('on') : true
-  }).then(()=>alert(t('savedMsg')));
+  }).then(()=>notify(t('savedMsg'))).catch(err=>notify(err.message));
 }
 async function saveAccountSettings(){
   if(!currentUser) return;
   const nameInput=document.querySelector('#settingsAccount .field input');
   const newName=nameInput ? nameInput.value.trim() : '';
-  if(!newName) return;
-  try{ await AuthService.updateProfileName(newName); updateUserUI(currentUser); alert(t('savedMsg')); }
-  catch(err){ alert(err.message); }
+  if(!newName){notify(t('pleaseEnterName'));return;}
+  try{ await AuthService.updateProfileName(newName); updateUserUI(currentUser); notify(t('savedMsg')); }
+  catch(err){ notify(err.message); }
 }
 async function updatePasswordSettings(){
   if(!currentUser) return;
   const inputs=document.querySelectorAll('#settingsPassword input[type=password]');
   const curPw=inputs[0] ? inputs[0].value : '';
   const newPw=inputs[1] ? inputs[1].value : '';
-  if(!curPw || !newPw){alert(t('pleaseEnterBothPw'));return;}
-  try{ await AuthService.changePassword(curPw,newPw); alert(t('pwUpdatedMsg')); inputs.forEach(i=>i.value=''); }
-  catch(err){ alert(err.message); }
+  if(!curPw || !newPw){notify(t('pleaseEnterBothPw'));return;}
+  try{ await AuthService.changePassword(curPw,newPw); notify(t('pwUpdatedMsg')); inputs.forEach(i=>i.value=''); }
+  catch(err){ notify(err.message); }
 }
 async function deleteAccount(){
   if(!currentUser) return;
-  if(!confirm(t('confirmDeleteAccount'))) return;
-  try{ await AuthService.deleteAccount(); alert(t('accountDeletedMsg')); }
-  catch(err){ alert(t('reauthRequiredMsg')+err.message); }
+  if(!await confirmAction(t('confirmDeleteAccount'))) return;
+  try{ await AuthService.deleteAccount(); notify(t('accountDeletedMsg')); }
+  catch(err){ notify(t('reauthRequiredMsg')+err.message); }
 }
 
 function loadPlan(){
@@ -393,7 +418,7 @@ async function submitCreateMeeting(){
       }
     } else {
       const status=(meetUrl && inviteKimkim) ? 'progress' : (document.getElementById('view-createMeeting').dataset.status||'processing');
-      const id=await MeetingService.createMeeting({title,date,time,participants,meetUrl,description,status,inviteKimkim});
+      const id=await MeetingService.createMeeting({title,date,time,participants,meetUrl,description,status,inviteKimkim,source:{kind:'manual',format:'unknown'}});
       openMeeting(id);
       if(meetUrl && inviteKimkim){
         startMeetBotJob(meetUrl, title, id);
@@ -403,9 +428,23 @@ async function submitCreateMeeting(){
 }
 async function deleteMeetingHandler(id){
   if(!id) return;
-  if(!confirm(t('confirmDeleteMeeting'))) return;
+  if(!await confirmAction(t('confirmDeleteMeeting'))) return;
   try{ await MeetingService.deleteMeeting(id); showView('meetings',document.querySelector('[data-view=meetings]')); }
-  catch(err){ alert(err.message); }
+  catch(err){ notify(err.message); }
+}
+function meetingSystemMessageKey(text){
+  const value=String(text||'').trim().replace(/\s+/g,' ');
+  const unavailable=new Set(['Xin lỗi, không thể kết nối tới mô hình AI lúc này.','Sorry, cannot connect to the AI model right now.','Sorry, unable to connect to the AI model at the moment.','The AI service is temporarily unavailable. Please try again later.','Dịch vụ AI đang gián đoạn. Vui lòng thử lại sau.']);
+  return (unavailable.has(value)||[I18N.vi?.detailAIUnavailable,I18N.en?.detailAIUnavailable].includes(value))?'detailAIUnavailable':null;
+}
+function meetingAgentContent(text){
+  const key=meetingSystemMessageKey(text);
+  return key?'<span data-i18n="'+key+'">'+escapeHtml(t(key))+'</span>':formatMarkdownToHtml(text||'');
+}
+function updateMeetingFormLocale(){
+  const title=document.getElementById('cmFormTitle'),button=document.getElementById('cmSubmitBtn');
+  if(title)title.textContent=t(editingMeetingId?'editMeetingTitle':'createMeetingTitle');
+  if(button)button.textContent=t(editingMeetingId?'saveBtn':'createBtn');
 }
 let mdChatUnsub=null, mdJobsUnsub=null;
 function openMeeting(id){
@@ -414,8 +453,7 @@ function openMeeting(id){
   currentSummaryData=null;
   segments = (currentMeetingObj && currentMeetingObj.transcript && currentMeetingObj.transcript.length) ? [...currentMeetingObj.transcript] : [];
   const jobsEl=document.getElementById('mdGenerationJobs');
-  if (jobsEl) jobsEl.textContent = '';
-  meetingSummaryTranslated=false;
+  if (jobsEl) {jobsEl.textContent = '';delete jobsEl.dataset.i18n;}
   showView('meetingDetail');
   showMeetingTab('transcript');
   renderMeetingDetail();
@@ -441,7 +479,7 @@ function openMeeting(id){
     body.innerHTML = '';
     (rows || []).forEach(m => {
       const cls = m.role === 'user' ? 'user' : 'agent';
-      const content = cls === 'agent' ? formatMarkdownToHtml(m.text || '') : escapeHtml(m.text || '');
+      const content = cls === 'agent' ? meetingAgentContent(m.text || '') : escapeHtml(m.text || '');
       body.insertAdjacentHTML('beforeend', `<div class="bubble ${cls}">${content}</div>`);
     });
     body.scrollTop = body.scrollHeight;
@@ -459,13 +497,12 @@ function openMeeting(id){
     } else if (currentMeetingObj && currentMeetingObj.chatHistory && currentMeetingObj.chatHistory.length) {
       renderChatRows(currentMeetingObj.chatHistory);
     }
+  }, () => {
+    notify(lang === 'vi' ? 'Không thể đọc lịch sử chat của cuộc họp. Vui lòng kiểm tra quyền Firebase.' : 'Meeting chat history could not be loaded. Please check Firebase permissions.');
   });
-
-  mdJobsUnsub = AiService.watchGenerationJobs(id, rows=>{
-    const el=document.getElementById('mdGenerationJobs');
-    if(!el) return;
-    el.innerHTML = rows.length ? rows.map(j=>`<div>• ${j.kind} — ${j.status==='queued'?t('genQueued'):j.status} ${j.status==='queued'?`<span style="opacity:.7">${t('genComingSoon')}</span>`:''}</div>`).join('') : '';
-  });
+  // Generation buttons call the API directly and render their own status.
+  // The unused prototype generationJobs collection is not part of that flow.
+  mdJobsUnsub = null;
 }
 function showMeetingTab(which){
   document.getElementById('mdTabTranscriptBtn').classList.toggle('active', which==='transcript');
@@ -473,6 +510,28 @@ function showMeetingTab(which){
   document.getElementById('mdTranscriptPane').classList.toggle('hidden', which!=='transcript');
   document.getElementById('mdChatPane').classList.toggle('hidden', which!=='chat');
 }
+const analysisInFlight = new Set();
+async function runTranscriptAnalysis(kind, transcript, message, onProgress) {
+  const uid=firebase.auth().currentUser?.uid;
+  const response=await apiFetch(getApiUrl()+'/api/analysis-jobs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind,transcript,...(message?{message}:{})})});
+  const started=await response.json();
+  if(!/^[a-f0-9]{32}$/.test(started.job_id||''))throw Error('Invalid analysis job.');
+  const labels={queued:['Đang chờ lượt AI…','Waiting for AI…'],preparing:['Đang chuẩn bị nội dung…','Preparing content…'],summarizing:['Đang tóm tắt từng phần','Summarizing sections'],merging:['Đang tổng hợp kết quả…','Combining summaries…'],selecting_context:['Đang tìm nội dung liên quan…','Finding relevant content…'],answering:['KimKim đang trả lời…','KimKim is answering…'],rate_wait:['Đang chờ hạn mức AI để tiếp tục…','Waiting for AI quota to continue…']};
+  const deadline=Date.now()+30*60*1000;
+  while(Date.now()<deadline){
+    if(firebase.auth().currentUser?.uid!==uid)throw Error(lang==='vi'?'Tài khoản đã thay đổi.':'Account changed.');
+    const res=await apiFetch(getApiUrl()+'/api/analysis-jobs/'+started.job_id);
+    const job=await res.json();
+    if(firebase.auth().currentUser?.uid!==uid)throw Error(lang==='vi'?'Tài khoản đã thay đổi.':'Account changed.');
+    if(job.status==='done')return job.result;
+    if(job.status==='error')throw Error(job.message||(lang==='vi'?'Không xử lý được nội dung.':'Analysis failed.'));
+    const p=job.progress||{},label=labels[p.phase]||labels.queued;
+    onProgress?.(label[lang==='en'?1:0]+(p.total?' ('+p.done+'/'+p.total+')':''));
+    await new Promise(resolve=>setTimeout(resolve,2000));
+  }
+  throw Error(lang==='vi'?'Nội dung cần thêm thời gian xử lý. Vui lòng thử lại; transcript vẫn được lưu.':'Analysis needs more time. Please retry; your transcript remains saved.');
+}
+
 async function sendMeetingChatMsg(){
   const input = document.getElementById('mdChatInput');
   const text = input ? input.value.trim() : '';
@@ -480,65 +539,59 @@ async function sendMeetingChatMsg(){
   const body = document.getElementById('mdChatBody');
   if (!body) return;
 
+  const sourceId=currentMeetingId, sourceObj=currentMeetingObj || meetings.find(m=>m.id===sourceId) || {id:sourceId};
+  const lock='chat:'+sourceId;if(analysisInFlight.has(lock)){notify(lang==='vi'?'KimKim đang xử lý câu hỏi trước.':'KimKim is processing the previous question.');return;}analysisInFlight.add(lock);
+  const transcript=segments.map(s=>({...s}));
   // Render user bubble immediately
   body.insertAdjacentHTML('beforeend', `<div class="bubble user">${escapeHtml(text)}</div>`);
   input.value = '';
 
   // Temporary thinking indicator
   const thinkingId = 'thinking_' + Date.now();
-  body.insertAdjacentHTML('beforeend', `<div class="bubble agent" id="${thinkingId}" style="opacity:0.7;font-style:italic;">⏳ Adolf KimKim đang suy nghĩ...</div>`);
+  body.insertAdjacentHTML('beforeend', `<div class="bubble agent" id="${thinkingId}" style="opacity:0.7;font-style:italic;">${escapeHtml(t('detailThinking'))}</div>`);
   body.scrollTop = body.scrollHeight;
 
-  // Initialize chatHistory array on currentMeetingObj
-  if (!currentMeetingObj) {
-    currentMeetingObj = meetings.find(m => m.id === currentMeetingId) || { id: currentMeetingId };
+  if (!Array.isArray(sourceObj.chatHistory)) {
+    sourceObj.chatHistory = [];
   }
-  if (!Array.isArray(currentMeetingObj.chatHistory)) {
-    currentMeetingObj.chatHistory = [];
-  }
-  currentMeetingObj.chatHistory.push({ role: 'user', text });
+  sourceObj.chatHistory.push({ role: 'user', text });
 
   // Persist user message to Firestore subcollection in background
   if (AiService.addMeetingChatMessage) {
-    AiService.addMeetingChatMessage(currentMeetingId, 'user', text).catch(e => console.warn("addMeetingChatMessage user error:", e));
+    AiService.addMeetingChatMessage(sourceId, 'user', text).catch(e => console.warn("addMeetingChatMessage user error:", e));
   }
 
   try {
-    const res = await apiFetch(`${getApiUrl()}/api/chat`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, transcript: segments })
-    });
-    const data = await res.json();
-    const reply = data.status === 'ok' ? data.reply : (data.message || 'Xin lỗi, không có phản hồi.');
+    const data = await runTranscriptAnalysis('chat',transcript,text,msg=>{const thinking=document.getElementById(thinkingId);if(thinking)thinking.textContent=msg;});
+    const reply = data.status === 'ok' ? data.reply : (data.message || t('detailNoReply'));
 
     // Remove thinking indicator
     const thinkingEl = document.getElementById(thinkingId);
     if (thinkingEl) thinkingEl.remove();
 
     // Render agent reply
-    body.insertAdjacentHTML('beforeend', `<div class="bubble agent">${formatMarkdownToHtml(reply)}</div>`);
+    body.insertAdjacentHTML('beforeend', `<div class="bubble agent">${meetingAgentContent(reply)}</div>`);
     body.scrollTop = body.scrollHeight;
 
     // Update local chatHistory
-    currentMeetingObj.chatHistory.push({ role: 'agent', text: reply });
+    sourceObj.chatHistory.push({ role: 'agent', text: reply });
 
     // Persist agent message to Firestore subcollection
     if (AiService.addMeetingChatMessage) {
-      AiService.addMeetingChatMessage(currentMeetingId, 'agent', reply).catch(e => console.warn("addMeetingChatMessage agent error:", e));
+      AiService.addMeetingChatMessage(sourceId, 'agent', reply).catch(e => console.warn("addMeetingChatMessage agent error:", e));
     }
 
     // Persist full chatHistory to meeting document in Firestore
-    MeetingService.updateMeeting(currentMeetingId, {
-      chatHistory: currentMeetingObj.chatHistory
+    MeetingService.updateMeeting(sourceId, {
+      chatHistory: sourceObj.chatHistory
     }).catch(e => console.warn("MeetingService.updateMeeting chatHistory error:", e));
 
   } catch (err) {
     const thinkingEl = document.getElementById(thinkingId);
     if (thinkingEl) thinkingEl.remove();
-    body.insertAdjacentHTML('beforeend', `<div class="bubble agent" style="color:var(--red);">Lỗi kết nối tới AI backend (${err.message}).</div>`);
+    body.insertAdjacentHTML('beforeend', `<div class="bubble agent" style="color:var(--red);">${meetingAgentContent(safeServiceMessage(err.message))}</div>`);
     body.scrollTop = body.scrollHeight;
-  }
+  } finally {analysisInFlight.delete(lock);}
 }
 async function requestGenerationHandler(kind){
   if(!currentMeetingId) return;
@@ -550,68 +603,89 @@ async function requestGenerationHandler(kind){
   const jobsEl=document.getElementById('mdGenerationJobs');
 
   if(kind==='mindmap'){
-    if(jobsEl) jobsEl.textContent='⏳ Đang tạo sơ đồ tư duy...';
+    if(!(segments.length?segments:m?.transcript||[]).some(s=>s.text?.trim())){notify(t('detailTranscriptNeeded'));return;}
+    if(jobsEl){jobsEl.dataset.i18n='detailMindmapWorking';jobsEl.textContent=t('detailMindmapWorking');}
     try{
       const res=await apiFetch(`${getApiUrl()}/api/mindmap/preview`,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({transcript:(segments.length?segments:(m&&m.transcript)||[])})});
       const html=await res.text();
-      const win=window.open('','_blank'); win.document.write(html); win.document.close();
-      if(jobsEl) jobsEl.textContent='✅ Sơ đồ tư duy đã mở trong tab mới.';
-    }catch(err){ if(jobsEl) jobsEl.textContent='❌ Lỗi: '+err.message; }
+      const win=window.open('','_blank'); if(!win) throw new Error(t('detailPopupBlocked')); win.document.write(html); win.document.close();
+      if(jobsEl){jobsEl.dataset.i18n='detailMindmapReady';jobsEl.textContent=t('detailMindmapReady');}
+    }catch(err){ if(jobsEl){delete jobsEl.dataset.i18n;jobsEl.textContent=t('detailError')+safeServiceMessage(err.message);} }
 
   }else if(kind==='slides'){
-    if(!summary){ alert('Vui lòng tóm tắt cuộc họp trước.'); return; }
-    if(jobsEl) jobsEl.textContent='⏳ Đang tạo PowerPoint...';
+    if(!summary){ notify(t('detailSummaryNeeded')); return; }
+    if(jobsEl){jobsEl.dataset.i18n='detailSlidesWorking';jobsEl.textContent=t('detailSlidesWorking');}
     try{
       const res=await apiFetch(`${getApiUrl()}/api/powerpoint`,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({title,key_points:keyPoints,summary})});
+      if(!res.headers.get('content-type')?.includes(kind==='slides'?'application/vnd.openxmlformats-officedocument.presentationml.presentation':'image/png')) throw new Error(t('detailInvalidExport'));
       const blob=await res.blob();
       const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:title.slice(0,40)+'.pptx'});
       a.click(); URL.revokeObjectURL(a.href);
-      if(jobsEl) jobsEl.textContent='✅ PowerPoint đã tải xuống.';
-    }catch(err){ if(jobsEl) jobsEl.textContent='❌ Lỗi: '+err.message; }
+      if(jobsEl){jobsEl.dataset.i18n='detailSlidesReady';jobsEl.textContent=t('detailSlidesReady');}
+    }catch(err){ if(jobsEl){delete jobsEl.dataset.i18n;jobsEl.textContent=t('detailError')+safeServiceMessage(err.message);} }
 
   }else if(kind==='image'){
-    if(!summary){ alert('Vui lòng tóm tắt cuộc họp trước.'); return; }
-    if(jobsEl) jobsEl.textContent='⏳ Đang tạo hình ảnh...';
+    if(!summary){ notify(t('detailSummaryNeeded')); return; }
+    if(jobsEl){jobsEl.dataset.i18n='detailImageWorking';jobsEl.textContent=t('detailImageWorking');}
     try{
       const res=await apiFetch(`${getApiUrl()}/api/visualization`,{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({title,key_points:keyPoints,summary})});
+      if(!res.headers.get('content-type')?.includes(kind==='slides'?'application/vnd.openxmlformats-officedocument.presentationml.presentation':'image/png')) throw new Error(t('detailInvalidExport'));
       const blob=await res.blob();
       const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:title.slice(0,40)+'.png'});
       a.click(); URL.revokeObjectURL(a.href);
-      if(jobsEl) jobsEl.textContent='✅ Hình ảnh đã tải xuống.';
-    }catch(err){ if(jobsEl) jobsEl.textContent='❌ Lỗi: '+err.message; }
+      if(jobsEl){jobsEl.dataset.i18n='detailImageReady';jobsEl.textContent=t('detailImageReady');}
+    }catch(err){ if(jobsEl){delete jobsEl.dataset.i18n;jobsEl.textContent=t('detailError')+safeServiceMessage(err.message);} }
   }
 }
-let meetingSummaryTranslated=false;
-async function toggleMeetingSummaryTranslation(){
-  const el=document.getElementById('mdSummary');
-  const btn=document.getElementById('mdTranslateBtn');
-  const m=currentMeetingObj;
-  if(!el||!m) return;
-  if(!meetingSummaryTranslated){
-    btn.textContent=t('translating');
-    el.textContent = await TranslationService.translateText(m.summary || I18N[lang].aiProcessing, 'en');
-    btn.textContent=t('translateBtnBack');
-    meetingSummaryTranslated=true;
-  } else {
-    el.textContent = m.summary ? m.summary : I18N[lang].aiProcessing;
-    btn.textContent=t('translateBtn');
-    meetingSummaryTranslated=false;
-  }
+
+function summaryFields(result) {
+  const summary = typeof result.summary === 'string' ? result.summary.trim() : '';
+  const keyPoints = result.key_points ?? result.keyPoints;
+  const actionItems = result.action_items ?? result.actionItems;
+  return {
+    summary,
+    keyPoints: Array.isArray(keyPoints) ? keyPoints.filter(item => typeof item === 'string' && item.trim()) : [],
+    actionItems: Array.isArray(actionItems)
+      ? actionItems.filter(item => typeof item === 'string' && item.trim())
+      : extractActionItems(summary)
+  };
 }
+
 function extractActionItems(summary) {
   if (!summary) return [];
-  const match = summary.match(/## Action Items\s*\n([\s\S]*?)(?:\n##|$)/i);
+  const match = summary.match(/#{2,6}\s+(?:Action Items|Việc cần làm)\s*\n([\s\S]*?)(?:\n##|$)/i);
   if (!match) return [];
   return match[1].split('\n')
     .map(l => l.replace(/^[\d+.\-*]\s*/, '').trim())
     .filter(l => l && !l.toLowerCase().includes('none explicitly stated') && !l.startsWith('#'));
 }
 
+function updateMeetingDetailLocale(){
+  const m=currentMeetingObj;
+  const contentTab=document.getElementById('mdTabTranscriptBtn');
+  if(contentTab) contentTab.textContent=m?.document ? (lang === 'vi' ? 'Văn bản trích xuất' : 'Extracted text') : t('detailTranscriptTab');
+  const button=document.getElementById('btnQuickSummarize');
+  if(button&&!analysisInFlight.has('summary:'+currentMeetingId)) button.textContent=t('detailAskSummary');
+  if(m){
+    if(!m.participants?.length){const n=document.getElementById('mdParticipants');if(n)n.textContent=t('noParticipants');}
+    if(!m.keyPoints?.length){const n=document.getElementById('mdKeyPoints');if(n)n.textContent=t('detailNoResult');}
+    if(!m.summary){const n=document.getElementById('mdSummary');if(n)n.textContent=t('detailNoResult');}
+    if(!(m.actionItems?.length||extractActionItems(m.summary).length)){const n=document.getElementById('mdActionItems');if(n)n.textContent=t('detailNoResult');}
+  }
+}
+
 function renderMeetingDetail(){
   const m=currentMeetingObj;
+  const isDocument = !!m?.document;
+  document.querySelector('#view-meetingDetail .video-controls')?.classList.toggle('hidden', isDocument);
+  document.getElementById('mdParticipants')?.closest('.card')?.classList.toggle('hidden', isDocument);
+  const contentTab = document.getElementById('mdTabTranscriptBtn');
+  if(contentTab) contentTab.textContent=isDocument ? (lang === 'vi' ? 'Văn bản trích xuất' : 'Extracted text') : t('detailTranscriptTab');
+  const summaryButton = document.getElementById('btnQuickSummarize');
+  if(summaryButton&&!analysisInFlight.has('summary:'+currentMeetingId)) summaryButton.textContent=t('detailAskSummary');
   const titleEl = document.querySelector('#view-meetingDetail .view-title');
   if (titleEl) titleEl.textContent = m ? m.title : '';
   const subEl = document.querySelector('#view-meetingDetail .view-sub');
@@ -620,9 +694,11 @@ function renderMeetingDetail(){
     segments = (m && m.transcript && m.transcript.length) ? [...m.transcript] : [];
   }
 
+  const summaryAction = document.getElementById('btnQuickSummarize');
+  summaryAction?.classList.toggle('hidden', Boolean(m?.summary?.trim()));
   const partEl=document.getElementById('mdParticipants');
   if(partEl){
-    const list=(m && m.participants) || [];
+    const list = cleanMeetingParticipants(m?.participants);
     partEl.innerHTML = list.length ? list.map(p=>`<span class="tag">${escapeHtml(p)}</span>`).join('') :
       `<div style="color:var(--text-2);font-size:12px;">${I18N[lang].noParticipants}</div>`;
   }
@@ -630,11 +706,11 @@ function renderMeetingDetail(){
   if(kpEl){
     const kp=(m && m.keyPoints) || [];
     kpEl.innerHTML = kp.length ? kp.map(k=>`<span class="tag">${escapeHtml(k)}</span>`).join('') :
-      `<div style="color:var(--text-2);font-size:12px;">${I18N[lang].aiProcessing}</div>`;
+      `<div style="color:var(--text-2);font-size:12px;">${t('detailNoResult')}</div>`;
   }
   const sumEl=document.getElementById('mdSummary');
   if(sumEl) {
-    sumEl.innerHTML = (m && m.summary) ? formatMarkdownToHtml(m.summary) : I18N[lang].aiProcessing;
+    sumEl.innerHTML = (m && m.summary) ? formatMarkdownToHtml(m.summary) : t('detailNoResult');
   }
   const aiEl=document.getElementById('mdActionItems');
   if(aiEl){
@@ -643,18 +719,19 @@ function renderMeetingDetail(){
       items = extractActionItems(m.summary);
     }
     aiEl.innerHTML = items.length ? '<ul style="margin:0;padding-left:18px;">'+items.map(i=>`<li style="font-size:13px;">${escapeHtml(i)}</li>`).join('')+'</ul>' :
-      `<div style="color:var(--text-2);font-size:12px;">${I18N[lang].aiProcessing}</div>`;
+      `<div style="color:var(--text-2);font-size:12px;">${t('detailNoResult')}</div>`;
   }
   const notesInput=document.getElementById('mdNotesInput');
   if(notesInput) notesInput.value = (m && m.notes) || '';
   const barEl=document.getElementById('mdMeetBotBar');
   if(barEl) barEl.classList.toggle('hidden', !(activeMeetBot && (!activeMeetBot.meetingId || activeMeetBot.meetingId===currentMeetingId)));
   renderTranscriptAndStats();
+  updateMeetingDetailLocale();
 }
 function saveMeetingNotes(){
   if(!currentMeetingId) return;
   const val=document.getElementById('mdNotesInput').value;
-  MeetingService.updateMeeting(currentMeetingId, {notes:val}).catch(err=>alert(err.message));
+  MeetingService.updateMeeting(currentMeetingId, {notes:val}).catch(err=>notify(err.message));
 }
 function filterMeetings(status,btn){
   activeMeetingFilter=status;
@@ -667,19 +744,75 @@ function onGlobalSearch(v){
   renderMeetingsTable();
   renderAll();
 }
+const MEETING_FILE_FORMATS=['pdf','docx','mp3','mp4','m4a','wav','webm','aac','flac','ogg','mov','mkv'];
+function meetingFileInfo(m){
+  const source=m.source||{};
+  const name=source.fileName||m.document?.name||'';
+  const extension=/\.([a-z0-9]+)$/i.exec(name)?.[1]?.toLowerCase();
+  const candidate=String(source.format||m.document?.kind||extension||'').toLowerCase();
+  const format=MEETING_FILE_FORMATS.includes(candidate)?candidate:'unknown';
+  const kinds=['upload','recorder','kimkim_meeting','manual'];
+  const kind=kinds.includes(source.kind)?source.kind:m.document?'upload':'unknown';
+  return {format,kind};
+}
+function sourceMetadata(kind,file){
+  const extension=/\.([a-z0-9]+)$/i.exec(file?.name||'')?.[1]?.toLowerCase();
+  const mime=(file?.type||'').split(';')[0].toLowerCase();
+  const types={'audio/mpeg':'mp3','audio/mp4':'m4a','video/mp4':'mp4','audio/webm':'webm','video/webm':'webm','audio/wav':'wav','audio/x-wav':'wav','application/pdf':'pdf'};
+  const candidate=extension||types[mime]||'unknown';
+  return {kind,format:MEETING_FILE_FORMATS.includes(candidate)?candidate:'unknown',fileName:file?.name||'',mimeType:mime};
+}
+const meetingSourceKey={upload:'filesUpload',recorder:'filesRecorder',kimkim_meeting:'filesMeeting',manual:'filesManual',unknown:'filesUnknown'};
+let meetingFormatFilter='all',meetingSourceFilter='all';
+function setMeetingFileFilter(axis,value){
+  if(axis==='format')meetingFormatFilter=value;
+  if(axis==='source')meetingSourceFilter=value;
+  renderMeetingsTable();
+}
 function visibleMeetings(){
   return meetings
     .filter(m=>activeMeetingFilter==='all' || m.status===activeMeetingFilter)
-    .filter(m=>!searchQuery || (m.title||'').toLowerCase().includes(searchQuery));
+    .filter(m=>!searchQuery || (m.title||'').toLowerCase().includes(searchQuery))
+    .filter(m=>meetingFormatFilter==='all'||meetingFileInfo(m).format===meetingFormatFilter)
+    .filter(m=>meetingSourceFilter==='all'||meetingFileInfo(m).kind===meetingSourceFilter);
 }
 
 /* ---- Notes ---- */
-async function createNote(){
-  const title=prompt(t('promptNewNoteTitle'),t('defaultNoteTitle'));
-  if(!title) return;
-  try{ currentNoteId = await NoteService.createNote(title); }
-  catch(err){ alert(err.message); }
+function createNote(){
+  if(window.NotesStudio?.create) return NotesStudio.create();
+  showView('notes',document.querySelector('[data-view=notes]'));
+  document.getElementById('noteComposer').classList.remove('hidden');
+  document.getElementById('newNoteTitle').focus();
 }
+function cancelNewNote(){
+  const form=document.getElementById('noteComposer');form.reset();delete form.dataset.pendingId;form.classList.add('hidden');
+  document.getElementById('newNoteError').textContent='';
+  document.querySelector('#view-notes [onclick="createNote()"]')?.focus();
+}
+async function submitNewNote(event){
+  event.preventDefault();
+  const title=document.getElementById('newNoteTitle').value.trim();
+  const content=document.getElementById('newNoteContent').value;
+  const error=document.getElementById('newNoteError'),button=document.getElementById('newNoteSubmit');
+  if(!title){error.textContent=t('uiNoteTitleRequired');document.getElementById('newNoteTitle').focus();return;}
+  error.textContent='';button.disabled=true;
+  document.querySelector('#noteComposer [type=button]').disabled=true;
+  try{
+    // Keep an already-created id for retry if saving the body fails.
+    const form=document.getElementById('noteComposer');
+    const id=form.dataset.pendingId || await NoteService.createNote(title);
+    if(!id) throw new Error(t('uiNoteSaveFailed'));
+    form.dataset.pendingId=id;
+    await NoteService.updateNote(id,{title,content});
+    currentNoteId=id;
+    const index=notesArr.findIndex(n=>n.id===id);
+    if(index<0) notesArr.unshift({id,title,content});else Object.assign(notesArr[index],{title,content});
+    delete form.dataset.pendingId;
+    cancelNewNote();openNote(id);notify(t('uiNoteSaved'));
+  }catch(err){error.textContent=err.message;}
+  finally{button.disabled=false;document.querySelector('#noteComposer [type=button]').disabled=false;}
+}
+
 function openNote(id){ currentNoteId=id; noteTranslated=false; renderAll(); }
 let noteTranslated=false;
 async function toggleNoteTranslation(){
@@ -702,19 +835,23 @@ async function toggleNoteTranslation(){
   }
 }
 function saveCurrentNote(){
+  if(window.NotesStudio) return NotesStudio.save();
   if(!currentNoteId) return;
   const editor=document.querySelector('#view-notes .editor');
   const h1=editor.querySelector('h1'); const p=editor.querySelector('p');
+  const status=document.getElementById('noteSaveStatus');
+  if(status) status.textContent=t('uiSaving');
   NoteService.updateNote(currentNoteId, { title: h1 ? h1.textContent : '', content: p ? p.textContent : '' })
-    .catch(err=>alert(err.message));
+    .then(()=>{if(status) status.textContent=t('savedMsg');})
+    .catch(err=>{if(status) status.textContent=err.message;});
 }
 async function deleteNoteHandler(){
   if(!currentNoteId) return;
-  if(!confirm(t('confirmDeleteNote'))) return;
+  if(!await confirmAction(t('confirmDeleteNote'))) return;
   try{
     await NoteService.deleteNote(currentNoteId);
     currentNoteId = notesArr.find(n=>n.id!==currentNoteId) ? notesArr.find(n=>n.id!==currentNoteId).id : null;
-  }catch(err){ alert(err.message); }
+  }catch(err){ notify(err.message); }
 }
 
 /* ---- Team ---- */
@@ -733,25 +870,25 @@ async function submitInviteMember(){
   try{
     await TeamService.inviteMember(email);
     closeInviteMemberModal();
-    alert(t('inviteSentMsg'));
+    notify(t('inviteSentMsg'));
   }catch(err){ errEl.textContent=err.message; }
 }
 async function inviteMember(){ openInviteMemberModal(); }
 async function removeMemberHandler(id){
-  if(!confirm(t('confirmRemoveMember'))) return;
-  try{ await TeamService.removeMember(id); } catch(err){ alert(err.message); }
+  if(!await confirmAction(t('confirmRemoveMember'))) return;
+  try{ await TeamService.removeMember(id); } catch(err){ notify(err.message); }
 }
 async function changeRoleHandler(id,role){
-  try{ await TeamService.changeRole(id,role); } catch(err){ alert(err.message); }
+  try{ await TeamService.changeRole(id,role); } catch(err){ notify(err.message); }
 }
 
 /* ---- Uploads (uploadApi abstraction — mock adapter today, real REST later) ---- */
 function selectUploadFile(){
   document.getElementById('hiddenFileInput').click();
 }
-async function addProcessedMeeting(title, transcript, durSeconds) {
+async function addProcessedMeeting(title, transcript, durSeconds, documentInfo = null, sourceInfo = null) {
   const now = new Date();
-  const durFormatted = durSeconds ? fmt(durSeconds) : '00:30';
+  const durFormatted = documentInfo ? '—' : (durSeconds ? fmt(durSeconds) : '00:30');
   const meetingData = {
     title: title || 'Cuộc họp ' + now.toLocaleString('vi-VN'),
     date: now.toISOString().slice(0, 10),
@@ -763,7 +900,9 @@ async function addProcessedMeeting(title, transcript, durSeconds) {
     keyPoints: [],
     actionItems: [],
     notes: '',
-    participants: []
+    participants: [],
+    ...(documentInfo ? {document: documentInfo} : {}),
+    source:sourceInfo||{kind:documentInfo?'upload':'unknown',format:documentInfo?.kind||'unknown'}
   };
 
   let meetingId = 'm_' + Date.now();
@@ -789,10 +928,17 @@ async function handleFileSelected(fileOrInput){
   const file = (fileOrInput instanceof File) ? fileOrInput : (fileOrInput && fileOrInput.files ? fileOrInput.files[0] : fileOrInput);
   if(!file) return;
 
+  const isDocument = /\.(pdf|docx)$/i.test(file.name);
   const isAudioVideo = (file.type && (file.type.startsWith('audio/') || file.type.startsWith('video/'))) ||
                        /\.(mp3|wav|ogg|m4a|aac|flac|webm|mp4|mov|mkv)$/i.test(file.name);
-  if(!isAudioVideo){
-    alert('Chỉ hỗ trợ file âm thanh hoặc video (mp3, wav, mp4, webm, ogg, m4a...).');
+  if (!isDocument && !isAudioVideo) {
+    notify(lang === 'vi'
+      ? 'Hỗ trợ âm thanh, video, PDF và Word DOCX. File DOC cần lưu lại thành DOCX.'
+      : 'Supported: audio, video, PDF and Word DOCX. Save DOC files as DOCX first.');
+    return;
+  }
+  if (isDocument && file.size > 10 * 1024 * 1024) {
+    notify(lang === 'vi' ? 'Tài liệu tối đa 10 MB.' : 'Documents must be 10 MB or smaller.');
     return;
   }
 
@@ -803,17 +949,43 @@ async function handleFileSelected(fileOrInput){
   if(upEl) upEl.prepend(row);
 
   try{
+    if (isDocument) {
+      await importDocumentFile(file, row);
+      return;
+    }
     const transcript = await transcribeAudioBlob(file, msg => {
       row.textContent = msg + ' — ' + file.name;
     });
     const meetingTitle = file.name.replace(/\.[^.]+$/, '') || 'Tệp tải lên';
     const durEst = (transcript && transcript.length) ? (transcript[transcript.length - 1].t + 5) : 30;
-    await addProcessedMeeting(meetingTitle, transcript, durEst);
+    await addProcessedMeeting(meetingTitle, transcript, durEst, null, sourceMetadata('upload',file));
     row.textContent = '✅ ' + file.name + ' — Đã xử lý và tạo cuộc họp thành công';
   }catch(err){
     console.error("Upload error:", err);
-    row.textContent = '❌ ' + file.name + ': ' + err.message;
+    row.textContent = '❌ ' + file.name + ': ' + safeServiceMessage(err.message);
   }
+}
+
+async function importDocumentFile(file, row) {
+  row.textContent = (lang === 'vi' ? 'Đang đọc tài liệu: ' : 'Reading document: ') + file.name;
+  const body = new FormData();
+  body.append('file', file, file.name);
+  const response = await apiFetch(getApiUrl() + '/api/documents/extract', {
+    method: 'POST', headers: {'Accept-Language': lang}, body
+  });
+  const result = await response.json();
+  const transcript = result.sections.map(section => ({
+    t: 0, speaker: 'DOCUMENT', color: getSpeakerColor('DOCUMENT'),
+    text: section.text, page: section.page
+  }));
+  const documentInfo = {
+    name: file.name, kind: result.kind,
+    pageCount: result.page_count, characterCount: result.character_count
+  };
+  await addProcessedMeeting(file.name.replace(/\.[^.]+$/, ''), transcript, 0, documentInfo, sourceMetadata('upload',file));
+  row.textContent = '✓ ' + file.name + (lang === 'vi'
+    ? ' — Đã đọc và lưu nội dung. Bạn có thể tóm tắt hoặc hỏi KimKim về tài liệu.'
+    : ' — Content imported. You can summarize it or ask KimKim about the document.');
 }
 
 async function audioBufferTo16kPcm(audioBuffer) {
@@ -860,12 +1032,12 @@ async function transcribeAudioBlob(blob, onProgress) {
 
   const result = await resp.json();
   if (result.status === "error") {
-    throw new Error(result.message || "Lỗi phiên âm");
+    throw new Error(safeServiceMessage(result.message, lang==='vi'?'Dịch vụ phiên âm chưa xử lý được tệp. Vui lòng thử lại sau.':'Audio transcription failed. Please try again later.'));
   }
 
   const rawSegments = result.segments || [];
   const collectedSegments = rawSegments.map(s => {
-    const spk = mapSpeakerName(s.speaker || "Sally");
+    const spk = mapSpeakerName(String(s.speaker ?? '').trim() || s.speaker_id);
     return {
       t: Math.floor(s.start || 0),
       speaker: spk,
@@ -893,11 +1065,11 @@ window.saveRecording = async function() {
     });
     const now = new Date();
     const durSec = (transcript && transcript.length) ? (transcript[transcript.length - 1].t + 5) : 30;
-    await addProcessedMeeting('Ghi âm ' + now.toLocaleString('vi-VN'), transcript, durSec);
+    await addProcessedMeeting('Ghi âm ' + now.toLocaleString('vi-VN'), transcript, durSec, null, sourceMetadata('recorder',blob));
     RecordingService.cancelRecording();
   } catch (err) {
     console.error("Recording transcription error:", err);
-    alert('Lỗi phiên âm: ' + err.message);
+    notify('Lỗi phiên âm: ' + err.message);
   } finally {
     if (saveBtn) {
       saveBtn.disabled = false;
@@ -917,34 +1089,22 @@ function initials(n){return (n||'?').split(' ').map(w=>w[0]).slice(0,2).join('')
 function renderMeetingsTable(){
   const el=document.getElementById('meetingsTable');
   if(!el) return;
-  if(meetingsState==='loading'){ el.innerHTML = `<tr><td colspan="5" style="color:var(--text-2)">${I18N[lang].loadingMeetings}</td></tr>`; return; }
-  if(meetingsState==='error'){ el.innerHTML = `<tr><td colspan="5" style="color:var(--red)">${I18N[lang].errorMeetings}</td></tr>`; return; }
+  if(meetingsState==='loading'){ el.innerHTML = `<tr><td colspan="6" style="color:var(--text-2)">${I18N[lang].loadingMeetings}</td></tr>`; return; }
+  if(meetingsState==='error'){ el.innerHTML = `<tr><td colspan="6" style="color:var(--red)">${I18N[lang].errorMeetings}</td></tr>`; return; }
   const rows=visibleMeetings();
   el.innerHTML = rows.map(m=>`
     <tr style="cursor:pointer" onclick="openMeeting('${m.id}')">
-      <td>${m.title}</td><td>${m.date||''}</td><td>${m.dur||''}</td><td>${statusBadge(m.status)}</td>
+      <td><span class="files-item-title">${escapeHtml(m.title)}</span><span class="files-source-label">${escapeHtml(t(meetingSourceKey[meetingFileInfo(m).kind]))}</span></td><td><span class="files-format">${meetingFileInfo(m).format==='unknown'?escapeHtml(t('filesUnknown')):meetingFileInfo(m).format.toUpperCase()}</span></td><td>${m.date||''}</td><td>${m.dur||''}</td><td>${statusBadge(m.status)}<span class="files-ai-status">${escapeHtml(t(analysisInFlight.has('summary:'+m.id)?'filesAiWorking':(typeof m.summary==='string'&&m.summary.trim())?'filesAiReady':'filesAiMissing'))}</span></td>
       <td style="text-align:right;color:var(--text-2)">→</td>
-    </tr>`).join('') || `<tr><td colspan="5" style="color:var(--text-2)">${I18N[lang].noMeetings}</td></tr>`;
+    </tr>`).join('') || `<tr><td colspan="6" style="color:var(--text-2)">${searchQuery||meetingFormatFilter!=='all'||meetingSourceFilter!=='all'?t('filesNoMatches'):I18N[lang].noMeetings}</td></tr>`;
 }
 
 function renderAll(){
-  // upcoming (home)
-  const upcomingEl=document.getElementById('upcomingList');
-  if(upcomingEl) upcomingEl.innerHTML = meetings.slice(0,3).map(m=>`
-    <div class="list-row" onclick="openMeeting('${m.id}')">
-      <div class="avatar" style="background:#3b82f6">${initials(m.title)}</div>
-      <div class="info"><div class="t">${m.title}</div><div class="d">${m.date||''} · ${m.dur||''}</div></div>
-      ${statusBadge(m.status)}
-    </div>`).join('') || `<div style="color:var(--text-2);font-size:13px;">${I18N[lang].noMeetings}</div>`;
-  // recent notes
-  const recentEl=document.getElementById('recentNotesList');
-  if(recentEl) recentEl.innerHTML = notesArr.slice(0,3).map(n=>`
-    <div class="list-row" onclick="showView('notes',document.querySelector('[data-view=notes]'));openNote('${n.id}')">
-      <div class="avatar" style="background:#22c55e">📝</div>
-      <div class="info"><div class="t">${n.title}</div></div>
-    </div>`).join('') || `<div style="color:var(--text-2);font-size:13px;">${I18N[lang].noNotes}</div>`;
+  if(typeof renderHome==='function') renderHome();
   // meetings table
   renderMeetingsTable();
+  if(window.NotesStudio) NotesStudio.render(notesArr,currentNoteId);
+  else {
   // notes sidebar + editor
   const sideEl=document.getElementById('notesSidebarList');
   if(sideEl) sideEl.innerHTML = notesArr.map(n=>`
@@ -953,15 +1113,19 @@ function renderAll(){
     </div>`).join('') || `<div style="color:var(--text-2);font-size:13px;padding:8px;">${I18N[lang].noNotes}</div>`;
   const curNote=notesArr.find(n=>n.id===currentNoteId);
   const editor=document.querySelector('#view-notes .editor');
-  if(editor){
+  document.getElementById('noteEmptyState')?.classList.toggle('hidden',!!curNote);
+  if(editor) editor.classList.toggle('hidden',!curNote);
+  document.querySelectorAll('#view-notes .notes-workspace .btn').forEach(button=>button.disabled=!curNote);
+  if(editor && !editor.contains(document.activeElement)){
     const h1=editor.querySelector('h1'); const p=editor.querySelector('p');
     if(curNote){ if(h1)h1.textContent=curNote.title||''; if(p)p.textContent=curNote.content||''; }
     else { if(h1)h1.textContent=''; if(p)p.textContent=''; }
   }
+  }
   // team table
   const teamEl=document.getElementById('teamTable');
   if(teamEl) teamEl.innerHTML = teamArr.map(t=>`
-    <tr><td style="display:flex;align-items:center;gap:9px;"><div class="avatar" style="background:${t.color||'#3b82f6'}">${initials(t.name)}</div>${t.name}</td>
+    <tr><td style="display:flex;align-items:center;gap:9px;"><div class="avatar" style="background:${t.color||'var(--color-primary)'}">${initials(t.name)}</div>${t.name}</td>
     <td>${t.email}</td><td>${statusBadge(t.status)}</td>
     <td><select onchange="changeRoleHandler('${t.id}',this.value)"><option value="member" ${t.role==='member'?'selected':''}>Member</option><option value="admin" ${t.role==='admin'?'selected':''}>Admin</option></select></td>
     <td><button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);padding:4px 10px;" onclick="removeMemberHandler('${t.id}')">✕</button></td></tr>`).join('') || `<tr><td colspan="5" style="color:var(--text-2)">${I18N[lang].noTeam}</td></tr>`;
@@ -969,37 +1133,65 @@ function renderAll(){
   const upEl=document.getElementById('uploadList');
   if(upEl) upEl.innerHTML = uploadsArr.map(u=>`
     <div class="upload-row"><div style="font-size:18px;">${u.status==='error'?'⚠️':'🎬'}</div>
-      <div style="flex:1;"><div style="font-size:13px;">${u.name}</div>
+      <div style="flex:1;"><div style="font-size:13px;">${escapeHtml(u.name)}</div>
         <div class="prog"><i style="width:${u.progressPct||0}%;${u.status==='error'?'background:var(--red)':''}"></i></div>
-        ${u.status==='error' ? `<div style="font-size:11px;color:var(--red);">${u.errorMessage||I18N[lang].uploadFailed}</div>` : ''}</div>
+        ${u.status==='error' ? `<div style="font-size:11px;color:var(--red);">${escapeHtml(safeServiceMessage(u.errorMessage, I18N[lang].uploadFailed))}</div>` : ''}</div>
       <div style="font-size:12px;color:var(--text-2)">${u.status==='done'?I18N[lang].uploadDone:(u.status==='error'?I18N[lang].uploadFailed:(u.progressPct||0)+'%')}</div></div>`).join('')
     || `<div style="color:var(--text-2);font-size:13px;padding:8px;">${I18N[lang].noUploads}</div>`;
   renderTranscriptAndStats();
 }
 function renderTranscriptAndStats(){
   const segEl=document.getElementById('segList');
+  segEl?.classList.toggle('extracted-reader', Boolean(currentMeetingObj?.document));
+  if (currentMeetingObj?.document) {
+    if (segEl) {
+      segEl.innerHTML = segments.filter(section => section.text?.trim()).map(section => {
+        const pageLabel = section.page == null ? '' : (lang === 'vi' ? 'Trang ' : 'Page ') + section.page;
+        const paragraphs = section.text.trim().split(/\r?\n[ \t]*\r?\n/);
+        return '<article class="extracted-page">' +
+          (pageLabel ? '<h3>' + escapeHtml(pageLabel) + '</h3>' : '') +
+          paragraphs.map(paragraph => '<p>' + escapeHtml(paragraph) + '</p>').join('') +
+          '</article>';
+      }).join('') || '<p class="extracted-empty">' + escapeHtml(t('detailNoTranscript')) + '</p>';
+    }
+    const stats = document.getElementById('speakerStats');
+    if (stats) stats.innerHTML = '';
+    return;
+  }
   if(segEl) {
     let html = segments.map(s=>`
       <div class="seg" onclick="highlightSeg(this)">
-        <div class="meta"><span class="dot" style="background:${s.color}"></span><b>${escapeHtml(s.speaker)}</b>
-        <span class="time">${fmt(s.t)}</span></div><p>${escapeHtml(s.text)}</p></div>`).join('');
+        <div class="meta"><span class="dot" style="background:${s.color}"></span><b>${escapeHtml(speakerDisplayName(s.speaker))}</b>
+        <span class="time">${Number.isFinite(s.t) ? fmt(Math.floor(s.t)) : "—"}</span></div><p>${escapeHtml(s.text)}</p></div>`).join('');
     if (livePartialText) {
       html += `
         <div class="seg partial">
-          <div class="meta"><span class="live-dot"></span><b>${escapeHtml(livePartialSpeaker || "Sally")} (đang nói...)</b></div>
+          <div class="meta"><span class="live-dot"></span><b>${escapeHtml(mapSpeakerName(livePartialSpeaker))} (${escapeHtml(t('detailSpeaking'))})</b></div>
           <p style="color:var(--text-0);font-style:italic;">${escapeHtml(livePartialText)}</p>
         </div>`;
     }
-    segEl.innerHTML = html || `<div style="color:var(--text-2);font-size:13px;">${I18N[lang].aiProcessing}</div>`;
+    segEl.innerHTML = html || `<div style="color:var(--text-2);font-size:13px;">${isMeetingRecording ? I18N[lang].aiProcessing : t('detailNoTranscript')}</div>`;
     segEl.scrollTop = segEl.scrollHeight;
   }
-  const totals={}; segments.forEach(s=>totals[s.speaker]=(totals[s.speaker]||0)+1);
+  const hasDurations = segments.length > 0 && segments.every(s =>
+    Number.isFinite(s.start) && Number.isFinite(s.end) && s.end > s.start);
+  const totals = Object.create(null);
+  segments.forEach(s => {
+    totals[s.speaker] = (totals[s.speaker] || 0) + (hasDurations ? s.end - s.start : 1);
+  });
+  const statsTitle = document.getElementById('speakerStats')?.previousElementSibling;
+  if (statsTitle) {
+    statsTitle.removeAttribute('data-i18n');
+    statsTitle.textContent = hasDurations
+      ? (lang === 'vi' ? 'Thời gian phát biểu' : 'Speaking time')
+      : (lang === 'vi' ? 'Số đoạn thoại theo giọng' : 'Transcript segments by speaker');
+  }
   const max=Math.max(1,...Object.values(totals));
   const statEl=document.getElementById('speakerStats');
   if(statEl) statEl.innerHTML = Object.entries(totals).map(([name,c])=>{
     const sp = segments.find(s=>s.speaker===name);
-    return `<div class="sp-row"><span style="width:50px">${name}</span><div class="sp-bar"><i style="width:${(c/max)*100}%;background:${sp ? sp.color : '#00d4ff'}"></i></div></div>`;
-  }).join('') || (statEl ? `<div style="color:var(--text-2);font-size:12px;">${I18N[lang].aiProcessing}</div>` : '');
+    return `<div class="sp-row"><span style="width:110px;max-width:40%;flex-shrink:0;overflow-wrap:anywhere">${escapeHtml(speakerDisplayName(name))}</span><div class="sp-bar"><i style="width:${(c/max)*100}%;background:${sp ? sp.color : 'var(--color-primary)'}"></i></div></div>`;
+  }).join('') || (statEl ? `<div style="color:var(--text-2);font-size:12px;">${t('detailNoSpeakerData')}</div>` : '');
 }
 function fmt(s){const m=Math.floor(s/60),sec=s%60;return `${m}:${sec.toString().padStart(2,'0')}`;}
 function highlightSeg(el){document.querySelectorAll('.seg').forEach(s=>s.style.background='');el.style.background='var(--accent-soft)';}
@@ -1074,7 +1266,7 @@ async function sendChat(){
 
   // 3. Thinking indicator
   const thinkingId = 'global_thinking_' + Date.now();
-  body.insertAdjacentHTML('beforeend', `<div class="bubble agent" id="${thinkingId}" style="opacity:0.7;font-style:italic;">⏳ Adolf KimKim đang suy nghĩ...</div>`);
+  body.insertAdjacentHTML('beforeend', `<div class="bubble agent" id="${thinkingId}" style="opacity:0.7;font-style:italic;">${escapeHtml(t('detailThinking'))}</div>`);
   body.scrollTop = body.scrollHeight;
 
   // 4. Persist user message to Firestore asynchronously
@@ -1088,7 +1280,7 @@ async function sendChat(){
       body: JSON.stringify({ message: text, history: historyPayload })
     });
     const data = await res.json();
-    const reply = data.status === 'ok' ? data.reply : (data.message || 'Xin lỗi, không có phản hồi.');
+    const reply = data.status === 'ok' ? data.reply : (data.message || t('detailNoReply'));
 
     // Remove thinking indicator
     const thinkingEl = document.getElementById(thinkingId);
@@ -1115,13 +1307,13 @@ async function sendChat(){
 
 async function clearGlobalChatHistory(){
   const msg = lang === 'vi' ? 'Bạn có chắc muốn xoá toàn bộ lịch sử trò chuyện?' : 'Are you sure you want to clear chat history?';
-  if (!confirm(msg)) return;
+  if (!await confirmAction(msg)) return;
   try {
     await AiService.clearChatHistory();
     globalChatHistoryCache = [];
     renderGlobalChat();
   } catch (err) {
-    alert("Lỗi khi xoá lịch sử: " + err.message);
+    notify("Lỗi khi xoá lịch sử: " + err.message);
   }
 }
 document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
@@ -1139,26 +1331,25 @@ document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='
    (Preserved & Modularized Backend AI Integration)
    ============================================================ */
 
-const SPEAKER_NAMES = ["Sally", "Miles", "Curtis", "Sean"];
-const SPEAKER_COLORS = {
-  "Sally": "#3b82f6",
-  "Miles": "#f59e0b",
-  "Curtis": "#22c55e",
-  "Sean": "#ef4444"
-};
-
+// Speaker identity comes from STT/Meet; colors are presentation only.
 function mapSpeakerName(spk) {
-  if (!spk) return "Sally";
-  if (SPEAKER_COLORS[spk]) return spk;
-  const num = parseInt(spk.replace(/\D/g, ''), 10);
-  if (!isNaN(num) && num < SPEAKER_NAMES.length) return SPEAKER_NAMES[num];
-  return spk;
+  if (spk === null || spk === undefined || String(spk).trim() === '') return 'UNKNOWN';
+  return String(spk).trim();
+}
+function speakerDisplayName(value) {
+  const name = mapSpeakerName(value);
+  const id = /^SPEAKER_(\d+)$/i.exec(name);
+  if (id) return (lang === 'vi' ? 'Giọng chưa xác định ' : 'Unidentified speaker ') + (Number(id[1]) + 1);
+  if (/^(unknown|speaker)$/i.test(name)) return lang === 'vi' ? 'Giọng chưa xác định' : 'Unidentified speaker';
+  return name;
 }
 function getSpeakerColor(name) {
-  if (SPEAKER_COLORS[name]) return SPEAKER_COLORS[name];
-  const palette = ["#3b82f6", "#f59e0b", "#22c55e", "#ef4444", "#a855f7", "#06b6d4", "#ec4899"];
+  const palette = ["var(--speaker-1)", "var(--speaker-2)", "var(--speaker-3)", "var(--speaker-4)", "var(--speaker-5)", "var(--speaker-6)", "var(--speaker-7)"];
+  const label = mapSpeakerName(name);
+  const speakerId = /^SPEAKER_(\d+)$/i.exec(label);
+  if (speakerId) return palette[Number(speakerId[1]) % palette.length];
   let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = (hash << 5) - hash + name.charCodeAt(i);
+  for (let i = 0; i < label.length; i++) hash = ((hash << 5) - hash + label.charCodeAt(i)) | 0;
   return palette[Math.abs(hash) % palette.length];
 }
 
@@ -1180,6 +1371,44 @@ function getApiUrl() {
   return (storedEndpoint('api_url') || getDefaultApiUrl()).replace(/\/$/, '');
 }
 // Firebase credentials are sent only to the configured backend, never persisted.
+function safeServiceMessage(value, fallback) {
+  const text=typeof value==='string'?value:'';
+  const key=meetingSystemMessageKey(text);if(key)return t(key);
+  if (/<!doctype|<html|<head|<body|<script|Gipformer STT error|Traceback|trycloudflare/i.test(text) || text.length>600)
+    return fallback || (lang==='vi'?'Dịch vụ AI đang gián đoạn. Vui lòng thử lại sau.':'The AI service is temporarily unavailable. Please try again later.');
+  return text || fallback || '';
+}
+function apiErrorMessage(status, detail, path) {
+  if (path.replace(/\/$/, '') === '/api/meet-bot/join') {
+    const reason = typeof detail === 'string' ? detail : detail?.message || detail?.code || '';
+    if (status === 409 || /busy|already (?:in|running|active)|stale|cache/i.test(reason)) {
+      return meetBotText('KimKim đang bận nên không thể mời ngay lúc này. Vui lòng thử lại sau.', 'KimKim is busy and cannot join right now. Please try again later.');
+    }
+    if (/is starting|warming up/i.test(reason)) {
+      return meetBotText('Không thể mời KimKim vì dịch vụ đang khởi động. Vui lòng thử lại sau ít phút.', 'KimKim could not join because the service is starting. Please try again shortly.');
+    }
+    if (status === 401 || status === 403) {
+      return meetBotText('Không thể mời KimKim vì phiên đăng nhập không hợp lệ hoặc bạn chưa có quyền.','KimKim could not join because your session is invalid or access was denied.');
+    }
+    return meetBotInviteFallback();
+  }
+  if (['/api/transcribe', '/transcribe'].includes(path.replace(/\/$/, ''))) {
+    if ([500, 502, 503].includes(status)) {
+      return lang === 'vi'
+        ? 'Chưa kết nối được dịch vụ chuyển giọng nói thành văn bản. Vui lòng thử lại khi server AI hoạt động trở lại.'
+        : 'The speech-to-text service is unavailable. Please try again when the AI service is back online.';
+    }
+    if (status === 504) {
+      return lang === 'vi'
+        ? 'Xử lý âm thanh quá thời gian chờ. Vui lòng thử lại sau.'
+        : 'Audio processing timed out. Please try again later.';
+    }
+  }
+  if (typeof detail === 'string' && detail) return safeServiceMessage(detail);
+  if (detail && typeof detail.message === 'string') return safeServiceMessage(detail.message);
+  return lang === 'vi' ? `Yêu cầu không thành công (mã ${status}).` : `Request failed (${status}).`;
+}
+
 async function apiFetch(url, options = {}) {
   const user = firebase.auth().currentUser;
   if (!user) throw new Error(lang === 'vi' ? 'Vui lòng đăng nhập.' : 'Please sign in.');
@@ -1190,7 +1419,7 @@ async function apiFetch(url, options = {}) {
   const response = await fetch(target.href, {...options, headers});
   if (!response.ok) {
     const data = await response.clone().json().catch(() => ({}));
-    throw new Error(data.detail || `API error (${response.status})`);
+    throw new Error(apiErrorMessage(response.status, data.detail, target.pathname));
   }
   return response;
 }
@@ -1279,7 +1508,7 @@ async function startMeetingRecording() {
 
   } catch (e) {
     console.error("Microphone access error:", e);
-    alert("Không thể truy cập microphone: " + e.message);
+    notify("Không thể truy cập microphone: " + e.message);
     stopMeetingRecording();
   }
 }
@@ -1331,7 +1560,7 @@ function handleSTTMessage(data) {
     const text = (data.text || '').trim();
     if (!text || text === lastFinalText) return;
     lastFinalText = text;
-    const spk = mapSpeakerName(data.speaker || data.speaker_id || "Sally");
+    const spk = mapSpeakerName(data.speaker ?? data.speaker_id);
     segments.push({
       t: recordingSeconds,
       speaker: spk,
@@ -1352,7 +1581,7 @@ function handleSTTMessage(data) {
       const finalText = data.tokens.filter(t => t.text !== '<end>').map(t => t.text).join('').trim();
       if (finalText && finalText !== lastFinalText) {
         lastFinalText = finalText;
-        const rawSpk = data.tokens.find(t => t.speaker)?.speaker || data.speaker || "Sally";
+        const rawSpk = data.tokens.find(t => t.speaker !== null && t.speaker !== undefined)?.speaker ?? data.speaker;
         const spk = mapSpeakerName(rawSpk);
         segments.push({
           t: recordingSeconds,
@@ -1371,7 +1600,7 @@ function handleSTTMessage(data) {
     const currentText = textTokens.map(t => t.text).join('').trim();
     if (currentText) {
       livePartialText = currentText;
-      const rawSpk = textTokens.find(t => t.speaker)?.speaker || data.speaker || "Sally";
+      const rawSpk = textTokens.find(t => t.speaker !== null && t.speaker !== undefined)?.speaker ?? data.speaker;
       livePartialSpeaker = mapSpeakerName(rawSpk);
       renderTranscriptAndStats();
     }
@@ -1383,7 +1612,21 @@ function renderTranscript() {
 }
 
 /* ---------------- Google Meet Bot Integration ---------------- */
-let activeMeetBot = null; // { jobId, meetingId, title, pollTimer }
+let activeMeetBot = null; // Keep the old job until its result is durably saved.
+let pendingMeetBot = null, meetBotJoining = false, meetBotSwitchTimer = null;
+const meetBotText = (vi,en) => lang==='en'?en:vi;
+function meetBotInviteFallback() {
+  return meetBotText('Không thể mời KimKim vì dịch vụ họp chưa phản hồi thành công. Vui lòng thử lại sau.', 'KimKim could not join because the meeting service did not respond successfully. Please try again later.');
+}
+function clearMeetBotPending(){pendingMeetBot=null;clearTimeout(meetBotSwitchTimer);meetBotSwitchTimer=null;}
+function sameMeetBotUser(bot){return !bot.uid || bot.uid===firebase.auth().currentUser?.uid;}
+
+function cleanMeetingParticipants(participants) {
+  return [...new Set((participants || [])
+    .filter(name => typeof name === 'string')
+    .map(name => name.trim())
+    .filter(name => name && !/^(zoom_in|zoom_out|backgrounds and effects|hình nền và hiệu ứng)$/i.test(name)))];
+}
 
 async function startMeetBotFromRecording() {
   const urlInput = document.getElementById('recMeetUrl');
@@ -1392,109 +1635,100 @@ async function startMeetBotFromRecording() {
   const title = (titleInput?.value || '').trim();
 
   if (!meetUrl || !meetUrl.includes('meet.google.com/')) {
-    alert('Vui lòng nhập link Google Meet hợp lệ (ví dụ: https://meet.google.com/xxx-xxxx-xxx).');
+    notify('Vui lòng nhập link Google Meet hợp lệ (ví dụ: https://meet.google.com/xxx-xxxx-xxx).');
     return;
   }
   await startMeetBotJob(meetUrl, title, null);
 }
 
 async function startMeetBotJob(meetUrl, title, existingMeetingId) {
-  if (activeMeetBot && activeMeetBot.pollTimer) {
-    alert('Hiện đang có một Bot đang chạy. Vui lòng dừng phiên hiện tại trước.');
+  let url;
+  try{url=new URL(/^https:\/\//.test(meetUrl)?meetUrl:'https://'+meetUrl);if(url.protocol!=='https:'||url.hostname!=='meet.google.com'||!/^\/[a-z]{3}-[a-z]{4}-[a-z]{3}\/?$/.test(url.pathname))throw Error();meetUrl=url.origin+url.pathname.replace(/\/$/,'');}
+  catch{notify(meetBotText('Link Google Meet không hợp lệ.','Invalid Google Meet link.'));return;}
+  if(meetBotJoining||pendingMeetBot){notify(meetBotText('Đang chuyển phiên. Vui lòng chờ lưu xong cuộc họp cũ.','Switching meetings. Wait for the previous meeting to be saved.'));return;}
+  if(activeMeetBot&&!sameMeetBotUser(activeMeetBot)){clearInterval(activeMeetBot.pollTimer);activeMeetBot=null;clearMeetBotPending();}
+  if(activeMeetBot){
+    if(activeMeetBot.meetUrl===meetUrl&&!activeMeetBot.saveError){notify(meetBotText('KimKim đang ở cuộc họp này.','KimKim is already in this meeting.'));return;}
+    const old=activeMeetBot;pendingMeetBot={meetUrl,title,existingMeetingId};
+    meetBotSwitchTimer=setTimeout(()=>{if(activeMeetBot===old&&pendingMeetBot){clearMeetBotPending();notify(meetBotText('Phiên cũ chưa xử lý xong. Đã hủy yêu cầu chuyển; vẫn tiếp tục theo dõi phiên cũ.','Previous meeting is still processing. Switch canceled; monitoring continues.'));updateMeetBotUI({active:true,status:'processing',message:meetBotText('Đang chờ kết quả phiên cũ. Bạn có thể gửi yêu cầu chuyển lại.','Waiting for the previous result. You may request a switch again.')});}},10*60*1000);
+    updateMeetBotUI({active:true,status:'switching',message:meetBotText('Đang dừng và lưu phiên cũ trước khi vào link mới…','Stopping and saving the previous meeting before joining the new link…')});
+    if(old.result){pollMeetBotStatus(old.jobId);return;}
+    if(!old.stopRequested&&!['transcribing','summarizing','processing','recorded','done'].includes(old.status))await stopActiveMeetBot();
+    else pollMeetBotStatus(old.jobId);
     return;
   }
-
-  updateMeetBotUI({ active: true, status: 'joining', message: '🚀 Đang khởi động Bot vào Google Meet...', elapsed_sec: 0, participants: [] });
-
-  try {
-    const res = await apiFetch(`${getApiUrl()}/api/meet-bot/join`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ meet_url: meetUrl, title: title || '' })
-    });
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(errText || `HTTP ${res.status}`);
-    }
-    const data = await res.json();
-    const jobId = data.job_id;
-
-    activeMeetBot = {
-      jobId,
-      meetingId: existingMeetingId || null,
-      title: title || '',
-      meetUrl,
-      pollTimer: setInterval(() => pollMeetBotStatus(jobId), 2000)
-    };
-    pollMeetBotStatus(jobId);
-  } catch (err) {
-    console.error('Failed to start Meet Bot:', err);
-    updateMeetBotUI({ active: false, status: 'error', message: '❌ Không thể khởi động Bot: ' + err.message });
-    alert('Không thể khởi động KimKim Meeting: ' + err.message);
-  }
+  meetBotJoining=true;
+  const uid=firebase.auth().currentUser?.uid;
+  updateMeetBotUI({active:true,status:'joining',message:meetBotText('Đang mời KimKim vào Google Meet…','Inviting KimKim to Google Meet…')});
+  try{
+    const res=await apiFetch(getApiUrl()+'/api/meet-bot/join',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({meet_url:meetUrl,title:title||''})});
+    const data=await res.json();if(!data.job_id)throw Error(meetBotText('API chưa trả mã phiên họp.','No meeting session ID returned.'));
+    if(uid!==firebase.auth().currentUser?.uid)return;
+    const bot={jobId:data.job_id,uid,meetingId:existingMeetingId||null,title:title||'',meetUrl,pollTimer:null,polling:false,stopRequested:false,pollFailures:0};
+    activeMeetBot=bot;bot.pollTimer=setInterval(()=>pollMeetBotStatus(bot.jobId),2000);
+    // Unlock before polling; the active job now prevents a second join.
+    meetBotJoining=false;pollMeetBotStatus(bot.jobId);
+  }catch(err){if(uid===firebase.auth().currentUser?.uid){const msg=/^(Không thể mời KimKim|KimKim đang bận|KimKim could not join|KimKim is busy)/.test(err.message) ? err.message : meetBotInviteFallback();updateMeetBotUI({active:false,status:'error',message:msg});notify(msg);}}
+  finally{meetBotJoining=false;const start=document.getElementById('recMeetStartBtn');if(start)start.disabled=!!pendingMeetBot||!!activeMeetBot?.saving;}
 }
 
 async function stopActiveMeetBot() {
-  if (!activeMeetBot || !activeMeetBot.jobId) return;
-  const stopBtn1 = document.getElementById('recMeetStopBtn');
-  const stopBtn2 = document.getElementById('mdMeetBotStopBtn');
-  if (stopBtn1) { stopBtn1.disabled = true; stopBtn1.textContent = '⏳ Đang dừng & xử lý...'; }
-  if (stopBtn2) { stopBtn2.disabled = true; stopBtn2.textContent = '⏳ Đang dừng & xử lý...'; }
-
-  try {
-    await apiFetch(`${getApiUrl()}/api/meet-bot/stop/${activeMeetBot.jobId}`, { method: 'POST' });
-  } catch (err) {
-    console.warn('Stop Meet Bot warning:', err);
+  const bot=activeMeetBot;if(!bot||bot.stopRequested||bot.saving)return false;
+  bot.stopRequested=true;
+  updateMeetBotUI({active:true,status:'stopping',message:meetBotText('Đang dừng phiên và chờ phiên âm/tóm tắt…','Stopping and waiting for transcription/summary…')});
+  try{
+    await apiFetch(getApiUrl()+'/api/meet-bot/stop/'+bot.jobId,{method:'POST'});
+    if(activeMeetBot===bot)pollMeetBotStatus(bot.jobId);
+    return true;
+  }catch(err){
+    if(activeMeetBot===bot){bot.stopRequested=false;clearMeetBotPending();const msg=meetBotText('Chưa dừng được phiên cũ; chưa mở phiên mới. Bạn có thể thử dừng lại. ','Could not stop the previous meeting; no new meeting started. Retry stopping. ')+safeServiceMessage(err.message);updateMeetBotUI({active:true,status:'recording',message:msg});notify(msg);}
+    return false;
   }
 }
 
 async function pollMeetBotStatus(jobId) {
-  if (!activeMeetBot || activeMeetBot.jobId !== jobId) return;
-  try {
-    const res = await apiFetch(`${getApiUrl()}/api/meet-bot/status/${jobId}`);
-    if (!res.ok) return;
-    const data = await res.json();
-
-    updateMeetBotUI({
-      active: data.status !== 'done' && data.status !== 'error' && data.status !== 'stopped',
-      status: data.status,
-      message: data.message,
-      elapsed_sec: data.elapsed_sec || 0,
-      participants: data.participants || []
-    });
-
-    // Live-update participants on the Meeting Detail view if open
-    if (activeMeetBot.meetingId && currentMeetingId === activeMeetBot.meetingId && data.participants?.length) {
-      if (currentMeetingObj) {
-        const merged = Array.from(new Set([...(currentMeetingObj.participants || []), ...data.participants]));
-        currentMeetingObj.participants = merged;
-        const partEl = document.getElementById('mdParticipants');
-        if (partEl) {
-          partEl.innerHTML = merged.map(p => `<span class="tag">${escapeHtml(p)}</span>`).join('');
-        }
-      }
+  const bot=activeMeetBot;if(!bot||bot.jobId!==jobId||bot.polling)return;
+  if(!sameMeetBotUser(bot)){clearInterval(bot.pollTimer);clearMeetBotPending();activeMeetBot=null;return;}
+  bot.polling=true;
+  try{
+    let data;
+    if(bot.result)data={status:'done',result:bot.result};
+    else{const res=await apiFetch(getApiUrl()+'/api/meet-bot/status/'+jobId);data=await res.json();}
+    if(activeMeetBot!==bot||!sameMeetBotUser(bot))return;
+    bot.pollFailures=0;bot.status=data.status;
+    const terminal=['done','error','stopped'].includes(data.status);
+    updateMeetBotUI({active:!terminal,status:pendingMeetBot?'switching':data.status,
+      message:pendingMeetBot?meetBotText('Đang xử lý và lưu phiên cũ; link mới đang chờ. ','Processing and saving previous meeting; new link is queued. ')+(data.message||''):data.message,
+      elapsed_sec:data.elapsed_sec||0,participants:data.participants||[]});
+    if(bot.meetingId&&currentMeetingId===bot.meetingId&&currentMeetingObj&&data.participants?.length){
+      const merged=cleanMeetingParticipants([...(currentMeetingObj.participants||[]),...data.participants]);currentMeetingObj.participants=merged;
+      const part=document.getElementById('mdParticipants');if(part)part.innerHTML=merged.map(p=>'<span class="tag">'+escapeHtml(p)+'</span>').join('');
     }
-
-    if (data.status === 'error' || data.status === 'stopped') {
-      clearInterval(activeMeetBot.pollTimer);
-      const errMsg = data.message || 'Bot đã dừng.';
-      activeMeetBot = null;
-      alert(errMsg);
-      return;
+    if(terminal&&data.result){
+      bot.result=data.result;bot.saving=true;
+      updateMeetBotUI({active:true,status:'saving',message:meetBotText('Đang lưu kết quả phiên cũ…','Saving the previous meeting…')});
+      try{await finalizeMeetBotResult(bot,data.result);}
+      catch(err){bot.saveError=true;bot.saving=false;clearInterval(bot.pollTimer);clearMeetBotPending();const msg=meetBotText('Chưa lưu được phiên cũ nên chưa mở phiên mới. Gửi lại link để thử lưu lại. ','Previous meeting could not be saved; no new meeting started. Submit the link again to retry saving. ')+safeServiceMessage(err.message);updateMeetBotUI({active:false,status:'error',message:msg});notify(msg);return;}
+      if(activeMeetBot!==bot||!sameMeetBotUser(bot))return;
+      clearInterval(bot.pollTimer);activeMeetBot=null;
+      const next=pendingMeetBot;clearMeetBotPending();
+      if(next)await startMeetBotJob(next.meetUrl,next.title,next.existingMeetingId);
+      else updateMeetBotUI({active:false,status:'done',message:meetBotText('Đã lưu biên bản cuộc họp.','Meeting saved.')});
+    }else if(terminal){
+      clearInterval(bot.pollTimer);activeMeetBot=null;const switching=!!pendingMeetBot;clearMeetBotPending();
+      const msg=safeServiceMessage(data.message)||meetBotText('Phiên cũ kết thúc nhưng chưa có kết quả để lưu.','Previous meeting ended without a result to save.');
+      updateMeetBotUI({active:false,status:'error',message:msg});notify(msg+(switching?meetBotText(' Đã hủy chuyển phiên; chưa mở bot mới.',' Switch canceled; no new bot started.'):''));
     }
-
-    if (data.status === 'done' && data.result) {
-      const finishedBot = activeMeetBot;
-      clearInterval(finishedBot.pollTimer);
-      activeMeetBot = null;
-      await finalizeMeetBotResult(finishedBot, data.result);
+  }catch(err){
+    if(activeMeetBot===bot){bot.pollFailures++;
+      if(bot.pollFailures>=3){clearMeetBotPending();const msg=meetBotText('Mất kết nối kiểm tra phiên cũ. Chưa mở phiên mới; vẫn đang thử kết nối lại. ','Previous meeting status unavailable. No new meeting started; reconnecting. ')+safeServiceMessage(err.message);updateMeetBotUI({active:true,status:'processing',message:msg});if(bot.pollFailures===3)notify(msg);}
     }
-  } catch (err) {
-    console.warn('Poll Meet Bot status error:', err);
-  }
+  }finally{bot.polling=false;}
 }
 
 function updateMeetBotUI({ active, status, message, elapsed_sec = 0, participants = [] }) {
+  message = safeServiceMessage(message);
+  participants = cleanMeetingParticipants(participants);
   // 1. Recording view card
   const startBtn = document.getElementById('recMeetStartBtn');
   const stopBtn = document.getElementById('recMeetStopBtn');
@@ -1502,12 +1736,12 @@ function updateMeetBotUI({ active, status, message, elapsed_sec = 0, participant
   const statusEl = document.getElementById('recMeetStatus');
   const partEl = document.getElementById('recMeetParticipants');
 
-  const canStop = active && (status === 'joining' || status === 'waiting_admission' || status === 'recording');
-  if (startBtn) startBtn.style.display = active ? 'none' : 'inline-flex';
+  const canStop = active && !pendingMeetBot && !activeMeetBot?.stopRequested && (status === 'joining' || status === 'waiting_admission' || status === 'recording');
+  if (startBtn) { startBtn.style.display='inline-flex'; startBtn.disabled=meetBotJoining||!!pendingMeetBot||!!activeMeetBot?.saving; startBtn.textContent=activeMeetBot?meetBotText('Chuyển sang cuộc họp mới','Switch to another meeting'):meetBotText('Mời KimKim vào Google Meet','Invite KimKim to Google Meet'); }
   if (stopBtn) {
     stopBtn.style.display = active ? 'inline-flex' : 'none';
     stopBtn.disabled = !canStop;
-    stopBtn.textContent = canStop ? '⏹ Kết thúc & Tóm tắt AI' : '⏳ Đang phiên âm & tóm tắt...';
+    stopBtn.textContent = t(canStop ? 'detailStopSummary' : 'detailTranscribing');
   }
   if (timerEl) {
     timerEl.style.display = (active && (status === 'recording' || elapsed_sec > 0)) ? 'block' : 'none';
@@ -1531,7 +1765,7 @@ function updateMeetBotUI({ active, status, message, elapsed_sec = 0, participant
     }
     if (barStopBtn) {
       barStopBtn.disabled = !canStop;
-      barStopBtn.textContent = canStop ? '⏹ Kết thúc & Tóm tắt' : '⏳ Đang xử lý AI...';
+      barStopBtn.textContent = t(canStop ? 'detailStopSummary' : 'detailProcessing');
     }
   }
 }
@@ -1539,9 +1773,11 @@ function updateMeetBotUI({ active, status, message, elapsed_sec = 0, participant
 async function finalizeMeetBotResult(botInfo, result) {
   const rawTranscript = result.transcript || [];
   const mappedSegments = rawTranscript.map(s => {
-    const spk = mapSpeakerName(s.speaker || 'Speaker');
+    const spk = mapSpeakerName(s.speaker ?? s.speaker_id);
+    const start = s.start ?? s.t;
     return {
-      t: Math.floor(s.t ?? s.start ?? 0),
+      t: Number.isFinite(start) && start >= 0 ? Math.floor(start) : null,
+      ...(Number.isFinite(start) && start >= 0 && Number.isFinite(s.end) && s.end > start ? {start, end: s.end} : {}),
       speaker: spk,
       color: getSpeakerColor(spk),
       text: (s.text || '').trim()
@@ -1550,19 +1786,19 @@ async function finalizeMeetBotResult(botInfo, result) {
 
   const now = new Date();
   const finalTitle = botInfo.title || result.title || ('Google Meet ' + now.toLocaleString('vi-VN'));
-  const durFormatted = fmt(result.duration_sec || 30);
-  const summary = result.summary || '';
-  const keyPoints = result.key_points || [];
-  const actionItems = extractActionItems(summary);
+  const durFormatted = Number.isFinite(result.duration_sec) && result.duration_sec >= 0
+    ? fmt(Math.floor(result.duration_sec)) : '';
+  const analysis = summaryFields(result);
 
   let meetingId = botInfo.meetingId;
   const existingMeeting = meetingId ? meetings.find(m => m.id === meetingId) : null;
-  const mergedParticipants = Array.from(new Set([
+  const mergedParticipants = cleanMeetingParticipants([
     ...((existingMeeting && existingMeeting.participants) || []),
     ...(result.participants || [])
-  ]));
+  ]);
 
   const meetingPayload = {
+    source:{kind:'kimkim_meeting',format:'unknown'},
     title: finalTitle,
     date: (existingMeeting && existingMeeting.date) || now.toISOString().slice(0, 10),
     time: (existingMeeting && existingMeeting.time) || now.toTimeString().slice(0, 5),
@@ -1570,9 +1806,7 @@ async function finalizeMeetBotResult(botInfo, result) {
     status: 'done',
     participants: mergedParticipants,
     transcript: mappedSegments,
-    summary,
-    keyPoints,
-    actionItems
+    ...analysis
   };
 
   try {
@@ -1582,24 +1816,14 @@ async function finalizeMeetBotResult(botInfo, result) {
       meetingId = await MeetingService.createMeeting(meetingPayload);
     }
   } catch (err) {
-    console.warn('Firestore save warning for Meet Bot:', err);
-    if (!meetingId) meetingId = 'm_' + Date.now();
+    throw err; // Never switch to another bot before the previous meeting is saved.
   }
 
+  botInfo.meetingId = meetingId;
   meetingPayload.id = meetingId;
   const idx = meetings.findIndex(m => m.id === meetingId);
   if (idx >= 0) meetings[idx] = { ...meetings[idx], ...meetingPayload };
   else meetings.unshift(meetingPayload);
-
-  // Also save summary to Notes if non-empty
-  if (summary) {
-    try {
-      const noteId = await NoteService.createNote(finalTitle);
-      if (noteId) await NoteService.updateNote(noteId, { title: finalTitle, content: summary });
-    } catch (e) {
-      console.warn('Could not create note from Meet Bot summary:', e);
-    }
-  }
 
   updateMeetBotUI({ active: false, status: 'done', message: '✅ Đã lưu biên bản cuộc họp Google Meet!' });
   renderAll();
@@ -1614,101 +1838,28 @@ async function endMeetingAndSummarize() {
 }
 
 async function generateSummaryFromCurrentTranscript() {
-  if (!segments || segments.length === 0) {
-    alert("Chưa có nội dung cuộc họp nào để tóm tắt.");
-    return;
-  }
-
-  const badge = document.getElementById('summaryStatusBadge');
-  const btn = document.getElementById('btnQuickSummarize');
-  if (badge) badge.classList.remove('hidden');
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang tóm tắt cuộc họp...'; }
-
-  try {
-    const apiUrl = getApiUrl();
-    const res = await apiFetch(`${apiUrl}/api/summarize`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ transcript: segments })
-    });
-    const data = await res.json();
-
-    if (data.status === 'ok') {
-      currentSummaryData = data;
-      const finalTitle = data.title || currentMeetingObj?.title || 'Cuộc họp mới';
-      const finalDur = recordingSeconds ? fmt(recordingSeconds) : (currentMeetingObj?.dur && currentMeetingObj.dur !== '00:00' ? currentMeetingObj.dur : '00:30');
-      const actionItems = extractActionItems(data.summary);
-
-      const meetingUpdates = {
-        title: finalTitle,
-        transcript: segments,
-        summary: data.summary,
-        keyPoints: data.key_points || [],
-        actionItems: actionItems,
-        status: 'done',
-        dur: finalDur
-      };
-
-      // 1. Persist to Firestore via MeetingService
-      if (currentMeetingId) {
-        try {
-          await MeetingService.updateMeeting(currentMeetingId, meetingUpdates);
-        } catch (mErr) {
-          console.error("MeetingService.updateMeeting error:", mErr);
-        }
-        if (currentMeetingObj) {
-          Object.assign(currentMeetingObj, meetingUpdates);
-        }
-      } else {
-        const now = new Date();
-        try {
-          currentMeetingId = await MeetingService.createMeeting({
-            ...meetingUpdates,
-            date: now.toISOString().slice(0, 10),
-            time: now.toTimeString().slice(0, 5),
-            participants: []
-          });
-          currentMeetingObj = { id: currentMeetingId, ...meetingUpdates };
-        } catch (cErr) {
-          console.error("MeetingService.createMeeting error:", cErr);
-        }
-      }
-
-      // Sync local meetings array cache
-      if (currentMeetingId) {
-        const existingIdx = meetings.findIndex(m => m.id === currentMeetingId);
-        if (existingIdx >= 0) {
-          meetings[existingIdx] = { ...meetings[existingIdx], ...meetingUpdates };
-        } else if (currentMeetingObj) {
-          meetings.unshift(currentMeetingObj);
-        }
-      }
-
-      // 2. Persist to NoteService
-      try {
-        const noteId = await NoteService.createNote(finalTitle);
-        if (noteId) {
-          await NoteService.updateNote(noteId, { title: finalTitle, content: data.summary });
-        }
-      } catch (noteErr) {
-        console.warn("Could not save note in NoteService:", noteErr);
-      }
-
-      // 3. Update DOM / render views
-      renderMeetingDetail();
-      renderAll();
-
-      alert(`Tóm tắt thành công: "${finalTitle}"!\nKết quả đã được cập nhật vào cuộc họp và mục Ghi chú.`);
-    } else {
-      alert("Lỗi khi tóm tắt: " + (data.message || "Unknown error"));
-    }
-  } catch (err) {
-    console.error("Summarization error:", err);
-    alert("Không thể kết nối đến AI backend (" + getApiUrl() + "). Vui lòng đảm bảo server đang chạy.");
-  } finally {
-    if (badge) badge.classList.add('hidden');
-    if (btn) { btn.disabled = false; btn.textContent = '⚡ Tóm tắt cuộc họp với AI'; }
-  }
+  if (currentMeetingObj?.summary?.trim()) return;
+  if(!segments?.length){notify(lang==='vi'?'Chưa có nội dung để tóm tắt.':'No transcript to summarize.');return;}
+  const sourceId=currentMeetingId,sourceObj=currentMeetingObj,transcript=segments.map(s=>({...s})),uid=firebase.auth().currentUser?.uid;
+  const lock='summary:'+sourceId;if(analysisInFlight.has(lock))return;analysisInFlight.add(lock);
+  const badge=document.getElementById('summaryStatusBadge'),btn=document.getElementById('btnQuickSummarize');
+  badge?.classList.remove('hidden');if(btn)btn.disabled=true;
+  try{
+    const data=await runTranscriptAnalysis('summary',transcript,'',msg=>{if(btn && currentMeetingId===sourceId)btn.textContent=msg;});
+    if(firebase.auth().currentUser?.uid!==uid)return;
+    const analysis = summaryFields(data);
+    if (!analysis.summary) throw Error(meetBotText('KimKim chưa trả về bản tóm tắt. Vui lòng thử lại.', 'KimKim returned no summary. Please try again.'));
+    const updates = {...analysis, status: 'done'};
+    let id=sourceId;
+    if(id)await MeetingService.updateMeeting(id,updates);
+    else{id=await MeetingService.createMeeting({...updates,title:sourceObj?.title||data.title||'Meeting',transcript,date:new Date().toISOString().slice(0,10),time:new Date().toTimeString().slice(0,5),participants:[]});}
+    if(!id)throw Error(lang==='vi'?'Chưa lưu được kết quả. Hãy thử lại.':'Result was not saved. Please retry.');
+    const idx=meetings.findIndex(m=>m.id===id);if(idx>=0)Object.assign(meetings[idx],updates);else meetings.unshift({id,...updates});
+    if(currentMeetingId===sourceId){currentMeetingId=id;currentMeetingObj={...(currentMeetingObj||{}),id,...updates};currentSummaryData=data;renderMeetingDetail();}
+    renderAll();
+    notify(lang==='vi'?'Đã lưu tóm tắt cuộc họp.':'Meeting summary saved.');
+  }catch(err){notify(safeServiceMessage(err.message));}
+  finally{analysisInFlight.delete(lock);badge?.classList.add('hidden');if(btn){btn.disabled=false;updateMeetingDetailLocale();}}
 }
 
 /* ---------------- Trans Tab Switching & Q&A Chat ---------------- */
@@ -1764,3 +1915,5 @@ for (const [id, action] of [['signinPassword',signInWithEmail],['signupPassword'
     if(event.key==='Enter'&&!event.isComposing){event.preventDefault();action();}
   });
 }
+
+

@@ -4,6 +4,6 @@
   "private": true,
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node --test tests/pwa.test.mjs"
+    "test": "node --test tests/pwa.test.mjs regression_tests/test_ui.cjs"
   }
 }

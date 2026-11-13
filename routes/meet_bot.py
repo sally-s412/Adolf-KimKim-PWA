@@ -15,6 +15,7 @@ import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from routes.speech_errors import SpeechServiceError, speech_error_message
 from routes.summary_service import summarize_meeting
 
 logger = logging.getLogger("routes.meet_bot")
@@ -150,8 +151,13 @@ async def _post_process_job(job_id: str) -> None:
             files = {"file": ("meeting_audio.wav", audio_bytes, "audio/wav")}
             resp = await client.post(SPEECH_SERVICE_URL, files=files)
             if resp.status_code != 200:
-                raise RuntimeError(f"Gipformer STT error ({resp.status_code}): {resp.text[:200]}")
-            stt_data = resp.json()
+                raise SpeechServiceError(resp.status_code)
+            try:
+                stt_data = resp.json()
+            except ValueError:
+                raise SpeechServiceError(502)
+            if not isinstance(stt_data, dict) or stt_data.get('status') == 'error':
+                raise SpeechServiceError(502)
 
         raw_segments = stt_data.get("segments", [])
         transcript = map_speakers_with_timeline(raw_segments, speaker_timeline, participants)
@@ -194,9 +200,9 @@ async def _post_process_job(job_id: str) -> None:
         job["message"] = "Hoàn tất ghi âm, phiên âm và tóm tắt AI!"
 
     except Exception as e:
-        logger.error(f"Post-processing failed for job {job_id}: {e}")
+        logger.error("Post-processing failed for job %s (%s)", job_id, type(e).__name__)
         job["status"] = "error"
-        job["message"] = f"Lỗi xử lý âm thanh: {e}"
+        job["message"] = speech_error_message(e.status if isinstance(e, SpeechServiceError) else 504 if isinstance(e, httpx.TimeoutException) else 503, "vi")
 
 
 @router.post("/join")

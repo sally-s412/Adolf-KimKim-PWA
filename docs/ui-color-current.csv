@@ -1,0 +1,586 @@
+file,line,color,classification
+frontend/appearance.js,2,#07152e,content / canvas / data validation
+frontend/appearance.js,2,#ffffff,content / canvas / data validation
+frontend/appearance.js,2,#07152e,content / canvas / data validation
+frontend/appearance.js,2,#ffffff,content / canvas / data validation
+frontend/appearance.js,4,#2f64ec,content / canvas / data validation
+frontend/appearance.js,4,#2f64ec,content / canvas / data validation
+frontend/communityCover.js,4,#244c9d,content / canvas / data validation
+frontend/communityCover.js,4,#547df3,content / canvas / data validation
+frontend/communityCover.js,4,#0c1733,content / canvas / data validation
+frontend/communityCover.js,4,#375d9f,content / canvas / data validation
+frontend/communityCover.js,4,#b7d8fa,content / canvas / data validation
+frontend/communityCover.js,4,#7aa9f2,content / canvas / data validation
+frontend/communityCover.js,4,#d2efe9,content / canvas / data validation
+frontend/communityCover.js,4,#91c6e1,content / canvas / data validation
+frontend/communityCover.js,4,#d5c7f2,content / canvas / data validation
+frontend/communityCover.js,4,#8dabe8,content / canvas / data validation
+frontend/communityCover.js,4,#f1d9e6,content / canvas / data validation
+frontend/communityCover.js,4,#b7c8ef,content / canvas / data validation
+frontend/communityCover.js,4,#102353,content / canvas / data validation
+frontend/communityCover.js,4,#6ce2d0,content / canvas / data validation
+frontend/communityCover.js,4,#1c1850,content / canvas / data validation
+frontend/communityCover.js,4,#9876ee,content / canvas / data validation
+frontend/communityCover.js,4,#feccaa,content / canvas / data validation
+frontend/communityCover.js,4,#e189b8,content / canvas / data validation
+frontend/communityCover.js,4,#dabda2,content / canvas / data validation
+frontend/communityCover.js,4,#816b93,content / canvas / data validation
+frontend/communityCover.js,4,#72c6d1,content / canvas / data validation
+frontend/communityCover.js,4,#1759a3,content / canvas / data validation
+frontend/communityCover.js,4,#f8cddd,content / canvas / data validation
+frontend/communityCover.js,4,#d597c6,content / canvas / data validation
+frontend/communityCover.js,4,#1c4ba8,content / canvas / data validation
+frontend/communityCover.js,4,#8cc7fa,content / canvas / data validation
+frontend/communityCover.js,4,#cdeaff,content / canvas / data validation
+frontend/communityCover.js,4,#879cdb,content / canvas / data validation
+frontend/communityCover.js,4,#163c4e,content / canvas / data validation
+frontend/communityCover.js,4,#83bca7,content / canvas / data validation
+frontend/communityCover.js,4,#ffd6be,content / canvas / data validation
+frontend/communityCover.js,4,#f4a3a3,content / canvas / data validation
+frontend/communityCover.js,4,#2347b8,content / canvas / data validation
+frontend/communityCover.js,4,#61a5f4,content / canvas / data validation
+frontend/communityCover.js,4,#171d31,content / canvas / data validation
+frontend/communityCover.js,4,#7885ad,content / canvas / data validation
+frontend/communityCover.js,24,#16284e,content / canvas / data validation
+frontend/design-tokens.css,2,#fcc188,token foundation
+frontend/design-tokens.css,2,#2834e7,token foundation
+frontend/design-tokens.css,2,#9765be,token foundation
+frontend/design-tokens.css,2,#fff,token foundation
+frontend/design-tokens.css,2,#5068e0,token foundation
+frontend/design-tokens.css,2,#fff,token foundation
+frontend/design-tokens.css,2,#6178ed,token foundation
+frontend/design-tokens.css,2,#e07a85,token foundation
+frontend/design-tokens.css,2,#7fbeac,token foundation
+frontend/design-tokens.css,2,#d6b77f,token foundation
+frontend/design-tokens.css,2,#9dacff,token foundation
+frontend/design-tokens.css,2,#202b43,token foundation
+frontend/design-tokens.css,2,#263653,token foundation
+frontend/design-tokens.css,2,"rgba(43,57,85,.9)",token foundation
+frontend/design-tokens.css,2,#283752,token foundation
+frontend/design-tokens.css,2,"rgba(32,44,66,.86)",token foundation
+frontend/design-tokens.css,2,"rgba(200,214,255,.07)",token foundation
+frontend/design-tokens.css,2,"rgba(205,216,248,.14)",token foundation
+frontend/design-tokens.css,2,#f2f5fd,token foundation
+frontend/design-tokens.css,2,#d1dcef,token foundation
+frontend/design-tokens.css,2,#a8b8d1,token foundation
+frontend/design-tokens.css,2,"rgba(101,126,231,.18)",token foundation
+frontend/design-tokens.css,2,"rgba(139,158,221,.08)",token foundation
+frontend/design-tokens.css,2,"rgba(214,224,247,.1)",token foundation
+frontend/design-tokens.css,2,"rgba(109,133,232,.17)",token foundation
+frontend/design-tokens.css,2,#bacaff,token foundation
+frontend/design-tokens.css,2,"rgba(10,20,42,.22)",token foundation
+frontend/design-tokens.css,2,"rgba(252,193,136,.1)",token foundation
+frontend/design-tokens.css,2,"rgba(40,52,231,.25)",token foundation
+frontend/design-tokens.css,2,"rgba(151,101,190,.18)",token foundation
+frontend/design-tokens.css,2,#566fce,token foundation
+frontend/design-tokens.css,2,#344b9f,token foundation
+frontend/design-tokens.css,2,#89635b,token foundation
+frontend/design-tokens.css,2,#4267a9,token foundation
+frontend/design-tokens.css,2,#324f96,token foundation
+frontend/design-tokens.css,2,#806ca8,token foundation
+frontend/design-tokens.css,3,#3655c7,token foundation
+frontend/design-tokens.css,3,#fff,token foundation
+frontend/design-tokens.css,3,#2c48b1,token foundation
+frontend/design-tokens.css,3,#b84756,token foundation
+frontend/design-tokens.css,3,#307b68,token foundation
+frontend/design-tokens.css,3,#8e6829,token foundation
+frontend/design-tokens.css,3,#4867d4,token foundation
+frontend/design-tokens.css,3,#edf1fa,token foundation
+frontend/design-tokens.css,3,#e7edf8,token foundation
+frontend/design-tokens.css,3,"rgba(253,254,255,.85)",token foundation
+frontend/design-tokens.css,3,#f7f9fd,token foundation
+frontend/design-tokens.css,3,"rgba(247,250,255,.86)",token foundation
+frontend/design-tokens.css,3,"rgba(74,99,163,.045)",token foundation
+frontend/design-tokens.css,3,"rgba(57,77,128,.14)",token foundation
+frontend/design-tokens.css,3,#21304b,token foundation
+frontend/design-tokens.css,3,#465a79,token foundation
+frontend/design-tokens.css,3,#627592,token foundation
+frontend/design-tokens.css,3,"rgba(65,91,201,.1)",token foundation
+frontend/design-tokens.css,3,"rgba(69,88,144,.07)",token foundation
+frontend/design-tokens.css,3,"rgba(71,99,202,.1)",token foundation
+frontend/design-tokens.css,3,#3655b1,token foundation
+frontend/design-tokens.css,3,#f2c6a5,token foundation
+frontend/design-tokens.css,3,#c3d3f2,token foundation
+frontend/design-tokens.css,3,#b8caec,token foundation
+frontend/design-tokens.css,3,#d5bfdf,token foundation
+frontend/design-tokens.css,3,"rgba(47,70,115,.13)",token foundation
+frontend/design-tokens.css,5,#7e9fff,token foundation
+frontend/design-tokens.css,5,#d6b77f,token foundation
+frontend/design-tokens.css,5,#7fbeac,token foundation
+frontend/design-tokens.css,5,#e07a85,token foundation
+frontend/design-tokens.css,5,#b5a2ed,token foundation
+frontend/design-tokens.css,5,#79bdcf,token foundation
+frontend/design-tokens.css,5,#d59aba,token foundation
+frontend/design-tokens.css,6,#3655c7,token foundation
+frontend/design-tokens.css,6,#8e6829,token foundation
+frontend/design-tokens.css,6,#307b68,token foundation
+frontend/design-tokens.css,6,#b84756,token foundation
+frontend/design-tokens.css,6,#7657ac,token foundation
+frontend/design-tokens.css,6,#286f87,token foundation
+frontend/design-tokens.css,6,#9c427c,token foundation
+frontend/index.html,36,#23293f,UI
+frontend/index.html,75,"rgba(59,130,246,.6)",UI
+frontend/index.html,88,"rgba(59,130,246,.6)",UI
+frontend/index.html,103,#93a4c3,UI
+frontend/index.html,115,#3b82f6,UI
+frontend/index.html,182,"rgba(59,130,246,0.12)",UI
+frontend/index.html,182,"rgba(59,130,246,0.4)",UI
+frontend/index.html,377,"rgba(0,0,0,.5)",UI
+frontend/index.html,443,#3b82f6,UI
+frontend/index.html,500,"rgba(0,0,0,.5)",UI
+frontend/index.html,520,"rgba(255,255,255,0.08)",UI
+frontend/legacy-color-tokens.css,3,#bf87f0,token foundation
+frontend/legacy-color-tokens.css,4,#92f0ed,token foundation
+frontend/legacy-color-tokens.css,5,#090f23a6,token foundation
+frontend/legacy-color-tokens.css,6,#e88bac,token foundation
+frontend/legacy-color-tokens.css,7,#111827,token foundation
+frontend/legacy-color-tokens.css,8,#0008,token foundation
+frontend/legacy-color-tokens.css,9,#ffffff20,token foundation
+frontend/legacy-color-tokens.css,10,#091e4c,token foundation
+frontend/legacy-color-tokens.css,11,#113072,token foundation
+frontend/legacy-color-tokens.css,12,#071c4c,token foundation
+frontend/legacy-color-tokens.css,13,#071d4e,token foundation
+frontend/legacy-color-tokens.css,14,#143667,token foundation
+frontend/legacy-color-tokens.css,15,"rgba(11,23,52,.94)",token foundation
+frontend/legacy-color-tokens.css,16,"rgba(160,195,255,.04)",token foundation
+frontend/legacy-color-tokens.css,17,"rgba(59,130,245,.35)",token foundation
+frontend/legacy-color-tokens.css,18,#93a4c3,token foundation
+frontend/legacy-color-tokens.css,19,#e8edf7,token foundation
+frontend/legacy-color-tokens.css,20,#788cac,token foundation
+frontend/legacy-color-tokens.css,21,#1e4274,token foundation
+frontend/legacy-color-tokens.css,22,#8697b2,token foundation
+frontend/legacy-color-tokens.css,23,#2f64ec,token foundation
+frontend/legacy-color-tokens.css,24,#5599ff,token foundation
+frontend/legacy-color-tokens.css,25,#0b1734,token foundation
+frontend/legacy-color-tokens.css,26,#b5c1d6,token foundation
+frontend/legacy-color-tokens.css,27,#20365b,token foundation
+frontend/legacy-color-tokens.css,28,#e9edf7,token foundation
+frontend/legacy-color-tokens.css,29,#fff,token foundation
+frontend/legacy-color-tokens.css,30,#eef3fc,token foundation
+frontend/legacy-color-tokens.css,31,#5d6d86,token foundation
+frontend/legacy-color-tokens.css,32,#dce3ef,token foundation
+frontend/legacy-color-tokens.css,33,#172e51,token foundation
+frontend/legacy-color-tokens.css,34,#ffffff50,token foundation
+frontend/legacy-color-tokens.css,35,#ffffff35,token foundation
+frontend/legacy-color-tokens.css,36,#ffffff88,token foundation
+frontend/legacy-color-tokens.css,37,#ffffff22,token foundation
+frontend/legacy-color-tokens.css,38,#fff4,token foundation
+frontend/legacy-color-tokens.css,39,#fff3,token foundation
+frontend/legacy-color-tokens.css,40,#386df1,token foundation
+frontend/legacy-color-tokens.css,41,#287b85,token foundation
+frontend/legacy-color-tokens.css,42,#24868d24,token foundation
+frontend/legacy-color-tokens.css,43,#2fa6b51a,token foundation
+frontend/legacy-color-tokens.css,44,#b64680,token foundation
+frontend/legacy-color-tokens.css,45,#ae548f22,token foundation
+frontend/legacy-color-tokens.css,46,#f171a81a,token foundation
+frontend/legacy-color-tokens.css,47,#7e59d6,token foundation
+frontend/legacy-color-tokens.css,48,#9567c824,token foundation
+frontend/legacy-color-tokens.css,49,#7450d329,token foundation
+frontend/legacy-color-tokens.css,50,#208273,token foundation
+frontend/legacy-color-tokens.css,51,#349c7e20,token foundation
+frontend/legacy-color-tokens.css,52,#57caab22,token foundation
+frontend/legacy-color-tokens.css,53,#bc6642,token foundation
+frontend/legacy-color-tokens.css,54,#c77b4922,token foundation
+frontend/legacy-color-tokens.css,55,#edaa6f22,token foundation
+frontend/legacy-color-tokens.css,56,#101d37,token foundation
+frontend/legacy-color-tokens.css,57,#030814a6,token foundation
+frontend/legacy-color-tokens.css,58,#87b3ff,token foundation
+frontend/legacy-color-tokens.css,59,#386df125,token foundation
+frontend/legacy-color-tokens.css,60,#ee5b81,token foundation
+frontend/legacy-color-tokens.css,61,#5583ef77,token foundation
+frontend/legacy-color-tokens.css,62,#386df119,token foundation
+frontend/legacy-color-tokens.css,63,#739cfa,token foundation
+frontend/legacy-color-tokens.css,64,#7297ff,token foundation
+frontend/legacy-color-tokens.css,65,#2f58bd,token foundation
+frontend/legacy-color-tokens.css,66,#e98ec8,token foundation
+frontend/legacy-color-tokens.css,67,#668ee9,token foundation
+frontend/legacy-color-tokens.css,68,#668ee90d,token foundation
+frontend/legacy-color-tokens.css,69,#365fbd50,token foundation
+frontend/legacy-color-tokens.css,70,#a68cef35,token foundation
+frontend/legacy-color-tokens.css,71,#a7c5ff,token foundation
+frontend/legacy-color-tokens.css,72,#070e1d,token foundation
+frontend/legacy-color-tokens.css,73,#345ec6,token foundation
+frontend/legacy-color-tokens.css,74,#ae76bb,token foundation
+frontend/legacy-color-tokens.css,75,#0005,token foundation
+frontend/legacy-color-tokens.css,76,#386df126,token foundation
+frontend/legacy-color-tokens.css,77,#386df111,token foundation
+frontend/legacy-color-tokens.css,78,#386df12a,token foundation
+frontend/legacy-color-tokens.css,79,#6695ff,token foundation
+frontend/legacy-color-tokens.css,80,#50bba4,token foundation
+frontend/legacy-color-tokens.css,81,#4eb59724,token foundation
+frontend/legacy-color-tokens.css,82,#da80ad,token foundation
+frontend/legacy-color-tokens.css,83,#d779aa24,token foundation
+frontend/legacy-color-tokens.css,84,#deb76e,token foundation
+frontend/legacy-color-tokens.css,85,#dbaf5c24,token foundation
+frontend/legacy-color-tokens.css,86,#a088e2,token foundation
+frontend/legacy-color-tokens.css,87,#a481de24,token foundation
+frontend/legacy-color-tokens.css,88,#63c4e1,token foundation
+frontend/legacy-color-tokens.css,89,#65b8d624,token foundation
+frontend/legacy-color-tokens.css,90,"rgba(255,255,255,.86)",token foundation
+frontend/legacy-color-tokens.css,91,"rgba(9,15,28,.98)",token foundation
+frontend/legacy-color-tokens.css,92,"rgba(0,0,0,.4)",token foundation
+frontend/legacy-color-tokens.css,93,"rgba(255,255,255,.35)",token foundation
+frontend/legacy-color-tokens.css,94,"rgba(255,255,255,.06)",token foundation
+frontend/legacy-color-tokens.css,95,"rgba(255,255,255,.75)",token foundation
+frontend/legacy-color-tokens.css,96,"rgba(0,0,0,.18)",token foundation
+frontend/legacy-color-tokens.css,97,"rgba(10,20,50,.1)",token foundation
+frontend/legacy-color-tokens.css,98,"rgba(12,22,42,.4)",token foundation
+frontend/legacy-color-tokens.css,99,"rgba(59,130,246,.15)",token foundation
+frontend/legacy-color-tokens.css,100,"rgba(96,165,250,.45)",token foundation
+frontend/legacy-color-tokens.css,101,"rgba(59,130,246,.17)",token foundation
+frontend/legacy-color-tokens.css,102,#93baff,token foundation
+frontend/legacy-color-tokens.css,103,#4b91ff,token foundation
+frontend/legacy-color-tokens.css,104,"rgba(148,163,184,.1)",token foundation
+frontend/legacy-color-tokens.css,105,#275fd1,token foundation
+frontend/legacy-color-tokens.css,106,"rgba(148,163,184,.07)",token foundation
+frontend/legacy-color-tokens.css,107,#75aaff,token foundation
+frontend/legacy-color-tokens.css,108,#1d2d49,token foundation
+frontend/legacy-color-tokens.css,109,#edf2fa,token foundation
+frontend/legacy-color-tokens.css,110,#e7efff,token foundation
+frontend/legacy-color-tokens.css,111,#2d5bb3,token foundation
+frontend/legacy-color-tokens.css,112,#0c1427,token foundation
+frontend/legacy-color-tokens.css,113,#f3f6fc,token foundation
+frontend/legacy-color-tokens.css,114,#bcd3ff,token foundation
+frontend/legacy-color-tokens.css,115,#203b65,token foundation
+frontend/legacy-color-tokens.css,116,#c3ece4,token foundation
+frontend/legacy-color-tokens.css,117,#e4d0fb,token foundation
+frontend/legacy-color-tokens.css,118,#ffd9bd,token foundation
+frontend/legacy-color-tokens.css,119,#d0dcfa,token foundation
+frontend/legacy-color-tokens.css,120,"rgba(47,100,236,.18)",token foundation
+frontend/legacy-color-tokens.css,121,#244c9d,token foundation
+frontend/legacy-color-tokens.css,122,#547df3,token foundation
+frontend/legacy-color-tokens.css,123,"rgba(12,28,59,.82)",token foundation
+frontend/legacy-color-tokens.css,124,#ffffff33,token foundation
+frontend/legacy-color-tokens.css,125,#0003,token foundation
+frontend/legacy-color-tokens.css,126,#8cafff,token foundation
+frontend/legacy-color-tokens.css,127,#08122a,token foundation
+frontend/legacy-color-tokens.css,128,#2834E7,token foundation
+frontend/legacy-color-tokens.css,129,#FBB1C3,token foundation
+frontend/legacy-color-tokens.css,130,#1d263e,token foundation
+frontend/legacy-color-tokens.css,131,#243251,token foundation
+frontend/legacy-color-tokens.css,132,"rgba(37,49,78,.9)",token foundation
+frontend/legacy-color-tokens.css,133,#263351,token foundation
+frontend/legacy-color-tokens.css,134,"rgba(26,35,56,.96)",token foundation
+frontend/legacy-color-tokens.css,135,"rgba(165,186,241,.09)",token foundation
+frontend/legacy-color-tokens.css,136,"rgba(184,202,244,.14)",token foundation
+frontend/legacy-color-tokens.css,137,#f2f5ff,token foundation
+frontend/legacy-color-tokens.css,138,#d0dbf2,token foundation
+frontend/legacy-color-tokens.css,139,#9fafd0,token foundation
+frontend/legacy-color-tokens.css,140,#718dff,token foundation
+frontend/legacy-color-tokens.css,141,#718dff24,token foundation
+frontend/legacy-color-tokens.css,142,#8ca9ef12,token foundation
+frontend/legacy-color-tokens.css,143,#c7d5ff,token foundation
+frontend/legacy-color-tokens.css,144,#2834e74d,token foundation
+frontend/legacy-color-tokens.css,145,#ac86c91a,token foundation
+frontend/legacy-color-tokens.css,146,#1c263b,token foundation
+frontend/legacy-color-tokens.css,147,#25334f,token foundation
+frontend/legacy-color-tokens.css,148,#303956,token foundation
+frontend/legacy-color-tokens.css,149,#eaf0fa,token foundation
+frontend/legacy-color-tokens.css,150,#e3eafb,token foundation
+frontend/legacy-color-tokens.css,151,"rgba(250,252,255,.86)",token foundation
+frontend/legacy-color-tokens.css,152,#f4f7fd,token foundation
+frontend/legacy-color-tokens.css,153,"rgba(244,248,255,.96)",token foundation
+frontend/legacy-color-tokens.css,154,#526ed10b,token foundation
+frontend/legacy-color-tokens.css,155,#365b9c20,token foundation
+frontend/legacy-color-tokens.css,156,#1d2b49,token foundation
+frontend/legacy-color-tokens.css,157,#415374,token foundation
+frontend/legacy-color-tokens.css,158,#607392,token foundation
+frontend/legacy-color-tokens.css,159,#405ee4,token foundation
+frontend/legacy-color-tokens.css,160,#405ee416,token foundation
+frontend/legacy-color-tokens.css,161,#7c96df13,token foundation
+frontend/legacy-color-tokens.css,162,#253f71,token foundation
+frontend/legacy-color-tokens.css,163,#6c8df633,token foundation
+frontend/legacy-color-tokens.css,164,#c5a8e221,token foundation
+frontend/legacy-color-tokens.css,165,#edf3fc,token foundation
+frontend/legacy-color-tokens.css,166,#e7edfc,token foundation
+frontend/legacy-color-tokens.css,167,#e4e8f8,token foundation
+frontend/legacy-color-tokens.css,168,#09132c30,token foundation
+frontend/legacy-color-tokens.css,169,#8c9aff35,token foundation
+frontend/legacy-color-tokens.css,170,#182549,token foundation
+frontend/legacy-color-tokens.css,171,#263b9a,token foundation
+frontend/legacy-color-tokens.css,172,#384bca,token foundation
+frontend/legacy-color-tokens.css,173,#9b8ad0,token foundation
+frontend/legacy-color-tokens.css,174,#ffffff12,token foundation
+frontend/legacy-color-tokens.css,175,#ffffff05,token foundation
+frontend/legacy-color-tokens.css,176,#ffffff03,token foundation
+frontend/legacy-color-tokens.css,177,#dbe5ff,token foundation
+frontend/legacy-color-tokens.css,178,#d6e1ff,token foundation
+frontend/legacy-color-tokens.css,179,#eef3ff,token foundation
+frontend/legacy-color-tokens.css,180,#213b86,token foundation
+frontend/legacy-color-tokens.css,181,#ffffff0d,token foundation
+frontend/legacy-color-tokens.css,182,#ffffff40,token foundation
+frontend/legacy-color-tokens.css,183,#07172b0a,token foundation
+frontend/legacy-color-tokens.css,184,#15223e,token foundation
+frontend/legacy-color-tokens.css,185,#2834b7,token foundation
+frontend/legacy-color-tokens.css,186,#7882d1,token foundation
+frontend/legacy-color-tokens.css,187,#c4a2d7,token foundation
+frontend/legacy-color-tokens.css,188,#d5dfff,token foundation
+frontend/legacy-color-tokens.css,189,#d3ddff,token foundation
+frontend/legacy-color-tokens.css,190,#ffffff38,token foundation
+frontend/legacy-color-tokens.css,191,#9eaeff20,token foundation
+frontend/legacy-color-tokens.css,192,#ffffff07,token foundation
+frontend/legacy-color-tokens.css,193,#060f4840,token foundation
+frontend/legacy-color-tokens.css,194,#ffffff13,token foundation
+frontend/legacy-color-tokens.css,195,#ffffff26,token foundation
+frontend/legacy-color-tokens.css,196,#f0f4ff,token foundation
+frontend/legacy-color-tokens.css,197,#07132f35,token foundation
+frontend/legacy-color-tokens.css,198,#7d97ef,token foundation
+frontend/legacy-color-tokens.css,199,#7d97ef25,token foundation
+frontend/legacy-color-tokens.css,200,#66bbad,token foundation
+frontend/legacy-color-tokens.css,201,#66bbad25,token foundation
+frontend/legacy-color-tokens.css,202,#cc93b5,token foundation
+frontend/legacy-color-tokens.css,203,#cc93b525,token foundation
+frontend/legacy-color-tokens.css,204,#d5b16a,token foundation
+frontend/legacy-color-tokens.css,205,#d5b16a25,token foundation
+frontend/legacy-color-tokens.css,206,#a695df,token foundation
+frontend/legacy-color-tokens.css,207,#a695df25,token foundation
+frontend/legacy-color-tokens.css,208,#7db9d0,token foundation
+frontend/legacy-color-tokens.css,209,#7db9d025,token foundation
+frontend/legacy-color-tokens.css,210,#24243e,token foundation
+frontend/legacy-color-tokens.css,211,#29334d,token foundation
+frontend/legacy-color-tokens.css,212,#f1eff8,token foundation
+frontend/legacy-color-tokens.css,213,#e0e3ef,token foundation
+frontend/legacy-color-tokens.css,214,#b6c0d5,token foundation
+frontend/legacy-color-tokens.css,215,"rgba(45,52,78,.82)",token foundation
+frontend/legacy-color-tokens.css,216,"rgba(35,41,63,.91)",token foundation
+frontend/legacy-color-tokens.css,217,"rgba(172,187,229,.12)",token foundation
+frontend/legacy-color-tokens.css,218,"rgba(198,206,237,.16)",token foundation
+frontend/legacy-color-tokens.css,219,#d5dff5,token foundation
+frontend/legacy-color-tokens.css,220,"rgba(42,50,76,.93)",token foundation
+frontend/legacy-color-tokens.css,221,#34415eb3,token foundation
+frontend/legacy-color-tokens.css,222,#0d0e08,token foundation
+frontend/legacy-color-tokens.css,223,"rgba(138,165,255,.19)",token foundation
+frontend/legacy-color-tokens.css,224,"rgba(100,120,166,.16)",token foundation
+frontend/legacy-color-tokens.css,225,#e5e6ef,token foundation
+frontend/legacy-color-tokens.css,226,#e7edf3,token foundation
+frontend/legacy-color-tokens.css,227,#253454,token foundation
+frontend/legacy-color-tokens.css,228,#374967,token foundation
+frontend/legacy-color-tokens.css,229,#596784,token foundation
+frontend/legacy-color-tokens.css,230,"rgba(237,240,249,.8)",token foundation
+frontend/legacy-color-tokens.css,231,"rgba(231,235,247,.92)",token foundation
+frontend/legacy-color-tokens.css,232,"rgba(151,167,209,.14)",token foundation
+frontend/legacy-color-tokens.css,233,"rgba(91,111,154,.18)",token foundation
+frontend/legacy-color-tokens.css,234,#344e80,token foundation
+frontend/legacy-color-tokens.css,235,"rgba(234,239,249,.94)",token foundation
+frontend/legacy-color-tokens.css,236,#cbd5e54d,token foundation
+frontend/legacy-color-tokens.css,237,#fbf5f1,token foundation
+frontend/legacy-color-tokens.css,238,"rgba(158,177,217,.14)",token foundation
+frontend/legacy-color-tokens.css,239,#17214d08,token foundation
+frontend/legacy-color-tokens.css,240,#4967c8bf,token foundation
+frontend/legacy-color-tokens.css,241,#575cafb3,token foundation
+frontend/legacy-color-tokens.css,242,#526dd8,token foundation
+frontend/legacy-color-tokens.css,243,#7471ce,token foundation
+frontend/legacy-color-tokens.css,244,#eef2ff,token foundation
+frontend/legacy-color-tokens.css,245,#151b4830,token foundation
+frontend/legacy-color-tokens.css,246,#15204e10,token foundation
+frontend/legacy-color-tokens.css,247,#5879df,token foundation
+frontend/legacy-color-tokens.css,248,#238b79,token foundation
+frontend/legacy-color-tokens.css,249,#b84b82,token foundation
+frontend/legacy-color-tokens.css,250,#a97614,token foundation
+frontend/legacy-color-tokens.css,251,#7a61d0,token foundation
+frontend/legacy-color-tokens.css,252,#25829b,token foundation
+frontend/legacy-color-tokens.css,253,#7c8ee7,token foundation
+frontend/legacy-color-tokens.css,254,#0c1014,token foundation
+frontend/legacy-color-tokens.css,255,#070a13d9,token foundation
+frontend/legacy-color-tokens.css,256,#a790ee66,token foundation
+frontend/legacy-color-tokens.css,257,#c3aeff,token foundation
+frontend/legacy-color-tokens.css,258,#433888,token foundation
+frontend/legacy-color-tokens.css,259,#122b55,token foundation
+frontend/legacy-color-tokens.css,260,#ffffffb3,token foundation
+frontend/legacy-color-tokens.css,261,#c6c8d1,token foundation
+frontend/legacy-color-tokens.css,262,#b5b6c2,token foundation
+frontend/legacy-color-tokens.css,263,#6b63d7,token foundation
+frontend/legacy-color-tokens.css,264,#3d6cec,token foundation
+frontend/legacy-color-tokens.css,265,#ffd2b6,token foundation
+frontend/legacy-color-tokens.css,266,#242630f5,token foundation
+frontend/legacy-color-tokens.css,267,#ffffff16,token foundation
+frontend/legacy-color-tokens.css,268,#e0e0ea,token foundation
+frontend/legacy-color-tokens.css,269,#ffffff10,token foundation
+frontend/legacy-color-tokens.css,270,#ffffff25,token foundation
+frontend/legacy-color-tokens.css,271,#aaa0ff,token foundation
+frontend/legacy-color-tokens.css,272,#c0c0ce,token foundation
+frontend/legacy-color-tokens.css,273,#f9f6ff,token foundation
+frontend/legacy-color-tokens.css,274,#603b9b,token foundation
+frontend/legacy-color-tokens.css,275,#ffffff55,token foundation
+frontend/legacy-color-tokens.css,276,#0002,token foundation
+frontend/legacy-color-tokens.css,277,#c0bfcd,token foundation
+frontend/legacy-color-tokens.css,278,#0006,token foundation
+frontend/legacy-color-tokens.css,279,#0007,token foundation
+frontend/legacy-color-tokens.css,280,#b385e6,token foundation
+frontend/legacy-color-tokens.css,281,#02040c,token foundation
+frontend/legacy-color-tokens.css,282,#050b1f,token foundation
+frontend/legacy-color-tokens.css,283,#1e40af,token foundation
+frontend/legacy-color-tokens.css,284,#3b82f6,token foundation
+frontend/legacy-color-tokens.css,285,"rgba(59,130,246,.14)",token foundation
+frontend/legacy-color-tokens.css,286,"rgba(59,130,246,.18)",token foundation
+frontend/legacy-color-tokens.css,287,#5b6a8c,token foundation
+frontend/legacy-color-tokens.css,288,#22c55e,token foundation
+frontend/legacy-color-tokens.css,289,#f59e0b,token foundation
+frontend/legacy-color-tokens.css,290,#ef4444,token foundation
+frontend/legacy-color-tokens.css,291,"rgba(59,130,246,.07)",token foundation
+frontend/legacy-color-tokens.css,292,"rgba(10,18,40,.55)",token foundation
+frontend/legacy-color-tokens.css,293,#2563eb,token foundation
+frontend/legacy-color-tokens.css,294,"rgba(34,197,94,.15)",token foundation
+frontend/legacy-color-tokens.css,295,"rgba(245,158,11,.15)",token foundation
+frontend/legacy-color-tokens.css,296,"rgba(239,68,68,.15)",token foundation
+frontend/legacy-color-tokens.css,297,"rgba(59,130,246,.6)",token foundation
+frontend/legacy-color-tokens.css,298,#fca5a5,token foundation
+frontend/legacy-color-tokens.css,299,"rgba(5,10,25,.4)",token foundation
+frontend/legacy-color-tokens.css,300,"rgba(59,130,246,.55)",token foundation
+frontend/legacy-color-tokens.css,301,"rgba(59,130,246,.5)",token foundation
+frontend/legacy-color-tokens.css,302,"rgba(59,130,246,.85)",token foundation
+frontend/legacy-color-tokens.css,303,"rgba(2,4,12,.4)",token foundation
+frontend/legacy-color-tokens.css,304,"rgba(59,130,246,.16)",token foundation
+frontend/legacy-color-tokens.css,305,"rgba(10,18,40,.5)",token foundation
+frontend/legacy-color-tokens.css,306,"rgba(59,130,246,.06)",token foundation
+frontend/legacy-color-tokens.css,307,#03060f,token foundation
+frontend/legacy-color-tokens.css,308,#0e1f45,token foundation
+frontend/legacy-color-tokens.css,309,#081029,token foundation
+frontend/legacy-color-tokens.css,310,"rgba(0,0,0,.5)",token foundation
+frontend/legacy-color-tokens.css,311,"rgba(239,68,68,.7)",token foundation
+frontend/legacy-color-tokens.css,312,"rgba(239,68,68,0)",token foundation
+frontend/legacy-color-tokens.css,313,"rgba(59,130,246,.08)",token foundation
+frontend/legacy-color-tokens.css,314,"rgba(59,130,246,.75)",token foundation
+frontend/legacy-color-tokens.css,315,"rgba(0,0,0,.45)",token foundation
+frontend/legacy-color-tokens.css,316,"rgba(59,130,246,.12)",token foundation
+frontend/legacy-color-tokens.css,317,"rgba(255,255,255,.1)",token foundation
+frontend/legacy-color-tokens.css,318,"rgba(0,0,0,.35)",token foundation
+frontend/legacy-color-tokens.css,319,"rgba(59,130,246,.22)",token foundation
+frontend/legacy-color-tokens.css,320,#0b1e43,token foundation
+frontend/legacy-color-tokens.css,321,"rgba(59,130,246,.45)",token foundation
+frontend/legacy-color-tokens.css,322,#788397,token foundation
+frontend/legacy-color-tokens.css,323,"rgba(5,11,31,.8)",token foundation
+frontend/legacy-color-tokens.css,324,#93c5fd,token foundation
+frontend/legacy-color-tokens.css,325,#243b69,token foundation
+frontend/legacy-color-tokens.css,326,#dceafa,token foundation
+frontend/legacy-color-tokens.css,327,#eaf3ff,token foundation
+frontend/legacy-color-tokens.css,328,#bdd9ff,token foundation
+frontend/legacy-color-tokens.css,329,#2864dc,token foundation
+frontend/legacy-color-tokens.css,330,"rgba(52,111,218,.12)",token foundation
+frontend/legacy-color-tokens.css,331,"rgba(64,112,181,.20)",token foundation
+frontend/legacy-color-tokens.css,332,#182f50,token foundation
+frontend/legacy-color-tokens.css,333,#435d7b,token foundation
+frontend/legacy-color-tokens.css,334,#536c89,token foundation
+frontend/legacy-color-tokens.css,335,"rgba(244,249,255,.64)",token foundation
+frontend/legacy-color-tokens.css,336,"rgba(233,243,255,.82)",token foundation
+frontend/legacy-color-tokens.css,337,"rgba(222,236,254,.60)",token foundation
+frontend/legacy-color-tokens.css,338,#607da5,token foundation
+frontend/legacy-color-tokens.css,339,#147348,token foundation
+frontend/legacy-color-tokens.css,340,#925707,token foundation
+frontend/legacy-color-tokens.css,341,#b62e45,token foundation
+frontend/legacy-color-tokens.css,342,"rgba(114,166,246,.34)",token foundation
+frontend/legacy-color-tokens.css,343,"rgba(130,204,230,.22)",token foundation
+frontend/legacy-color-tokens.css,344,"rgba(196,215,255,.45)",token foundation
+frontend/legacy-color-tokens.css,345,#d9e8fc,token foundation
+frontend/legacy-color-tokens.css,346,#e9f5fb,token foundation
+frontend/legacy-color-tokens.css,347,"rgba(255,255,255,.76)",token foundation
+frontend/legacy-color-tokens.css,348,"rgba(232,242,255,.52)",token foundation
+frontend/legacy-color-tokens.css,349,"rgba(255,255,255,.85)",token foundation
+frontend/legacy-color-tokens.css,350,"rgba(45,85,145,.07)",token foundation
+frontend/legacy-color-tokens.css,351,"rgba(242,249,255,.82)",token foundation
+frontend/legacy-color-tokens.css,352,"rgba(205,226,255,.52)",token foundation
+frontend/legacy-color-tokens.css,353,"rgba(54,94,155,.04)",token foundation
+frontend/legacy-color-tokens.css,354,"rgba(238,246,255,.94)",token foundation
+frontend/legacy-color-tokens.css,355,"rgba(36,76,134,.16)",token foundation
+frontend/legacy-color-tokens.css,356,"rgba(220,235,255,.72)",token foundation
+frontend/legacy-color-tokens.css,357,"rgba(192,45,67,.07)",token foundation
+frontend/legacy-color-tokens.css,358,"rgba(192,45,67,.24)",token foundation
+frontend/legacy-color-tokens.css,359,"rgba(39,68,108,.22)",token foundation
+frontend/legacy-color-tokens.css,360,"rgba(250,253,255,.86)",token foundation
+frontend/legacy-color-tokens.css,361,"rgba(224,238,255,.76)",token foundation
+frontend/legacy-color-tokens.css,362,"rgba(255,255,255,.9)",token foundation
+frontend/legacy-color-tokens.css,363,"rgba(50,91,151,.12)",token foundation
+frontend/legacy-color-tokens.css,364,"rgba(224,237,255,.68)",token foundation
+frontend/legacy-color-tokens.css,365,"rgba(249,252,255,.58)",token foundation
+frontend/legacy-color-tokens.css,366,#245ecb,token foundation
+frontend/legacy-color-tokens.css,367,#000,token foundation
+frontend/legacy-color-tokens.css,368,#526781,token foundation
+frontend/legacy-color-tokens.css,369,#20344f,token foundation
+frontend/legacy-color-tokens.css,370,"rgba(13,33,75,.58)",token foundation
+frontend/legacy-color-tokens.css,371,"rgba(105,157,248,.28)",token foundation
+frontend/legacy-color-tokens.css,372,"rgba(0,10,40,.1)",token foundation
+frontend/legacy-color-tokens.css,373,"rgba(22,89,221,.75)",token foundation
+frontend/legacy-color-tokens.css,374,#4b9bff,token foundation
+frontend/legacy-color-tokens.css,375,"rgba(79,135,247,.22)",token foundation
+frontend/legacy-color-tokens.css,376,"rgba(133,181,255,.36)",token foundation
+frontend/legacy-color-tokens.css,377,#d6e7ff,token foundation
+frontend/legacy-color-tokens.css,378,#bdcfea,token foundation
+frontend/legacy-color-tokens.css,379,#e0eaff,token foundation
+frontend/legacy-color-tokens.css,380,#70acff,token foundation
+frontend/legacy-color-tokens.css,381,"rgba(70,131,240,.2)",token foundation
+frontend/legacy-color-tokens.css,382,#9fc8ff,token foundation
+frontend/legacy-color-tokens.css,383,"rgba(246,250,255,.8)",token foundation
+frontend/legacy-color-tokens.css,384,"rgba(67,117,200,.22)",token foundation
+frontend/legacy-color-tokens.css,385,#2667e4,token foundation
+frontend/legacy-color-tokens.css,386,#4d8af4,token foundation
+frontend/legacy-color-tokens.css,387,#3569db,token foundation
+frontend/legacy-color-tokens.css,388,#275bbd,token foundation
+frontend/legacy-color-tokens.css,389,"rgba(117,157,247,.13)",token foundation
+frontend/legacy-color-tokens.css,390,"rgba(110,160,245,.22)",token foundation
+frontend/legacy-color-tokens.css,391,#edf2fc,token foundation
+frontend/legacy-color-tokens.css,392,#becbdd,token foundation
+frontend/legacy-color-tokens.css,393,#99abc4,token foundation
+frontend/legacy-color-tokens.css,394,"rgba(12,25,58,.48)",token foundation
+frontend/legacy-color-tokens.css,395,"rgba(5,12,29,.94)",token foundation
+frontend/legacy-color-tokens.css,396,"rgba(51,100,190,.08)",token foundation
+frontend/legacy-color-tokens.css,397,#a5b7d1,token foundation
+frontend/legacy-color-tokens.css,398,"rgba(37,82,203,.48)",token foundation
+frontend/legacy-color-tokens.css,399,#071125,token foundation
+frontend/legacy-color-tokens.css,400,#0b1c43,token foundation
+frontend/legacy-color-tokens.css,401,#070e21,token foundation
+frontend/legacy-color-tokens.css,402,"rgba(53,105,219,.1)",token foundation
+frontend/legacy-color-tokens.css,403,"rgba(67,93,132,.17)",token foundation
+frontend/legacy-color-tokens.css,404,#647996,token foundation
+frontend/legacy-color-tokens.css,405,"rgba(255,255,255,.82)",token foundation
+frontend/legacy-color-tokens.css,406,"rgba(247,250,255,.94)",token foundation
+frontend/legacy-color-tokens.css,407,"rgba(70,100,150,.045)",token foundation
+frontend/legacy-color-tokens.css,408,#607797,token foundation
+frontend/legacy-color-tokens.css,409,#dce9fb,token foundation
+frontend/legacy-color-tokens.css,410,#f3f7fd,token foundation
+frontend/legacy-color-tokens.css,411,#eaf1fa,token foundation
+frontend/legacy-color-tokens.css,412,"rgba(5,16,32,.05)",token foundation
+frontend/legacy-color-tokens.css,413,"rgba(240,93,107,.13)",token foundation
+frontend/legacy-color-tokens.css,414,"rgba(240,93,107,.3)",token foundation
+frontend/legacy-color-tokens.css,415,#ffa5af,token foundation
+frontend/legacy-color-tokens.css,416,#ffb0b8,token foundation
+frontend/legacy-color-tokens.css,417,"rgba(77,126,222,.24)",token foundation
+frontend/legacy-color-tokens.css,418,"rgba(5,14,28,.22)",token foundation
+frontend/legacy-color-tokens.css,419,"rgba(0,0,0,.16)",token foundation
+frontend/legacy-color-tokens.css,420,"rgba(0,0,0,.28)",token foundation
+frontend/legacy-color-tokens.css,421,"rgba(5,14,30,.4)",token foundation
+frontend/legacy-color-tokens.css,422,#050c1d,token foundation
+frontend/notes-studio.js,37,#202b45,content / canvas / data validation
+frontend/notes-studio.js,37,#f2f5ff,content / canvas / data validation
+frontend/offline.html,2,#050b1f,UI
+frontend/offline.html,3,#050b1f,UI
+frontend/offline.html,3,#e8edf7,UI
+frontend/offline.html,3,#1e3a68,UI
+frontend/offline.html,3,#0b1734,UI
+frontend/offline.html,3,#93a4c3,UI
+frontend/offline.html,3,#2f64ec,UI
+frontend/offline.html,3,white,UI
+frontend/offline.html,3,#a8b6ce,UI
+frontend/postStudio.js,13,#18233b,content / canvas / data validation
+frontend/postStudio.js,13,#aebbd3,content / canvas / data validation
+frontend/services/teamService.js,13,#3b82f6,content / canvas / data validation
+frontend/services/teamService.js,13,#f59e0b,content / canvas / data validation
+frontend/services/teamService.js,13,#22c55e,content / canvas / data validation
+frontend/services/teamService.js,13,#ef4444,content / canvas / data validation
+frontend/services/teamService.js,13,#a855f7,content / canvas / data validation
+frontend/storyEditor.js,9,#433888,content / canvas / data validation
+frontend/storyEditor.js,9,#122b55,content / canvas / data validation
+frontend/storyEditor.js,9,#d9709f,content / canvas / data validation
+frontend/storyEditor.js,9,#6f419d,content / canvas / data validation
+frontend/storyEditor.js,9,#146d84,content / canvas / data validation
+frontend/storyEditor.js,9,#19244c,content / canvas / data validation
+frontend/storyEditor.js,9,#bd704f,content / canvas / data validation
+frontend/storyEditor.js,9,#4a3157,content / canvas / data validation
+frontend/storyEditor.js,9,#242733,content / canvas / data validation
+frontend/storyEditor.js,9,#0c1014,content / canvas / data validation
+frontend/storyEditor.js,16,#ffffff,content / canvas / data validation
+frontend/storyEditor.js,25,#ffffff,content / canvas / data validation
+frontend/storyEditor.js,26,#ffffff,content / canvas / data validation
+frontend/storyEditor.js,27,#ffffff,content / canvas / data validation
+frontend/storyEditor.js,43,#ffffff,content / canvas / data validation
+frontend/storyEditor.js,43,#503487,content / canvas / data validation
+frontend/storyEditor.js,43,#0008,content / canvas / data validation

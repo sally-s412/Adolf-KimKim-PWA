@@ -5,12 +5,12 @@ window.I18N.vi = {
   navRecording: 'Ghi âm',
   navMore: 'Thêm',
   kimkimMeetingTitle: 'KimKim Meeting',
-  kimkimMeetingDescription: 'Dán link Google Meet để mời KimKim vào họp',
+  kimkimMeetingDescription: 'Dán link Google Meet của bạn hoặc người khác. Chủ phòng có thể cần duyệt KimKim vào họp.',
   inviteKimkimMeet: 'Mời KimKim vào Google Meet',
   kimkimMeetingTitlePh: 'Tiêu đề cuộc họp (tuỳ chọn)',
   signinTitle: "Đăng nhập",
-  signinSub: "Thống trị thế giới cùng Adolf KimKim",
-  signinGoogle: "🪐Đăng nhập với Google",
+  signinSub: "Đăng nhập để tiếp tục không gian của bạn.",
+  signinGoogle: "Đăng nhập với Google",
   emailLbl: "Email",
   pwLbl: "Mật khẩu",
   signinBtn: "Đăng nhập",
@@ -27,16 +27,16 @@ window.I18N.vi = {
   forgotBtn: "Gửi hướng dẫn",
   addNew: "+ Thêm mới",
   navHome: "Trang chủ",
-  navMeetings: "Cuộc họp",
+  navMeetings: "Tệp & bản ghi",
   navNotes: "Ghi chú",
-  navUploads: "Tải lên",
+  navUploads: "KimKim Upload",
   navTeam: "Nhóm",
   navPlan: "Gói cước",
   navRules: "Quy định",
   navSettings: "Cài đặt",
   logoutLbl: "Đăng xuất",
   searchPh: "Tìm kiếm cuộc họp, ghi chú...",
-  heroTitle: "Hi Sally, chào mừng đến với Adolf KimKim 💙",
+  heroTitle: "Chào mừng đến với ADOLF KIMKIM",
   heroSub: "Hãy mời KimKim vào lịch của bạn hoặc chọn ghi âm để bắt đầu ghi lại cuộc họp.",
   recordLive: "🔴 Ghi cuộc họp trực tiếp",
   scheduleNew: "📆 Lên lịch cuộc họp mới",
@@ -61,11 +61,11 @@ window.I18N.vi = {
   speakTime: "Thời gian phát biểu",
   notesSub: "Toàn bộ ghi chú được tạo tự động và thủ công",
   ntitle: "Community UAT meeting",
-  ncontent: "Sally đã đưa ra phản hồi sau giai đoạn UAT, đề cập đến các tính năng của Sprint 34 cũng như các vấn đề liên quan đến sự chậm trễ của dự án. Cô đã gay gắt chỉ trích Quản lý dự án (PM) Luis Bui vì sự thiếu quan tâm đến đội ngũ, đồng thời phê bình Lập trình viên Backend Son Nguyen vì thiếu sự chỉn chu, tận tâm trong công việc. .",
+  ncontent: "Ghi lại ý tưởng, quyết định và việc cần làm của bạn.",
   uploadSub: "Tải file âm thanh, video, PDF hoặc Word để AI phân tích và tạo bản ghi tự động",
   dropText: "Kéo thả file MP3, WAV, MP4, PDF hoặc DOCX vào đây, hoặc chọn file để tải lên",
   selectFile: "Chọn file",
-  teamSub: "Quản lý thành viên có quyền truy cập",
+  teamSub: "Danh sách lời mời beta. Chưa gửi email hoặc cấp quyền tài liệu chung.",
   inviteBtn: "+ Mời thành viên",
   sAccount: "Tài khoản",
   sMeeting: "Cuộc họp",
@@ -198,7 +198,7 @@ window.I18N.vi = {
   avatarUploading: "Đang tải ảnh lên...",
   avatarUploaded: "Đã cập nhật ảnh đại diện.",
   scopedChatNote: "Chatbot chỉ trả lời trong phạm vi bản ghi và file đã tải lên của cuộc họp này.",
-  navRecording: "Recording",
+  navRecording: "KimKim Recorder",
   recordingSub: "Ghi âm cuộc họp trực tiếp và tạo bản ghi tự động",
   recDesc: "Bắt đầu ghi âm cuộc họp trực tiếp và tạo bản ghi tự động",
   startRec: "🔴 Bắt đầu ghi âm",
@@ -207,7 +207,7 @@ window.I18N.vi = {
   addNewNoteOpt: "📝 Ghi chú mới",
   addNewUploadOpt: "📤 Upload",
   inviteKimkimLbl: "Mời Adolf KimKim vào lịch",
-  inviteKimkimHint: "KimKim sẽ tự động tham gia và ghi âm cuộc họp này",
+  inviteKimkimHint: "Gửi yêu cầu mời KimKim ngay khi lưu. Chưa hỗ trợ tự vào theo lịch.",
   teamInviteTitle: "Mời thành viên",
   teamInviteEmailLbl: "Email",
   teamInviteSendBtn: "Gửi lời mời",
@@ -221,3 +221,23 @@ window.I18N.vi = {
   notLoggedIn: "Chưa đăng nhập.",
   errStorageCheckHint: "Kiểm tra: đã bật Cloud Storage cho project, đúng storageBucket trong cấu hình, và đã deploy storage.rules cho phép user ghi vào avatars/{uid}/.",
 };
+
+Object.assign(window.I18N.vi,{"uiAddNote": "+ Thêm ghi chú", "uiNewNote": "Ghi chú mới", "uiNoteTitle": "Tiêu đề", "uiNoteContent": "Nội dung", "uiNoteTitlePh": "Đặt tên cho ghi chú", "uiNoteContentPh": "Viết nội dung ghi chú...", "uiNoteTitleRequired": "Vui lòng nhập tiêu đề ghi chú.", "uiNoteSaveFailed": "Chưa lưu được ghi chú. Vui lòng thử lại.", "uiNoteSaved": "Đã lưu ghi chú.", "uiAccountHelp": "Cập nhật thông tin hiển thị của bạn. Email được quản lý bởi tài khoản đăng nhập.", "uiMeetingHelp": "Các tuỳ chọn được lưu. Tự vào họp theo lịch chưa được hỗ trợ trong beta.", "uiAIHelp": "Các tuỳ chọn được lưu; việc áp dụng phụ thuộc pipeline AI hiện tại.", "uiPasswordHelp": "Nhập mật khẩu hiện tại và mật khẩu mới để cập nhật tài khoản.", "uiAdvancedConnection": "Kết nối nâng cao", "uiConfirmTitle": "Xác nhận thao tác", "uiConfirmAction": "Xác nhận", "uiCloseMessage": "Đóng thông báo"});
+
+Object.assign(window.I18N.vi,{"uiEmptyNoteTitle": "Sẵn sàng ghi lại ý tưởng?", "uiEmptyNoteHelp": "Tạo ghi chú mới hoặc chọn một ghi chú ở bên trái.", "uiSaving": "Đang lưu..."});
+
+Object.assign(window.I18N.vi,{loginMeetKimKim:"Gặp KimKim.",loginKimKimHelp:"Trợ lý AI giúp bạn ghi lại, đọc hiểu và tóm tắt nội dung.",loginRecord:"Ghi âm",loginRead:"Đọc tệp",loginSummarize:"Tóm tắt"});
+
+Object.assign(window.I18N.vi,{"studioLoginSub": "Tập trung vào cuộc trò chuyện. Để KimKim lo phần ghi nhớ.", "studioRecord": "Ghi âm cùng KimKim", "studioRecordSub": "Lưu lại nội dung quan trọng của cuộc trò chuyện.", "studioRead": "Đọc tệp thông minh", "studioReadSub": "Từ âm thanh, video đến PDF và tài liệu Word.", "studioSummarize": "Hiểu nhanh với AI", "studioSummarizeSub": "Tìm điểm chính, tóm tắt và trao đổi với KimKim.", "accountSettingsTitle": "Cài đặt tài khoản", "accountSettingsSub": "Quản lý tài khoản đăng nhập, bảo mật và tùy chọn ứng dụng."});
+
+Object.assign(window.I18N.vi,{authWelcome:"CHÀO MỪNG ĐẾN VỚI<br>ADOLF KIMKIM"});
+
+// Meeting detail UI strings; never translate user-authored content.
+Object.assign(window.I18N.vi,{"detailBack": "Quay lại", "detailRecording": "ĐANG GHI ÂM", "detailSummarizing": "KimKim đang tóm tắt", "detailBotConnecting": "KimKim đang kết nối vào Google Meet…", "detailStopSummary": "Kết thúc và tóm tắt", "detailProcessing": "Đang xử lý AI…", "detailTranscribing": "Đang phiên âm và tóm tắt…", "detailMicTitle": "Bật / tắt phiên âm trực tiếp", "detailEndTitle": "Dừng ghi âm và tóm tắt", "detailThinking": "KimKim đang suy nghĩ…", "detailNoReply": "Chưa nhận được phản hồi. Vui lòng thử lại.", "detailNoResult": "Chưa có kết quả.", "detailNoTranscript": "Chưa có bản chép lời.", "detailNoSpeakerData": "Chưa có dữ liệu người nói.", "detailSpeaking": "đang nói…", "detailContentTab": "Nội dung tài liệu", "detailTranscriptTab": "Bản chép lời", "detailSummaryDocument": "Tóm tắt tài liệu với AI", "detailSummaryMeeting": "Tóm tắt cuộc họp với AI", "detailSummaryNeeded": "Vui lòng tóm tắt nội dung trước.", "detailTranscriptNeeded": "Cần có bản chép lời trước.", "detailMindmapWorking": "Đang tạo sơ đồ tư duy…", "detailMindmapReady": "Sơ đồ tư duy đã mở trong tab mới.", "detailSlidesWorking": "Đang xuất PowerPoint…", "detailSlidesReady": "Đã tải PowerPoint xuống.", "detailImageWorking": "Đang xuất ảnh tóm tắt…", "detailImageReady": "Đã tải ảnh tóm tắt xuống.", "detailError": "Lỗi: ", "detailPopupBlocked": "Cho phép mở cửa sổ bật lên để xem sơ đồ tư duy.", "detailInvalidExport": "Dịch vụ chưa trả về tệp hợp lệ. Vui lòng thử lại.", "detailNotesPlaceholder": "Thêm ghi chú của bạn…", "detailTranslationSoon": "Dịch · Sắp có", "detailTranslationUnavailable": "Chưa kết nối dịch nội dung. Bản tóm tắt gốc được giữ nguyên.", "detailSummaryImage": "Xuất ảnh tóm tắt", "detailPowerPoint": "Xuất PowerPoint", "detailSendQuestion": "Gửi câu hỏi", "detailNoSavedResult": "Chưa có kết quả được lưu."});
+
+Object.assign(window.I18N.vi,{"filesFormat": "Loại tệp", "filesAllFormats": "Tất cả loại tệp", "filesUnknown": "Chưa rõ", "filesSource": "Nguồn", "filesAllSources": "Tất cả nguồn", "filesUpload": "Tệp tải lên", "filesRecorder": "KimKim Recorder", "filesMeeting": "KimKim Meeting", "filesManual": "Tạo thủ công", "filesName": "Tệp / bản ghi", "filesAiReady": "Tóm tắt AI: Đã lưu kết quả", "filesAiMissing": "Tóm tắt AI: Chưa có kết quả được lưu", "filesAiWorking": "Tóm tắt AI: Đang xử lý…", "filesStatusHelp": "Trạng thái nội dung và kết quả AI được hiển thị riêng.", "filesFilterNote": "Bản ghi cũ thiếu thông tin tệp gốc sẽ hiển thị Chưa rõ."});
+
+Object.assign(window.I18N.vi, {filesNoMatches:"Không có nội dung khớp bộ lọc."});
+
+
+Object.assign(window.I18N.vi,{"detailAskSummary": "Nhờ KimKim tóm tắt", "detailSummaryDocument": "Nhờ KimKim tóm tắt", "detailSummaryMeeting": "Nhờ KimKim tóm tắt", "tabChat": "Hỏi KimKim", "mdNotesLbl": "Ghi chú", "mdChatPh": "Hỏi KimKim về nội dung này…", "noParticipants": "Chưa có thông tin người tham gia.", "detailAIUnavailable": "Chưa kết nối được KimKim. Vui lòng thử lại sau.", "detailNoResult": "Chưa có kết quả.", "detailMeetLink": "Link Google Meet (tuỳ chọn)", "editMeetingTitle": "Chỉnh sửa thông tin", "tabGenerate": "Tạo nội dung", "genMindmap": "Sơ đồ tư duy", "detailPowerPoint": "Xuất PowerPoint", "detailSummaryImage": "Xuất ảnh tóm tắt"});

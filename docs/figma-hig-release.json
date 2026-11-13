@@ -1,0 +1,451 @@
+{
+  "fileKey": "fyQX0DucWbjQkSYse1WKKw",
+  "colorModes": {
+    "mutatedIds": [
+      "VariableID:255:1240",
+      "VariableID:255:1241",
+      "VariableID:2:5",
+      "VariableID:255:1242",
+      "VariableID:255:1243",
+      "VariableID:2:7",
+      "VariableID:255:1244",
+      "VariableID:255:1245",
+      "VariableID:2:9",
+      "VariableID:255:1246",
+      "VariableID:255:1247",
+      "VariableID:2:11",
+      "VariableID:255:1248",
+      "VariableID:255:1249",
+      "VariableID:2:13",
+      "VariableID:255:1250",
+      "VariableID:255:1251",
+      "VariableID:2:15",
+      "VariableID:255:1252",
+      "VariableID:255:1253",
+      "VariableID:2:17",
+      "VariableID:255:1254",
+      "VariableID:255:1255",
+      "VariableID:2:19",
+      "VariableID:255:1256",
+      "VariableID:255:1257",
+      "VariableID:2:21",
+      "VariableID:255:1258",
+      "VariableID:255:1259",
+      "VariableID:2:23",
+      "VariableID:255:1260",
+      "VariableID:255:1261",
+      "VariableID:2:25",
+      "VariableID:255:1262",
+      "VariableID:255:1263",
+      "VariableID:12:64",
+      "VariableID:255:1265",
+      "VariableID:255:1266",
+      "VariableID:255:1264",
+      "VariableID:255:1268",
+      "VariableID:255:1269",
+      "VariableID:255:1267",
+      "VariableID:255:1271",
+      "VariableID:255:1272",
+      "VariableID:255:1270",
+      "VariableID:255:1274",
+      "VariableID:255:1275",
+      "VariableID:255:1273",
+      "VariableID:255:1277",
+      "VariableID:255:1278",
+      "VariableID:255:1276",
+      "VariableID:255:1280",
+      "VariableID:255:1281",
+      "VariableID:255:1279",
+      "VariableID:255:1283",
+      "VariableID:255:1284",
+      "VariableID:255:1282"
+    ],
+    "variables": {
+      "bg-0": "VariableID:2:5",
+      "surface": "VariableID:2:7",
+      "panel": "VariableID:2:9",
+      "border": "VariableID:2:11",
+      "text-0": "VariableID:2:13",
+      "text-2": "VariableID:2:15",
+      "color-primary": "VariableID:2:17",
+      "color-on-primary": "VariableID:2:19",
+      "color-success": "VariableID:2:21",
+      "color-warning": "VariableID:2:23",
+      "color-danger": "VariableID:2:25",
+      "chrome": "VariableID:12:64",
+      "field": "VariableID:255:1264",
+      "text-1": "VariableID:255:1267",
+      "button-gray": "VariableID:255:1270",
+      "button-tinted": "VariableID:255:1273",
+      "button-on-tinted": "VariableID:255:1276",
+      "color-focus": "VariableID:255:1279",
+      "color-primary-hover": "VariableID:255:1282"
+    },
+    "modes": [
+      {
+        "name": "Dark",
+        "modeId": "2:1"
+      },
+      {
+        "name": "Light",
+        "modeId": "12:0"
+      }
+    ]
+  },
+  "buttons": {
+    "mutatedIds": [
+      "257:1260",
+      "257:1240",
+      "257:1261",
+      "257:1241",
+      "257:1262",
+      "257:1242",
+      "257:1263",
+      "257:1243",
+      "257:1264",
+      "257:1244",
+      "257:1265",
+      "257:1245",
+      "257:1266",
+      "257:1246",
+      "257:1267",
+      "257:1247",
+      "257:1268",
+      "257:1248",
+      "257:1269",
+      "257:1249",
+      "257:1270",
+      "257:1250",
+      "257:1271",
+      "257:1251",
+      "257:1272",
+      "257:1252",
+      "257:1273",
+      "257:1253",
+      "257:1274",
+      "257:1254",
+      "257:1275",
+      "257:1255",
+      "257:1276",
+      "257:1256",
+      "257:1277",
+      "257:1257",
+      "257:1278",
+      "257:1258",
+      "257:1279",
+      "257:1259",
+      "257:1280"
+    ],
+    "componentSet": "257:1260",
+    "labelProperty": "Label#257:0",
+    "variants": [
+      {
+        "id": "257:1240",
+        "name": "Variant=Filled, State=Default",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "id": "257:1241",
+        "name": "Variant=Filled, State=Hover",
+        "x": 172,
+        "y": 0
+      },
+      {
+        "id": "257:1242",
+        "name": "Variant=Filled, State=Pressed",
+        "x": 344,
+        "y": 0
+      },
+      {
+        "id": "257:1243",
+        "name": "Variant=Filled, State=Disabled",
+        "x": 516,
+        "y": 0
+      },
+      {
+        "id": "257:1244",
+        "name": "Variant=Filled, State=Loading",
+        "x": 688,
+        "y": 0
+      },
+      {
+        "id": "257:1245",
+        "name": "Variant=Tinted, State=Default",
+        "x": 0,
+        "y": 60
+      },
+      {
+        "id": "257:1246",
+        "name": "Variant=Tinted, State=Hover",
+        "x": 172,
+        "y": 60
+      },
+      {
+        "id": "257:1247",
+        "name": "Variant=Tinted, State=Pressed",
+        "x": 344,
+        "y": 60
+      },
+      {
+        "id": "257:1248",
+        "name": "Variant=Tinted, State=Disabled",
+        "x": 516,
+        "y": 60
+      },
+      {
+        "id": "257:1249",
+        "name": "Variant=Tinted, State=Loading",
+        "x": 688,
+        "y": 60
+      },
+      {
+        "id": "257:1250",
+        "name": "Variant=Gray, State=Default",
+        "x": 0,
+        "y": 120
+      },
+      {
+        "id": "257:1251",
+        "name": "Variant=Gray, State=Hover",
+        "x": 172,
+        "y": 120
+      },
+      {
+        "id": "257:1252",
+        "name": "Variant=Gray, State=Pressed",
+        "x": 344,
+        "y": 120
+      },
+      {
+        "id": "257:1253",
+        "name": "Variant=Gray, State=Disabled",
+        "x": 516,
+        "y": 120
+      },
+      {
+        "id": "257:1254",
+        "name": "Variant=Gray, State=Loading",
+        "x": 688,
+        "y": 120
+      },
+      {
+        "id": "257:1255",
+        "name": "Variant=Plain, State=Default",
+        "x": 0,
+        "y": 180
+      },
+      {
+        "id": "257:1256",
+        "name": "Variant=Plain, State=Hover",
+        "x": 172,
+        "y": 180
+      },
+      {
+        "id": "257:1257",
+        "name": "Variant=Plain, State=Pressed",
+        "x": 344,
+        "y": 180
+      },
+      {
+        "id": "257:1258",
+        "name": "Variant=Plain, State=Disabled",
+        "x": 516,
+        "y": 180
+      },
+      {
+        "id": "257:1259",
+        "name": "Variant=Plain, State=Loading",
+        "x": 688,
+        "y": 180
+      }
+    ],
+    "bounds": {
+      "width": 924,
+      "height": 304
+    }
+  },
+  "controls": {
+    "AKK/Icon/home": "259:1240",
+    "AKK/Icon/files": "259:1243",
+    "AKK/Icon/note": "259:1246",
+    "AKK/Icon/calendar": "259:1249",
+    "AKK/Icon/mic": "259:1252",
+    "AKK/Icon/upload": "259:1255",
+    "AKK/Icon/social": "259:1258",
+    "AKK/Icon/people": "259:1261",
+    "AKK/Icon/message": "259:1264",
+    "AKK/Icon/user": "259:1267",
+    "AKK/Icon/bell": "259:1270",
+    "AKK/Icon/sun": "259:1273",
+    "AKK/Icon/moon": "259:1276",
+    "AKK/Icon/settings": "259:1279",
+    "AKK/Icon/logout": "259:1282",
+    "AKK/Icon/sparkles": "259:1285",
+    "AKK/Icon/plus": "259:1288",
+    "AKK/Icon/close": "259:1291",
+    "AKK/Icon/back": "259:1294",
+    "AKK/Icon/next": "259:1297",
+    "AKK/Icon/edit": "259:1300",
+    "AKK/Icon/heart": "259:1303",
+    "AKK/Icon/share": "259:1306",
+    "AKK/Icon/save": "259:1309",
+    "AKK/Icon/trash": "259:1312",
+    "AKK/Icon/check": "259:1315",
+    "AKK/Icon/shield": "259:1318",
+    "AKK/Icon/grid": "259:1321",
+    "AKK/Icon/list": "259:1324",
+    "AKK/Icon/music": "259:1327",
+    "AKK/Icon/pause": "259:1330",
+    "AKK/Icon/play": "259:1333",
+    "AKK/Icon/link": "259:1336",
+    "AKK/Icon/search": "259:1339",
+    "AKK/Icon/photo": "259:1342",
+    "AKK/Icon/more": "259:1345",
+    "AKK/Icon/diamond": "259:1348",
+    "AKK/HIG Switch/Off": "259:1411",
+    "AKK/HIG Switch/On": "259:1413",
+    "AKK/HIG Switch/Disabled": "259:1415",
+    "AKK/HIG Input/Default": "259:1417",
+    "AKK/HIG Input/Focus": "259:1419",
+    "AKK/HIG Input/Error": "259:1421",
+    "AKK/HIG Input/Disabled": "259:1423",
+    "AKK/HIG Card": "259:1425",
+    "AKK/HIG Badge": "259:1427",
+    "AKK/HIG Avatar": "259:1429",
+    "AKK/HIG Tooltip": "259:1431",
+    "AKK/HIG Toast": "259:1433",
+    "AKK/HIG Segmented language": "259:1435",
+    "AKK/HIG Navigation bar": "259:1448",
+    "AKK/HIG Sheet": "259:1456"
+  },
+  "frames": [
+    {
+      "id": "261:27702",
+      "name": "HIG RELEASE / Home / 1440 / Dark / VI"
+    },
+    {
+      "id": "261:27851",
+      "name": "HIG RELEASE / Home / 1440 / Light / EN"
+    },
+    {
+      "id": "261:27996",
+      "name": "HIG RELEASE / Home / 390 / Dark / VI"
+    },
+    {
+      "id": "261:28071",
+      "name": "HIG RELEASE / Home / 390 / Light / EN"
+    },
+    {
+      "id": "261:28146",
+      "name": "HIG RELEASE / Login / 1440 / Dark / EN"
+    },
+    {
+      "id": "261:28190",
+      "name": "HIG RELEASE / Login / 1440 / Light / VI"
+    },
+    {
+      "id": "261:28232",
+      "name": "HIG RELEASE / Login / 390 / Light / VI"
+    },
+    {
+      "id": "262:27906",
+      "name": "HIG RELEASE / Account settings / Desktop / Light / VI"
+    },
+    {
+      "id": "262:28032",
+      "name": "HIG RELEASE / Social Profile settings / Desktop / Dark / VI"
+    },
+    {
+      "id": "262:28165",
+      "name": "HIG RELEASE / Social Profile / Mobile / Light / VI"
+    },
+    {
+      "id": "262:28221",
+      "name": "HIG RELEASE / Story viewer / Mobile / Dark / VI"
+    }
+  ],
+  "validation": {
+    "frames": [
+      {
+        "id": "261:27702",
+        "name": "HIG RELEASE / Home / 1440 / Dark / VI",
+        "w": 1440,
+        "h": 994,
+        "overflow": []
+      },
+      {
+        "id": "261:27851",
+        "name": "HIG RELEASE / Home / 1440 / Light / EN",
+        "w": 1440,
+        "h": 994,
+        "overflow": []
+      },
+      {
+        "id": "261:27996",
+        "name": "HIG RELEASE / Home / 390 / Dark / VI",
+        "w": 390,
+        "h": 1416,
+        "overflow": []
+      },
+      {
+        "id": "261:28071",
+        "name": "HIG RELEASE / Home / 390 / Light / EN",
+        "w": 390,
+        "h": 1372,
+        "overflow": []
+      },
+      {
+        "id": "261:28146",
+        "name": "HIG RELEASE / Login / 1440 / Dark / EN",
+        "w": 1440,
+        "h": 804,
+        "overflow": []
+      },
+      {
+        "id": "261:28190",
+        "name": "HIG RELEASE / Login / 1440 / Light / VI",
+        "w": 1440,
+        "h": 804,
+        "overflow": []
+      },
+      {
+        "id": "261:28232",
+        "name": "HIG RELEASE / Login / 390 / Light / VI",
+        "w": 390,
+        "h": 1097,
+        "overflow": []
+      },
+      {
+        "id": "262:27906",
+        "name": "HIG RELEASE / Account settings / Desktop / Light / VI",
+        "w": 1440,
+        "h": 1003,
+        "overflow": []
+      },
+      {
+        "id": "262:28032",
+        "name": "HIG RELEASE / Social Profile settings / Desktop / Dark / VI",
+        "w": 1440,
+        "h": 979,
+        "overflow": []
+      },
+      {
+        "id": "262:28165",
+        "name": "HIG RELEASE / Social Profile / Mobile / Light / VI",
+        "w": 390,
+        "h": 776,
+        "overflow": []
+      },
+      {
+        "id": "262:28221",
+        "name": "HIG RELEASE / Story viewer / Mobile / Dark / VI",
+        "w": 390,
+        "h": 844,
+        "overflow": []
+      }
+    ],
+    "icons": 37,
+    "testsPassed": 41
+  }
+}

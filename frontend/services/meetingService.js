@@ -42,10 +42,12 @@
       participants: data.participants || [],
       description: data.description || '',
       transcript: data.transcript || [],
-      summary: '',
-      keyPoints: [],
-      actionItems: [],
-      notes: '',
+      summary: typeof data.summary==='string'?data.summary:'',
+      keyPoints: Array.isArray(data.keyPoints)?data.keyPoints:[],
+      actionItems: Array.isArray(data.actionItems)?data.actionItems:[],
+      notes: typeof data.notes==='string'?data.notes:'',
+      ...(data.source ? {source:data.source} : {}),
+      ...(data.document ? {document: data.document} : {}),
       createdAt: FC.serverTimestamp()
     });
     return ref.id;

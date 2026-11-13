@@ -1,0 +1,162 @@
+/* Private calendar. Manual handoff to existing KimKim Meeting; never claims automatic joining. */
+(function(g){
+ const en=()=>typeof lang!=='undefined'&&lang==='en',t=(vi,eng)=>en()?eng:vi;
+ const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
+ const button=(text,fn,cls='btn btn-ghost')=>{const b=el('button',cls,text);b.type='button';b.onclick=fn;return b;};
+ const pad=n=>String(n).padStart(2,'0'),day=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()),local=d=>day(d)+'T'+pad(d.getHours())+':'+pad(d.getMinutes());
+ const colors=['royal','mint','rose','amber','purple','cyan'];let me=null,events=[],off=null,focus=new Date(),selected=day(new Date()),mode='month',error='',generation=0,booted=false,googleEvents=[],googleToken='',googleOwner='',googleEpoch=0,googleBusy=false,googleError='',googleTimer=null;
+ const col=()=>FirebaseClient.db.collection('users').doc(me.uid).collection('calendarEvents');
+
+ // Backend owns OAuth tokens; the browser holds only connection status.
+ let googleEmail='';
+ function clearGoogle(){googleEpoch++;googleToken='';googleOwner='';googleEmail='';googleEvents=[];googleError='';googleBusy=false;clearInterval(googleTimer);googleTimer=null;render();}
+ function googleMessage(err){return err.message||t('Không kết nối được Google Calendar.','Could not connect Google Calendar.');}
+ function calendarBase(){const value=typeof getApiUrl==='function'?getApiUrl():(g.AKK_CONFIG?.apiBaseUrl||location.origin);return value.replace(/\/$/,'')+'/api/google-calendar';}
+ async function backendCalendar(path,options={}){
+  const owner=me?.uid,epoch=googleEpoch,user=firebase.auth().currentUser;
+  if(!user||user.uid!==owner)throw Error(t('Vui lòng đăng nhập lại.','Please sign in again.'));
+  const idToken=await user.getIdToken();
+  if(owner!==me?.uid||epoch!==googleEpoch)throw Error(t('Tài khoản đã thay đổi.','Account changed.'));
+  const response=await fetch(calendarBase()+path,{...options,headers:{Authorization:'Bearer '+idToken,'Content-Type':'application/json',...(options.headers||{})}});
+  if(owner!==me?.uid||epoch!==googleEpoch)throw Error(t('Tài khoản đã thay đổi.','Account changed.'));
+  let data=null;try{data=await response.json();}catch{}
+  if(!response.ok){
+   const detail=data?.detail,code=typeof detail==='string'?detail:detail?.code;
+   const messages={
+    'calendar/configuration':t('Backend Calendar chưa đủ cấu hình. Kiểm tra 5 biến GOOGLE_CALENDAR trên Render và khóa mã hóa tối thiểu 32 ký tự.','Calendar backend needs configuration. Check the five GOOGLE_CALENDAR variables and an encryption key of at least 32 characters.'),
+    'calendar/storage-unavailable':t('Chưa lưu được kết nối Calendar. Kiểm tra quyền Firestore của tài khoản.','Calendar connection storage unavailable. Check Firestore permissions.'),
+    'calendar/reconnect-required':t('Google yêu cầu cấp quyền lại. Bấm Kết nối Google Calendar.','Google requires authorization again. Connect Google Calendar.'),
+    'calendar/permission-required':t('Bạn chưa cấp quyền Calendar. Kết nối lại và cho phép truy cập lịch.','Calendar permission was not granted. Reconnect and allow Calendar access.'),
+    'calendar/event-changed':t('Sự kiện đã thay đổi trên Google. Làm mới trước khi sửa tiếp.','Event changed on Google. Refresh before editing.'),
+    'calendar/google-permission-or-api':t('Google từ chối truy cập lịch. Kiểm tra Calendar API và quyền đã cấp.','Google denied Calendar access. Check the Calendar API and granted permissions.'),
+    'calendar/invalid-state-or-key':t('Phiên kết nối hoặc khóa mã hóa không hợp lệ. Kết nối lại; nếu vẫn lỗi, kiểm tra khóa trên backend.','Invalid connection session or encryption key. Reconnect; if it persists, check the backend key.'),
+    'calendar/expired-state':t('Cửa sổ cấp quyền hết hạn. Hãy kết nối lại.','Authorization window expired. Connect again.')
+   };
+   if(code==='calendar/reconnect-required'){googleToken='';googleEvents=[];clearInterval(googleTimer);googleTimer=null;}
+   throw Error(messages[code]||t('Calendar chưa thực hiện được yêu cầu. Mã lỗi: ','Calendar request failed. Status: ')+response.status);
+  }return data;
+ }
+ async function disconnectGoogle(){if(!me)return;googleBusy=true;render();try{await backendCalendar('/connection',{method:'DELETE'});clearGoogle();}catch(err){googleError=googleMessage(err);}finally{googleBusy=false;render();}}
+ async function googleRequest(path='',options={}){return backendCalendar('/events'+path,options);}
+ function googlePolling(){clearInterval(googleTimer);googleTimer=setInterval(()=>{if(document.visibilityState==='visible'&&googleToken&&!googleBusy)syncGoogle();},60000);}
+ async function restoreGoogle(){
+  if(!me)return;const owner=me.uid,epoch=googleEpoch;googleBusy=true;render();
+  try{const data=await backendCalendar('/status');if(owner!==me?.uid||epoch!==googleEpoch)return;
+   if(data.connected){googleToken='backend';googleOwner=owner;googleEmail=data.email||'';await syncGoogle();googlePolling();}
+   else if(data.reconnect)googleError=t('Google yêu cầu kết nối lại Calendar.','Google requires reconnecting Calendar.');
+  }catch(err){if(owner===me?.uid&&epoch===googleEpoch)googleError=googleMessage(err);}finally{if(owner===me?.uid&&epoch===googleEpoch){googleBusy=false;render();}}
+ }
+ async function connectGoogle(){
+  if(googleBusy||!me)return;
+  const popup=window.open('about:blank','kimkim-calendar-connect','popup,width=520,height=720');
+  if(!popup){googleError=t('Trình duyệt chặn cửa sổ. Cho phép popup rồi kết nối lại.','Popup blocked. Allow popups and connect again.');render();return;}
+  const owner=me.uid,epoch=googleEpoch;googleBusy=true;googleError='';render();
+  try{
+   const started=await backendCalendar('/start',{method:'POST'});if(owner!==me?.uid||epoch!==googleEpoch){popup.close();return;}
+   const url=new URL(started.url);if(url.origin!=='https://accounts.google.com')throw Error(t('URL kết nối không hợp lệ.','Invalid connection URL.'));
+   const expectedOrigin=new URL(calendarBase(),location.href).origin;
+   const auth=await new Promise((resolve,reject)=>{
+    let finished=false;
+    const cleanup=()=>{finished=true;clearInterval(poll);clearTimeout(timeout);window.removeEventListener('message',listener);};
+    const listener=event=>{if(event.origin!==expectedOrigin||event.source!==popup||event.data?.type!=='kimkim-calendar-oauth'||event.data.state!==started.state)return;cleanup();event.data.error?reject(Error(t('Bạn chưa cho phép kết nối Calendar.','Calendar authorization was not granted.'))):resolve(event.data);};
+    const poll=setInterval(()=>{if(finished)return;if(owner!==me?.uid||epoch!==googleEpoch||popup.closed){cleanup();reject(Error(t('Đã đóng cửa sổ kết nối.','Connection window closed.')));}},700);
+    const timeout=setTimeout(()=>{cleanup();reject(Error(t('Cửa sổ kết nối hết hạn.','Connection window expired.')));},600000);
+    window.addEventListener('message',listener);popup.location.href=started.url;
+   });
+   if(owner!==me?.uid||epoch!==googleEpoch)return;
+   const data=await backendCalendar('/exchange',{method:'POST',body:JSON.stringify({code:auth.code,state:auth.state})});
+   googleToken='backend';googleOwner=owner;googleEmail=data.email||'';await syncGoogle();googlePolling();
+  }catch(err){if(owner===me?.uid&&epoch===googleEpoch)googleError=googleMessage(err);}finally{try{popup.close();}catch{}if(owner===me?.uid&&epoch===googleEpoch){googleBusy=false;render();}}
+ }
+ async function syncGoogle(){
+  if(!googleToken||googleOwner!==me?.uid)return;const owner=me.uid,epoch=googleEpoch,month=focus.getMonth(),year=focus.getFullYear();
+  googleBusy=true;googleError='';render();
+  try{const min=new Date(year,month-1,1),max=new Date(year,month+2,1),items=[];let page='';
+   do{const query=new URLSearchParams({timeMin:min.toISOString(),timeMax:max.toISOString(),singleEvents:'true',orderBy:'startTime',maxResults:'250'});if(page)query.set('pageToken',page);const data=await googleRequest('?'+query);items.push(...(data.items||[]));page=data.nextPageToken||'';}while(page);
+   if(owner!==me?.uid||epoch!==googleEpoch)return;googleEvents=items.filter(e=>e.status!=='cancelled'&&e.start&&e.end).map(e=>({id:'google:'+e.id,googleId:e.id,etag:e.etag,google:true,title:e.summary||t('(Không có tiêu đề)','(Untitled)'),description:e.description||'',start:new Date(e.start.dateTime||e.start.date+'T00:00:00'),end:new Date(e.end.dateTime||e.end.date+'T00:00:00'),allDay:!!e.start.date,meetUrl:e.hangoutLink||e.conferenceData?.entryPoints?.find(p=>p.entryPointType==='video')?.uri||'',color:'royal'}));
+  }catch(err){if(owner===me?.uid&&epoch===googleEpoch)googleError=googleMessage(err);}finally{if(owner===me?.uid&&epoch===googleEpoch){googleBusy=false;render();}}
+ }
+
+ function normalizeMeet(value){if(!value)return '';const url=new URL(/^https:\/\//.test(value)?value:'https://'+value);if(url.protocol!=='https:'||url.hostname!=='meet.google.com'||!/^\/[a-z]{3}-[a-z]{4}-[a-z]{3}\/?$/.test(url.pathname))throw Error(t('Link Google Meet chưa hợp lệ.','Enter a valid Google Meet link.'));return url.origin+url.pathname.replace(/\/$/,'');}
+ function forDay(value){const a=new Date(value+'T00:00:00'),b=new Date(a);b.setDate(b.getDate()+1);return [...events,...googleEvents].filter(e=>e.start<b&&e.end>a).sort((x,y)=>x.start-y.start);}
+ function meeting(event){if(!event.meetUrl)return;showView('recording',document.querySelector('[data-view=recording]'));const link=document.getElementById('recMeetUrl'),name=document.getElementById('recMeetTitle');if(link)link.value=event.meetUrl;if(name)name.value=event.title;document.querySelector('.kimkim-meet-card,#recMeetUrl')?.scrollIntoView?.({behavior:'smooth',block:'center'});document.getElementById('recMeetUrl')?.focus();}
+ function escapeICS(v){return String(v||'').replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');}
+ const utc=d=>d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+ function ics(event){const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//ADOLF KIMKIM//Calendar//VI','CALSCALE:GREGORIAN','BEGIN:VEVENT','UID:'+event.id+'@adolf-kimkim','DTSTAMP:'+utc(new Date()),'DTSTART:'+utc(event.start),'DTEND:'+utc(event.end),'SUMMARY:'+escapeICS(event.title),'DESCRIPTION:'+escapeICS(event.description+(event.meetUrl?'\n'+event.meetUrl:'')),...(event.meetUrl?['URL:'+event.meetUrl]:[]),'END:VEVENT','END:VCALENDAR'];return lines.map(line=>{let out='',part='',count=0;for(const ch of line){const n=new TextEncoder().encode(ch).length;if(count+n>73){out+=part+'\r\n ';part='';count=1;}part+=ch;count+=n;}return out+part;}).join('\r\n')+'\r\n';}
+ function exportEvent(event){const url=URL.createObjectURL(new Blob([ics(event)],{type:'text/calendar;charset=utf-8'})),a=el('a');a.href=url;a.download='kimkim-event.ics';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+ function editor(event){if(!me)return;const saved=!!event?.id;const owner=me.uid,key=generation;const d=el('dialog','confirm-dialog social-dialog calendar-editor');d.setAttribute('aria-label',t('Sự kiện','Event'));const head=el('div','community-dialog-heading');head.append(el('h2','',saved?t('Chi tiết sự kiện','Event details'):t('Tạo sự kiện','Create event')),button('×',()=>d.close()));const form=el('form','social-dialog-body');const fields={};function input(label,name,type,value){const wrap=el('label','calendar-field',label),n=el(type==='textarea'?'textarea':'input');if(type!=='textarea')n.type=type;n.name=name;n.value=value||'';wrap.append(n);form.append(wrap);fields[name]=n;return n;}
+  const destination=el('select');destination.name='calendarSource';destination.append(new Option(t('Lịch riêng KimKim','Private KimKim calendar'),'local'));if(googleToken)destination.append(new Option('Google Calendar','google'));destination.value=event?.google?'google':'local';destination.disabled=saved;const sourceLabel=el('label','calendar-field',t('Lưu vào','Save to'));sourceLabel.append(destination);form.append(sourceLabel);
+  const createMeet=el('input');createMeet.type='checkbox';const meetLabel=el('label','calendar-field',t('Tạo link Google Meet (lịch Google)','Create Google Meet link (Google events)'));meetLabel.prepend(createMeet);form.append(meetLabel);
+  const start=event?.start||new Date(selected+'T09:00:00'),end=event?.end||new Date(+start+3600000);
+  input(t('Tên sự kiện','Event title'),'title','text',event?.title).required=true;fields.title.maxLength=120;
+  const a=input(t('Bắt đầu','Starts'),'start','datetime-local',local(start)),b=input(t('Kết thúc','Ends'),'end','datetime-local',local(end));a.required=b.required=true;
+  form.append(el('p','community-help',t('Múi giờ thiết bị: ','Device timezone: ')+Intl.DateTimeFormat().resolvedOptions().timeZone));
+  input('Google Meet','meetUrl','text',event?.meetUrl).placeholder='https://meet.google.com/xxx-xxxx-xxx';
+  const desc=input(t('Mô tả','Description'),'description','textarea',event?.description);desc.maxLength=2000;desc.rows=3;
+  const palette=el('div','calendar-palette');let color=event?.color||'royal';for(const c of colors){const choice=button('',()=>{color=c;palette.querySelectorAll('button').forEach(n=>n.setAttribute('aria-pressed',String(n.dataset.color===c)));},'calendar-color');choice.dataset.color=c;choice.title=c;choice.setAttribute('aria-label',c);choice.setAttribute('aria-pressed',String(color===c));palette.append(choice);}form.append(palette);
+  const status=el('p','field-error');status.setAttribute('role','alert');const actions=el('div','community-actions'),save=el('button','btn btn-primary',t('Lưu sự kiện','Save event'));save.type='submit';actions.append(save);
+  if(saved){if(event.meetUrl)actions.append(button(t('Mời KimKim vào Meet','Invite KimKim to Meet'),()=>{d.close();meeting(event);}));actions.append(button(t('Xuất lịch .ics','Export .ics'),()=>exportEvent(event)));actions.append(button(t('Xóa sự kiện','Delete event'),async()=>{if(!await confirmAction(t('Xóa sự kiện này?','Delete this event?')))return;try{if(owner!==me?.uid)return;if(event.google){await googleRequest('/'+encodeURIComponent(event.googleId),{method:'DELETE',headers:{'If-Match':event.etag}});await syncGoogle();}else await col().doc(event.id).delete();d.close();}catch{status.textContent=t('Chưa xóa được sự kiện.','Could not delete event.');}}));}
+  form.append(status,actions,el('p','calendar-note',t('Chọn lịch Google để lưu trực tiếp lên Google Calendar. Mời KimKim vào Meet vẫn cần bấm trực tiếp.','Choose Google Calendar to save directly to Google. Inviting KimKim to Meet still requires a manual action.')));
+  form.onsubmit=async e=>{e.preventDefault();save.disabled=true;try{const starts=new Date(a.value),ends=new Date(b.value);if(!fields.title.value.trim()||!Number.isFinite(+starts)||!Number.isFinite(+ends)||ends<=starts)throw Error(t('Nhập tiêu đề và giờ kết thúc sau giờ bắt đầu.','Enter a title and an end time after the start.'));const meet=normalizeMeet(fields.meetUrl.value.trim());if(owner!==me?.uid||key!==generation)return;const data={title:fields.title.value.trim(),start:firebase.firestore.Timestamp.fromDate(starts),end:firebase.firestore.Timestamp.fromDate(ends),description:desc.value.trim(),meetUrl:meet,color,updatedAt:FirebaseClient.serverTimestamp()};if(destination.value==='google'){
+    const payload={summary:data.title,description:data.description,location:meet||'',start:event?.allDay?{date:day(starts)}:{dateTime:starts.toISOString()},end:event?.allDay?{date:day(ends)}:{dateTime:ends.toISOString()}};
+    if(createMeet.checked){payload.conferenceData={createRequest:{requestId:crypto.randomUUID(),conferenceSolutionKey:{type:'hangoutsMeet'}}};}
+    const path=(event?.google?'/'+encodeURIComponent(event.googleId):'')+'?conferenceDataVersion=1';
+    await googleRequest(path,{method:event?.google?'PATCH':'POST',headers:event?.etag?{'If-Match':event.etag}:{},body:JSON.stringify(payload)});await syncGoogle();d.close();return;
+   }
+   if(createMeet.checked)throw Error(t('Chọn Google Calendar để tạo link Meet.','Select Google Calendar to create a Meet link.'));
+   const ref=saved?col().doc(event.id):col().doc();await ref.set({...data,...(!saved?{createdAt:FirebaseClient.serverTimestamp()}:{})},{merge:true});d.close();}catch(err){status.textContent=err.message||t('Chưa lưu được lịch.','Could not save event.');}finally{save.disabled=false;}};
+  d.append(head,form);d.addEventListener('close',()=>d.remove());document.body.append(d);d.showModal();fields.title.focus();
+ }
+ const timeText=d=>d.toLocaleTimeString(en()?'en-GB':'vi-VN',{hour:'2-digit',minute:'2-digit'});
+ function eventTime(event){return event.allDay?t('Cả ngày','All day'):timeText(event.start)+' – '+timeText(event.end);}
+ function eventChip(event,short=false){const b=button('',()=>editor(event),'calendar-event');b.dataset.color=event.color||'royal';b.dataset.source=event.google?'google':'kimkim';if(!short)b.append(el('small','',eventTime(event)));b.append(el('span','',event.title));b.title=event.title+' · '+eventTime(event)+(event.google?' · Google Calendar':' · KimKim');b.setAttribute('aria-label',b.title);return b;}
+ // Use wall-clock minutes so local daylight-saving transitions do not shift labels.
+ function dayLayout(items,date){
+  const from=new Date(date);from.setHours(0,0,0,0);const until=new Date(from);until.setDate(until.getDate()+1);
+  const minute=d=>d.getHours()*60+d.getMinutes();
+  const rows=items.filter(e=>!e.allDay&&e.start<until&&e.end>from).map(e=>{
+   const start=e.start<from?0:minute(e.start),end=e.end>=until?1440:minute(e.end);
+   return {event:e,start,end:Math.max(start+1,end),lane:0,lanes:1};
+  }).sort((a,b)=>a.start-b.start||b.end-a.end);
+  let group=[],ends=[],groupEnd=-1;
+  const finish=()=>{for(const r of group)r.lanes=ends.length;group=[];ends=[];};
+  for(const row of rows){if(row.start>=groupEnd){finish();groupEnd=-1;}let lane=ends.findIndex(end=>end<=row.start);if(lane<0)lane=ends.length;row.lane=lane;ends[lane]=Math.max(row.end,row.start+28);groupEnd=Math.max(groupEnd,ends[lane]);group.push(row);}finish();return rows;
+ }
+ function timeline(root,oldTop){
+  const count=mode==='week'?7:1,start=new Date(mode==='day'?selected+'T00:00:00':focus);start.setHours(0,0,0,0);if(count===7)start.setDate(start.getDate()-(start.getDay()+6)%7);
+  const wrap=el('div','calendar-time-scroll calendar-timeline'),canvas=el('div','calendar-timeline-canvas');canvas.style.setProperty('--calendar-days',count);if(count===1)canvas.classList.add('single-day');
+  wrap.setAttribute('aria-label',t('Lịch theo giờ; cuộn ngang để xem các ngày','Hourly calendar; scroll horizontally to view days'));
+  const sticky=el('div','calendar-timeline-sticky'),head=el('div','calendar-timeline-head'),all=el('div','calendar-all-day');
+  head.append(el('div','calendar-timeline-corner',Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop()));all.append(el('span','calendar-all-label',t('Cả ngày','All day')));
+  const dates=[];for(let i=0;i<count;i++){const date=new Date(start);date.setDate(date.getDate()+i);dates.push(date);const value=day(date),h=button('',()=>{selected=value;focus=date;render();},'calendar-column-date');h.classList.toggle('is-today',value===day(new Date()));h.classList.toggle('is-selected',value===selected);h.append(el('small','',date.toLocaleDateString(en()?'en-GB':'vi-VN',{weekday:'short'})),el('strong','',String(date.getDate())));h.setAttribute('aria-label',date.toLocaleDateString());head.append(h);const cell=el('div','calendar-all-cell');for(const e of forDay(value).filter(e=>e.allDay))cell.append(eventChip(e,true));all.append(cell);}
+  sticky.append(head,all);canvas.append(sticky);
+  const body=el('div','calendar-timeline-body'),axis=el('div','calendar-time-axis');
+  for(let h=0;h<24;h++){const label=el('span','',pad(h)+':00');label.style.top=h*64+'px';axis.append(label);}body.append(axis);
+  for(const date of dates){const column=el('div','calendar-time-column');column.classList.toggle('is-today',day(date)===day(new Date()));
+   for(let h=0;h<24;h++){const slot=button('',()=>{selected=day(date);const begin=new Date(date);begin.setHours(h);editor({id:null,title:'',start:begin,end:new Date(+begin+3600000)});},'calendar-time-slot');slot.style.top=h*64+'px';slot.setAttribute('aria-label',t('Tạo sự kiện ','Create event ')+date.toLocaleDateString()+' '+pad(h)+':00');column.append(slot);}
+   for(const row of dayLayout(forDay(day(date)),date)){const chip=eventChip(row.event);chip.classList.add('calendar-timed-event');chip.style.top=row.start/60*64+'px';chip.style.height=Math.max(28,(row.end-row.start)/60*64-2)+'px';chip.style.left='calc('+row.lane/row.lanes*100+'% + 3px)';chip.style.width='calc('+100/row.lanes+'% - 6px)';chip.classList.toggle('compact',row.end-row.start<45);column.append(chip);}
+   if(day(date)===day(new Date())){const now=new Date(),line=el('div','calendar-now-line');line.style.top=(now.getHours()*60+now.getMinutes())/60*64+'px';line.setAttribute('aria-label',t('Giờ hiện tại','Current time'));column.append(line);}
+   body.append(column);
+  }
+  canvas.append(body);wrap.append(canvas);root.append(wrap);
+  wrap.scrollTop=oldTop??(8*64); 
+ }
+ function agenda(root){const box=el('section','calendar-agenda'),items=forDay(selected);const heading=el('div','calendar-agenda-heading');heading.append(el('h2','',new Date(selected+'T12:00:00').toLocaleDateString(en()?'en-GB':'vi-VN',{weekday:'long',day:'numeric',month:'long'})));const add=button('+',()=>editor(),'btn btn-primary');add.setAttribute('aria-label',t('Tạo sự kiện trong ngày','Create event on this day'));heading.append(add);box.append(heading,el('p','social-kicker',t('SỰ KIỆN TRONG NGÀY','DAY SCHEDULE')));if(!items.length)box.append(el('p','community-muted',t('Chưa có sự kiện. Chọn Tạo để lên lịch.','No events yet. Select Create to plan something.')));for(const e of items){const row=el('div','calendar-agenda-event');row.append(eventChip(e));if(e.meetUrl){const link=el('a','btn btn-ghost',t('Mở Google Meet','Open Google Meet'));link.href=e.meetUrl;link.target='_blank';link.rel='noopener noreferrer';row.append(link,button(t('Mời KimKim','Invite KimKim'),()=>meeting(e)));}box.append(row);}root.append(box);}
+ function render(){const root=document.getElementById('view-calendar');if(!root||root.classList.contains('hidden'))return;const oldTop=root.querySelector('.calendar-timeline')?.scrollTop;root.replaceChildren();if(!me){root.append(el('p','community-help',t('Vui lòng đăng nhập để dùng lịch.','Please sign in to use Calendar.')));return;}
+  const toolbar=el('div','calendar-toolbar'),heading=el('div');heading.append(el('p','social-kicker','KIMKIM CALENDAR'),el('h1','view-title',focus.toLocaleDateString(en()?'en-GB':'vi-VN',{month:'long',year:'numeric'})));toolbar.append(heading);const controls=el('div','calendar-controls calendar-navigation');controls.append(button(t('Hôm nay','Today'),()=>{focus=new Date();selected=day(focus);render();if(googleToken)syncGoogle();}),button('‹',()=>move(-1)),button('›',()=>move(1)));for(const [key,vi,eng]of [['month','Tháng','Month'],['week','Tuần','Week'],['day','Ngày','Day']]){const b=button(t(vi,eng),()=>{mode=key;if(key==='day')focus=new Date(selected+'T12:00:00');render();});b.dataset.calendarMode=key;b.setAttribute('aria-pressed',String(mode===key));controls.append(b);}controls.append(button('+ '+t('Tạo','Create'),()=>editor(),'btn btn-primary'));toolbar.append(controls);root.append(toolbar);
+  const connection=el('div','calendar-controls calendar-connection');connection.setAttribute('aria-label','Google Calendar');
+  connection.append(el('span','community-help',googleToken?(t('Google Calendar · ','Google Calendar · ')+(googleEmail||t('Lịch chính','Primary calendar'))):t('Kết nối lịch Google của bạn','Connect your Google calendar')));
+  const connect=button(googleBusy?t('Đang đồng bộ…','Syncing…'):googleToken?t('Làm mới Google','Refresh Google'):t('Kết nối Google Calendar','Connect Google Calendar'),()=>googleToken?syncGoogle():connectGoogle());connect.disabled=googleBusy;connection.append(connect);
+  if(googleToken)connection.append(button(t('Ngắt kết nối','Disconnect'),disconnectGoogle));
+  root.append(connection);if(googleError){const msg=el('p','field-error',googleError);msg.setAttribute('role','alert');root.append(msg);}
+  if(error){const msg=el('p','field-error',error);msg.setAttribute('role','alert');root.append(msg);}root.append(el('p','calendar-zone',Intl.DateTimeFormat().resolvedOptions().timeZone+' · '+(googleToken?t('KimKim + Google Calendar','KimKim + Google Calendar'):t('Lịch riêng tư','Private calendar'))));
+  const workspace=el('div','calendar-workspace');root.append(workspace);
+  if(mode==='month'){const grid=el('div','calendar-month');grid.setAttribute('aria-label',t('Lịch tháng','Month calendar'));const first=new Date(focus.getFullYear(),focus.getMonth(),1),offset=(first.getDay()+6)%7,start=new Date(first);start.setDate(start.getDate()-offset);for(let i=0;i<7;i++){const date=new Date(start);date.setDate(date.getDate()+i);grid.append(el('div','calendar-weekday',date.toLocaleDateString(en()?'en-GB':'vi-VN',{weekday:'short'})));}const cells=Math.ceil((offset+new Date(focus.getFullYear(),focus.getMonth()+1,0).getDate())/7)*7;for(let i=0;i<cells;i++){const date=new Date(start);date.setDate(date.getDate()+i);const value=day(date),cell=el('section','calendar-day');cell.classList.toggle('outside',date.getMonth()!==focus.getMonth());cell.classList.toggle('selected',value===selected);cell.classList.toggle('today',value===day(new Date()));const label=button(String(date.getDate()),()=>{selected=value;render();},'calendar-day-label');label.setAttribute('aria-label',date.toLocaleDateString());cell.append(label);const items=forDay(value);for(const e of items.slice(0,2))cell.append(eventChip(e,true));if(items.length>2)cell.append(button('+'+(items.length-2),()=>{selected=value;mode='day';focus=date;render();},'calendar-more'));grid.append(cell);}workspace.append(grid);
+  }else{timeline(workspace,oldTop);}
+  agenda(workspace);
+ }
+ function move(n){if(mode==='month')focus=new Date(focus.getFullYear(),focus.getMonth()+n,1);else focus=new Date(focus.getFullYear(),focus.getMonth(),focus.getDate()+n*(mode==='week'?7:1));selected=day(focus);render();if(googleToken)syncGoogle();}
+ function reset(user){if(me?.uid!==user?.uid)clearGoogle();generation++;off?.();off=null;me=user;events=[];error='';document.querySelectorAll('.calendar-editor').forEach(d=>d.close());render();if(user)restoreGoogle();if(!user||!FirebaseClient.db)return;const key=generation;off=col().orderBy('start','desc').limit(200).onSnapshot(s=>{if(key!==generation)return;events=s.docs.map(d=>({id:d.id,...d.data(),start:d.data().start?.toDate?.(),end:d.data().end?.toDate?.()})).filter(e=>e.start&&e.end);render();},()=>{if(key===generation){error=t('Chưa tải được lịch. Kiểm tra kết nối và quyền dữ liệu.','Could not load Calendar. Check connection and data permissions.');render();}});}
+ function boot(){if(booted)return;booted=true;const root=el('div','view hidden community-view calendar-view');root.id='view-calendar';document.getElementById('view-home').parentElement.append(root);const nav=el('a','nav-item');nav.href='#calendar';nav.onclick=e=>{e.preventDefault();showView('calendar',nav);render();};nav.dataset.view='calendar';const icon=el('span','ic');const iconImage=el('img');iconImage.src='assets/sally/calendar.svg';iconImage.width=24;iconImage.height=24;iconImage.alt='';icon.append(iconImage);nav.append(icon,el('span','calendar-nav-label',t('Lịch','Calendar')));document.querySelector('.sidebar [data-view=recording]')?.before(nav);document.addEventListener('akk:viewchange',render);document.addEventListener('akk:languagechange',()=>{nav.querySelector('.calendar-nav-label').textContent=t('Lịch','Calendar');render();});const rec=document.getElementById('recMeetUrl');if(rec){const schedule=button(t('Lên lịch cuộc họp','Schedule a meeting'),()=>{const begin=new Date();begin.setMinutes(0,0,0);begin.setHours(begin.getHours()+1);editor({id:null,title:document.getElementById('recMeetTitle')?.value||'',meetUrl:rec.value,start:begin,end:new Date(+begin+3600000)});},'btn btn-ghost calendar-meet-launcher');rec.closest('.card')?.append(schedule);}AuthService.onAuthChange(reset);}
+ g.KimKimCalendar={ics,normalizeMeet,editor,meeting,connectGoogle,syncGoogle,disconnectGoogle,restoreGoogle,dayLayout};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})(window);

@@ -1,0 +1,16 @@
+FROM python:3.12-slim
+WORKDIR /app
+ENV PYTHONUNBUFFERED=1 PLAYWRIGHT_BROWSERS_PATH=/opt/browsers
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg pulseaudio xvfb xauth \
+    && rm -rf /var/lib/apt/lists/*
+COPY requirements-api.txt ./
+RUN pip install --no-cache-dir -r requirements-api.txt 'patchright>=1.52.0' \
+    && python -m patchright install --with-deps chromium
+COPY app.py beta.py meeting_server.py meeting_capture_worker.py ./
+COPY routes ./routes
+COPY frontend ./frontend
+COPY scripts/start-meeting.sh ./scripts/start-meeting.sh
+RUN useradd --create-home kimkim && mkdir -p tmp/meet_jobs google_meet_record/meet_bot_profile \
+    && chown -R kimkim:kimkim /app /opt/browsers && chmod +x scripts/start-meeting.sh
+USER kimkim
+CMD ["sh", "scripts/start-meeting.sh"]

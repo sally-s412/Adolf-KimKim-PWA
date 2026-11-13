@@ -1,0 +1,130 @@
+<!doctype html><html data-theme="dark"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Workspace layout regression</title><link rel="stylesheet" href="legacy-color-tokens.css?v=1">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="design-system.css">
+<link rel="stylesheet" href="auth-final.css">
+<link rel="stylesheet" href="light-theme.css?v=rose-dusk-3">
+<link rel="stylesheet" href="home.css?v=rose-dusk-3">
+<link rel="stylesheet" href="community.css?v=2">
+<link rel="stylesheet" href="social-v4.css?v=3">
+<link rel="stylesheet" href="space-refresh.css?v=rose-dusk-3">
+<link rel="stylesheet" href="workspace-refresh.css?v=rose-dusk-3">
+<link rel="stylesheet" href="story-editor.css?v=2">
+<link rel="stylesheet" href="social-complete.css?v=1">
+<link rel="stylesheet" href="chat-widget.css?v=1">
+<link rel="stylesheet" href="design-tokens.css?v=rose-dusk-3">
+<link rel="stylesheet" href="hig-components.css?v=rose-dusk-3">
+<link rel="stylesheet" href="hig-screens.css?v=files-flow-1">
+<link rel="stylesheet" href="studio-workspace.css?v=layout-stable-1"><style>.fixture-header{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.fixture-header span{margin-right:auto;font-size:11px}#app .sidebar{display:block}.fixture-header button{font-size:11px!important;padding:6px!important}.fixture-sidebar{font-weight:700;padding:24px}.fixture-sidebar p{font-weight:400;font-size:12px}#mdMeetBotBar,.video-controls{display:none!important}@media(max-width:700px){.fixture-header{flex-wrap:nowrap;overflow-x:auto}.fixture-header span{display:none}.fixture-header button{flex-shrink:0}}</style><div id="app" class="active"><header class="app-header fixture-header"><span>LAYOUT QA · SAMPLE DATA</span><button onclick="sample('short')">PDF short</button><button onclick="sample('long')">PDF long chat</button><button onclick="sample('record')">Recording</button><button onclick="showFormFixture()">Create / edit</button><button onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'">Light / Dark</button></header><aside class="sidebar fixture-sidebar">ADOLF KIMKIM<p>Files & recordings</p></aside><main class="main"><div class="view hidden" id="view-meetingDetail">
+      <div class="page-heading">
+        <button class="btn btn-ghost" disabled><svg class="akk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg><span data-i18n="detailBack">Quay lại</span></button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" disabled data-i18n="studioEdit">Sửa</button>
+          <button class="btn btn-ghost" style="border-color:var(--red);color:var(--red);" disabled data-i18n="studioDelete">Xoá</button>
+        </div>
+      </div>
+      <div class="view-title"></div>
+      <div class="view-sub"></div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+          <span id="recordingStatusBadge" class="badge red hidden"><span class="live-dot"></span><span data-i18n="detailRecording">ĐANG GHI ÂM</span></span>
+          <span id="summaryStatusBadge" class="badge amber hidden" data-i18n="detailSummarizing">Đang tóm tắt với AI…</span>
+          <div id="mdMeetBotBar" class="hidden" style="display:flex;align-items:center;gap:10px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.4);padding:6px 12px;border-radius:8px;font-size:12px;">
+            <span class="live-dot"></span>
+            <span id="mdMeetBotStatusText" data-i18n="detailBotConnecting">KimKim đang kết nối vào Google Meet…</span>
+            <button class="btn btn-ghost" id="mdMeetBotStopBtn" style="padding:3px 10px;font-size:11px;border-color:var(--red);color:var(--red);" disabled data-i18n="detailStopSummary">Kết thúc và tóm tắt</button>
+          </div>
+        </div>
+      <div class="studio-toolbar">
+        <div id="mdSourceMeta" class="studio-source-meta"></div>
+        <div class="video-controls">
+          <button class="btn btn-ghost" id="btnMicToggle" disabled data-i18n-title="detailMicTitle" data-i18n-aria="detailMicTitle" data-i18n="studioLive">Phiên âm trực tiếp</button>
+          <button class="btn btn-ghost" id="btnEndMeeting" disabled data-i18n-title="detailEndTitle" data-i18n-aria="detailEndTitle" data-i18n="detailStopSummary">Kết thúc và tóm tắt</button>
+        </div>
+        <button class="btn btn-primary" id="btnQuickSummarize" disabled></button>
+      </div>
+      <div class="studio-mobile-nav" role="tablist" data-i18n-aria="studioWorkspace">
+        <button class="active" id="mdMobileContentBtn" disabled role="tab" aria-selected="true" data-i18n="studioContent">Nội dung</button>
+        <button id="mdTabChatBtn" disabled role="tab" aria-selected="false" data-i18n="studioAsk">Hỏi KimKim</button>
+      </div>
+      <div id="meetingDetailBody" class="studio-grid">
+        <section class="studio-document" id="mdContentColumn">
+          <div class="studio-tabs" role="tablist" data-i18n-aria="studioContent">
+            <button class="active" id="mdTabSummaryBtn" disabled role="tab" aria-selected="true" aria-controls="mdSummaryPane" data-i18n="summaryLbl">Tóm tắt</button>
+            <button id="mdTabTranscriptBtn" disabled role="tab" aria-selected="false" aria-controls="mdTranscriptPane" data-i18n="detailTranscriptTab">Bản chép lời</button>
+          </div>
+          <div id="mdSummaryPane" role="tabpanel" aria-labelledby="mdTabSummaryBtn">
+<div class="card keypoints">
+            <h3 class="studio-section-heading" data-i18n="summaryLbl">Tóm tắt</h3>
+            <div id="mdSummary" style="font-size:13px;color:var(--text-1);"></div>
+          </div><div class="card keypoints">
+            <h3 class="studio-section-heading" data-i18n="keyPoints">Điểm chính</h3>
+            <div id="mdKeyPoints"></div>
+          </div><div class="card keypoints">
+            <h3 class="studio-section-heading" data-i18n="actionItemsLbl">Việc cần làm</h3>
+            <div id="mdActionItems"></div>
+          </div><div class="card keypoints">
+            <h3 class="studio-section-heading" data-i18n="participants">Người tham gia</h3>
+            <div id="mdParticipants"></div>
+          </div>
+          </div>
+          <div id="mdTranscriptPane" class="hidden" role="tabpanel" aria-labelledby="mdTabTranscriptBtn"><div class="trans-list" id="segList"></div></div>
+          <details class="studio-notes"><summary data-i18n="mdNotesLbl">Ghi chú</summary><div class="card keypoints">
+            <div class="view-sub" style="margin-bottom:8px" data-i18n="mdNotesLbl">Ghi chú cuộc họp</div>
+            <textarea id="mdNotesInput" data-i18n-ph="detailNotesPlaceholder" placeholder="Thêm ghi chú của bạn…" style="width:100%;min-height:70px;resize:vertical;"></textarea>
+          </div></details>
+          <details class="studio-exports"><summary data-i18n="tabGenerate">Tạo nội dung</summary><div class="card keypoints">
+            <div class="view-sub" style="margin-bottom:8px" data-i18n="tabGenerate">Tạo nội dung</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+              <button class="btn btn-ghost" style="font-size:12px;" disabled data-i18n="detailPowerPoint">Xuất PowerPoint</button>
+              <button class="btn btn-ghost" style="font-size:12px;" disabled data-i18n="studioMindmap">Sơ đồ tư duy</button>
+              <button class="btn btn-ghost" style="font-size:12px;" disabled data-i18n="detailSummaryImage">Xuất ảnh tóm tắt</button>
+            </div>
+            <div id="mdGenerationJobs" style="font-size:12px;color:var(--text-2);"></div>
+          </div></details>
+        </section>
+        <aside class="studio-chat" id="mdChatColumn" aria-labelledby="studioChatHeading">
+          <div class="studio-chat-heading"><div><span class="studio-kicker">KIMKIM AI</span><h2 id="studioChatHeading" data-i18n="studioAsk">Hỏi KimKim</h2></div><span class="studio-context" data-i18n="studioScoped">Theo nội dung này</span></div>
+<div class="card" id="mdChatPane" style="flex:1;padding:12px;display:flex;flex-direction:column;min-height:0;">
+            <div id="mdChatEmpty" class="studio-chat-empty" data-i18n="studioChatEmpty">Hỏi KimKim để tìm ý chính, quyết định hoặc thông tin trong nội dung này.</div><div id="mdChatBody" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;"></div>
+            <div style="display:flex;gap:6px;margin-top:8px;">
+              <input id="mdChatInput" data-i18n-ph="mdChatPh" placeholder="Hỏi về cuộc họp này..." style="flex:1;">
+              <button class="btn btn-primary" disabled data-i18n-aria="detailSendQuestion" data-i18n="studioSend">Gửi</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+      <div id="speakerStats" class="hidden" aria-hidden="true"></div>
+    </div>
+
+    <!-- ===== CREATE / EDIT MEETING ===== -->
+    <div class="view hidden" id="view-createMeeting">
+      <button class="btn btn-ghost" style="margin-bottom:8px" disabled><svg class="akk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg><span data-i18n="detailBack">Quay lại</span></button>
+      <div class="view-title" id="cmFormTitle" data-i18n="createMeetingTitle">Tạo cuộc họp mới</div>
+      <div class="card" style="max-width:520px;padding:20px;">
+        <div class="field"><label data-i18n="cmTitleLbl">Tiêu đề</label><input id="cmTitle" style="width:100%"></div>
+        <div class="field-pair">
+          <div class="field" style="flex:1"><label data-i18n="cmDateLbl">Ngày</label><input id="cmDate" type="date" style="width:100%"></div>
+          <div class="field" style="flex:1"><label data-i18n="cmTimeLbl">Giờ</label><input id="cmTime" type="time" style="width:100%"></div>
+        </div>
+        <div class="field"><label data-i18n="cmParticipantsLbl">Người tham gia (email, cách nhau bởi dấu phẩy)</label><input id="cmParticipants" style="width:100%" placeholder="a@x.com, b@x.com"></div>
+        <div class="field"><label data-i18n="studioMeetLink">Link Google Meet (tuỳ chọn)</label><input id="cmMeetUrl" style="width:100%" placeholder="https://meet.google.com/xxx-xxxx-xxx"></div>
+        <div class="field"><label data-i18n="cmDescLbl">Mô tả</label><textarea id="cmDescription" style="width:100%;min-height:70px;"></textarea></div>
+        <div class="toggle-row" style="margin:8px 0;">
+          <span data-i18n="inviteKimkimLbl">Mời Adolf KimKim vào lịch</span>
+          <div id="cmInviteKimkim" class="switch on" disabled><i></i></div>
+        </div>
+        <div style="font-size:11px;color:var(--text-2);margin:-4px 0 8px;" data-i18n="inviteKimkimHint">KimKim sẽ tự động tham gia và ghi âm cuộc họp này</div>
+        <div id="cmError" class="auth-error"></div>
+        <div style="display:flex;gap:10px;margin-top:14px;">
+          <button class="btn btn-ghost" style="flex:1" disabled data-i18n="cancelBtn">Huỷ</button>
+          <button class="btn btn-primary" style="flex:1" disabled id="cmSubmitBtn" data-i18n="createBtn">Tạo</button>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+    </main></div><script>function sample(kind){document.getElementById('view-createMeeting').classList.add('hidden');const detail=document.getElementById('view-meetingDetail');detail.classList.remove('hidden');detail.querySelector('.view-title').textContent=kind==='short'?'PDF — Short content':kind==='long'?'Document — a longer title for comparison':'Meeting recording';detail.querySelector('.view-sub').textContent='03/11/2026 · 09:00';mdSourceMeta.textContent=kind==='record'?'WEBM · KimKim Meeting':'PDF · Upload';btnQuickSummarize.textContent='Nhờ KimKim tóm tắt';mdSummary.textContent='Chưa có kết quả.';mdKeyPoints.textContent='Chưa có kết quả.';mdActionItems.textContent='Chưa có kết quả.';mdParticipants.textContent='Chưa có người tham gia.';mdChatEmpty.classList.add('hidden');mdChatBody.innerHTML=kind==='long'?'<div class="bubble agent"><p>'+('Long answer with technical references https://example.test/averylongunbrokentoken1234567890 '.repeat(25))+'</p></div>':kind==='short'?'<div class="bubble user">Một câu hỏi ngắn?</div>':'';}
+function showFormFixture(){document.getElementById('view-meetingDetail').classList.add('hidden');document.getElementById('view-createMeeting').classList.remove('hidden');}
+sample('short');if(new URLSearchParams(location.search).has('mobile')){document.body.innerHTML='<iframe title="390px layout" src="workspace-layout-check.html?frame=1" style="display:block;width:390px;height:844px;margin:10px auto;border:0"></iframe>';document.body.style.overflow='auto';}</script></html>

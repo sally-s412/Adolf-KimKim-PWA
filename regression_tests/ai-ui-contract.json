@@ -1,0 +1,12 @@
+{
+  "payloads": [
+    "body: JSON.stringify({ message: text, transcript: segments })",
+    "body:JSON.stringify({transcript:(segments.length?segments:(m&&m.transcript)||[])})});",
+    "body:JSON.stringify({title,key_points:keyPoints,summary})});",
+    "body:JSON.stringify({title,key_points:keyPoints,summary})});",
+    "body: JSON.stringify({ message: text, history: historyPayload })",
+    "body: JSON.stringify({ meet_url: meetUrl, title: title || '' })",
+    "body: JSON.stringify({ transcript: segments })"
+  ],
+  "endpoints_sha256": "bbd4f38977f582d4cef61f9a8ab67d0d626807a4e5c82a8373a1f96db5d21633"
+}

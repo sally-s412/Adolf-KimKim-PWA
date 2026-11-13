@@ -1,0 +1,45 @@
+/* Light variants use the shared Rose Dusk semantic tokens. */
+
+html[data-theme="light"]{background:var(--bg-0);}
+html[data-theme="light"] body,
+html[data-theme="light"] body:has(#authScreen:not([style*="display: none"])){
+  background:var(--canvas);background-attachment:fixed;
+}
+[data-theme="light"] :is(.card,.table-wrap,.dropzone){
+  background:var(--surface);
+  border-color:var(--border);
+  box-shadow:var(--shadow-card);
+  -webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);
+}
+[data-theme="light"] .hero-card{
+  background:var(--gradient-hero);
+}
+[data-theme="light"] :is(.app-header,.sidebar){
+  background:var(--chrome);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);
+}
+[data-theme="light"] .app-header{box-shadow:none;}
+[data-theme="light"] #chatPanel{
+  background:var(--panel);-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);
+  box-shadow:var(--shadow-float);
+}
+[data-theme="light"] .bubble.agent{background:var(--field);}
+[data-theme="light"] .bubble.user{color:var(--compat-color-27);}
+[data-theme="light"] .btn-danger{color:var(--red);background:var(--compat-color-355);border-color:var(--compat-color-356);}
+[data-theme="light"] :is(.field-error,.auth-error){color:var(--red);}
+[data-theme="light"] .confirm-dialog::backdrop{background:var(--compat-color-357);}
+[data-theme="light"] #authScreen .auth-card{
+  background:var(--surface);
+  border-color:var(--border);
+  box-shadow:var(--shadow-card);
+}
+[data-theme="light"] #authScreen .auth-logo span{color:var(--brand);}
+[data-theme="light"] #authScreen .auth-card h1{color:var(--text-0);}
+[data-theme="light"] #authScreen .auth-card :is(p.sub,label,.auth-tabs){color:var(--text-1);}
+[data-theme="light"] #authScreen .auth-card input{
+  background:var(--field);border-color:var(--border);color:var(--text-0);
+}
+[data-theme="light"] #authScreen .auth-card input::placeholder{color:var(--text-2);}
+[data-theme="light"] #authScreen .auth-google{
+  background:var(--field);border-color:var(--border);color:var(--text-0);
+}
+[data-theme="light"] #authScreen .auth-tabs a{color:var(--accent);}

@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="vi" data-theme="light">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><link rel="stylesheet" href="design-tokens.css" /><link
+    rel="stylesheet"
+    href="personal.css?v=2"
+  /><style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: var(--bg-0);
+      font-family: Inter, system-ui, sans-serif;
+    }
+    .hidden {
+      display: none !important;
+    }
+    #app {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      height: 100vh;
+    }
+    .sidebar {
+      background: var(--chrome);
+      padding: 24px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text-0);
+      text-align: left;
+    }
+    .nav-item.active {
+      background: var(--accent-soft);
+    }
+    .ic svg {
+      width: 20px;
+      height: 20px;
+    }
+    .shell-nav-heading {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: var(--text-2);
+    }
+    .main {
+      min-width: 0;
+      overflow: auto;
+    }
+    .personal-dialog .hidden {
+      display: none;
+    }
+    @media (max-width: 760px) {
+      #app {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        display: none;
+      }
+    }
+    .akk-icon {
+      width: 20px;
+      height: 20px;
+    }
+  </style>
+  <div
+    style="
+      padding: 10px 16px;
+      background: var(--field);
+      color: var(--text-0);
+      font: 12px system-ui;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    "
+  >
+    <b>DEMO · Dữ liệu minh họa / Sample data</b
+    ><span>Không gửi email · Changes reset on reload</span
+    ><button
+      onclick="
+        document.documentElement.dataset.theme =
+          document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'
+      "
+    >
+      Light / Dark</button
+    ><button
+      onclick="
+        window.lang = window.lang === 'vi' ? 'en' : 'vi';
+        document.dispatchEvent(new Event('akk:languagechange'));
+        document.getElementById('financePreviewButton').textContent = window.lang === 'vi' ? 'KimKim tài chính' : 'KimKim Finance';
+      "
+    >
+      VIE / ENG</button
+    ><button id="financePreviewButton" onclick="showView('finance')">KimKim tài chính</button
+    ><button onclick="showView('capsules')">KimKim Capsule</button>
+  </div>
+  <div id="app">
+    <aside class="sidebar">
+      <b style="color: var(--text-0); margin: 10px 0 40px">ADOLF KIMKIM</b>
+      <div class="shell-plan-card"></div>
+    </aside>
+    <main class="main"></main>
+  </div>
+  <script>
+    var lang = "vi";
+    var authListener;
+    var authenticated = { uid: "test-user", reload: async()=>{}, getIdToken: async()=>"" };
+    var memory = {
+        financeWallets: {
+          cash: { name: "Tiền mặt", opening: 1000000 },
+          bank: { name: "Ngân hàng", opening: 0 },
+        },
+        financeEntries: {
+          pay: {
+            kind: "income",
+            amount: 18000000,
+            title: "Lương tháng này",
+            date: new Date().toISOString().slice(0, 10),
+            wallet: "bank",
+            category: "other",
+          },
+          lunch: {
+            kind: "expense",
+            amount: 85000,
+            title: "Bữa trưa",
+            date: new Date().toISOString().slice(0, 10),
+            wallet: "cash",
+            category: "food",
+          },
+          trip: {
+            kind: "expense",
+            amount: 120000,
+            title: "Đi Grab",
+            date: new Date().toISOString().slice(0, 10),
+            wallet: "cash",
+            category: "travel",
+          },
+          shopping: {
+            kind: "expense",
+            amount: 650000,
+            title: "Một chiếc áo mới",
+            date: new Date().toISOString().slice(0, 10),
+            wallet: "bank",
+            category: "shopping",
+          },
+        },
+        financeBudgets: {
+          [new Date().toISOString().slice(0, 7)]: { amount: 10000000 },
+        },
+        financeGoals: {
+          trip: {
+            title: "Đà Lạt tháng 12",
+            target: 8000000,
+            saved: 3200000,
+            date: "2026-12-04",
+          },
+        },
+        capsuleDrafts: {
+          draft1: {
+            title: "Gửi tôi của một năm sau",
+            body: "Hy vọng cậu vẫn giữ những điều khiến mình vui.",
+            email: "friend@example.com",
+          },
+          draft2: {
+            title: "Mùa hè của chúng mình",
+            body: "Một mùa hè để nhớ.",
+            email: "friend@example.com",
+          },
+        },
+      },
+      listeners = {};
+    const docs = (name) =>
+      Object.entries(memory[name] || {}).map(([id, data]) => ({
+        id,
+        data: () => data,
+      }));
+    function collection(name) {
+      return {
+        onSnapshot(cb) {
+          listeners[name] = cb;
+          cb({ docs: docs(name) });
+          return () => delete listeners[name];
+        },
+        doc(id) {
+          return {
+            id,
+            async set(data) {
+              memory[name] ||= {};
+              memory[name][id] = data;
+              listeners[name]?.({ docs: docs(name) });
+            },
+            async delete() {
+              delete memory[name]?.[id];
+              listeners[name]?.({ docs: docs(name) });
+            },
+            async get() {
+              return {
+                exists: !!memory[name]?.[id],
+                data: () => memory[name][id],
+              };
+            },
+          };
+        },
+      };
+    }
+    window.FirebaseClient = {
+      uid: () => authenticated?.uid,
+      userCol: collection,
+      serverTimestamp: () => 0,
+      db: {
+        collection: () => ({ doc: () => ({ collection }) }),
+        runTransaction: (fn) =>
+          fn({
+            get: (ref) => ref.get(),
+            update: (ref, data) => ref.set(data),
+            set: (ref, data) => ref.set(data),
+          }),
+      },
+    };
+    window.firebase = {
+      auth: () => ({
+        onAuthStateChanged(cb) {
+          authListener = cb;
+          cb(authenticated);
+        },
+      }),
+    };
+    window.apiFetch = async () => ({ json: async () => ({ ready: false }) });
+    window.getApiUrl = () => "";
+    window.notify = (message) => {
+      window.lastNotice = message;
+    };
+    window.showView = (v, nav) => {
+      document
+        .querySelectorAll(".view")
+        .forEach((el) => el.classList.toggle("hidden", el.id !== "view-" + v));
+      document
+        .querySelectorAll(".nav-item")
+        .forEach((el) => el.classList.toggle("active", el === nav));
+      document.dispatchEvent(
+        new CustomEvent("akk:viewchange", { detail: { view: v } }),
+      );
+    };
+  </script>
+  <script src="hig-ui.js"></script>
+  <script src="personal.js?v=2"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () =>
+      showView("finance", document.querySelector("[data-view=finance]")),
+    );
+  </script>
+</html>

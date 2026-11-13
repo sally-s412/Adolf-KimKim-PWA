@@ -1,0 +1,156 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Mỗi user chỉ đọc/ghi được document của chính mình và các subcollection bên trong
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+
+      match /{subcollection}/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // Chặn tất cả những gì không khớp rule ở trên
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  
+// BEGIN KimKim Community beta v1
+// Add INSIDE the existing match /databases/{database}/documents block.
+// Do not replace the project's existing rules or broaden users/{uid}.
+// The emulator wrapper is test-only. Review live overlapping wildcard grants first.
+function communitySigned() { return request.auth != null; }
+function communityMember(members) { return communitySigned() && request.auth.uid in members; }
+function communityUnblocked(a,b) {
+  return !exists(/databases/$(database)/documents/communityBlocks/$(a)/targets/$(b))
+      && !exists(/databases/$(database)/documents/communityBlocks/$(b)/targets/$(a));
+}
+function communityPair(id,members) {
+  return members is list && members.size() == 2 && members[0] is string && members[1] is string
+      && members[0] != members[1] && id == members[0] + '~' + members[1];
+}
+function communityGate(kind) {
+  return getAfter(/databases/$(database)/documents/communityGates/$(request.auth.uid)/limits/$(kind)).data.lastAt == request.time;
+}
+function communityFriends(id,members) {
+  let r = get(/databases/$(database)/documents/communityConnections/$(id)).data;
+  return r.status == 'accepted' && r.members == members && communityUnblocked(members[0],members[1]);
+}
+match /communityConfig/release {
+  allow get: if communitySigned();
+  allow write, list: if false;
+}
+match /communityProfiles/{uid} {
+  allow get: if communitySigned();
+  allow list: if communitySigned() && request.query.limit <= 20;
+  allow create, update: if communitySigned() && request.auth.uid == uid
+    && request.resource.data.keys().hasOnly(['name','handle','bio','avatarUrl','createdAt','updatedAt','coverPreset','coverUrl'])
+    && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 80
+    && request.resource.data.bio is string && request.resource.data.bio.size() <= 300
+    && request.resource.data.handle is string && request.resource.data.handle.matches('^[a-z0-9_]{3,24}$')
+    && request.resource.data.avatarUrl is string && request.resource.data.avatarUrl.size() <= 2048
+    && (request.resource.data.avatarUrl == '' || request.resource.data.avatarUrl.matches('https://.*'))
+    && (!('coverPreset' in request.resource.data) || request.resource.data.coverPreset in ['royal','midnight','sky','mint','lavender','rose'])
+    && (!('coverUrl' in request.resource.data) || (request.resource.data.coverUrl is string && request.resource.data.coverUrl.size() <= 2048
+      && (request.resource.data.coverUrl == '' || request.resource.data.coverUrl.matches('https://firebasestorage[.]googleapis[.]com/v0/b/adolfkimkim[.]firebasestorage[.]app/o/covers%2F' + uid + '%2F[a-zA-Z0-9-]{20,80}[.]jpg[?].*'))))
+    && getAfter(/databases/$(database)/documents/communityHandles/$(request.resource.data.handle)).data.uid == uid
+    && request.resource.data.updatedAt == request.time
+    && ((resource == null && request.resource.data.createdAt == request.time)
+      || (resource != null && request.resource.data.createdAt == resource.data.createdAt && request.resource.data.handle == resource.data.handle));
+  allow delete: if communitySigned() && request.auth.uid == uid;
+}
+match /communityHandles/{handle} {
+  allow get: if communitySigned();
+  allow create: if communitySigned() && handle.matches('^[a-z0-9_]{3,24}$')
+    && request.resource.data.keys().hasOnly(['uid']) && request.resource.data.uid == request.auth.uid
+    && getAfter(/databases/$(database)/documents/communityProfiles/$(request.auth.uid)).data.handle == handle;
+  // Reservation is intentionally retained on profile deletion to prevent impersonation.
+  allow update, delete, list: if false;
+}
+match /communityGates/{uid}/limits/{kind} {
+  allow get: if communitySigned() && request.auth.uid == uid;
+  allow create, update: if communitySigned() && request.auth.uid == uid && kind in ['invite','message','report']
+    && request.resource.data.keys().hasOnly(['lastAt']) && request.resource.data.lastAt == request.time
+    && (resource == null || request.time >= resource.data.lastAt + duration.value(kind == 'message' ? 1 : 5,'s'));
+}
+match /communityConnections/{id} {
+  allow get: if communitySigned() && (resource == null || communityMember(resource.data.members));
+  allow list: if communityMember(resource.data.members) && request.query.limit <= 50;
+  function newInvitation() {
+    let d = request.resource.data;
+    return d.keys().hasOnly(['members','senderId','status','createdAt','updatedAt'])
+      && communityPair(id,d.members) && communityMember(d.members) && d.senderId == request.auth.uid && d.status == 'pending'
+      && d.createdAt == request.time && d.updatedAt == request.time && communityGate('invite')
+      && exists(/databases/$(database)/documents/communityProfiles/$(d.members[0]))
+      && exists(/databases/$(database)/documents/communityProfiles/$(d.members[1]))
+      && communityUnblocked(d.members[0],d.members[1]);
+  }
+  allow create: if communitySigned() && newInvitation();
+  allow update: if communityMember(resource.data.members) && (
+    (resource.data.status in ['declined','cancelled'] && newInvitation() && request.resource.data.members == resource.data.members)
+    || (resource.data.status == 'pending'
+      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status','updatedAt'])
+      && request.resource.data.updatedAt == request.time
+      && communityUnblocked(resource.data.members[0],resource.data.members[1])
+      && ((request.auth.uid != resource.data.senderId && request.resource.data.status in ['accepted','declined'])
+        || (request.auth.uid == resource.data.senderId && request.resource.data.status == 'cancelled'))));
+  allow delete: if communityMember(resource.data.members);
+}
+match /communityBlocks/{uid}/targets/{peer} {
+  allow read: if communitySigned() && request.auth.uid == uid;
+  allow create: if communitySigned() && request.auth.uid == uid && peer != uid
+    && request.resource.data.keys().hasOnly(['createdAt']) && request.resource.data.createdAt == request.time;
+  allow delete: if communitySigned() && request.auth.uid == uid;
+}
+match /communityThreads/{id} {
+  allow get: if communitySigned() && (resource == null || communityMember(resource.data.members));
+  allow list: if communityMember(resource.data.members) && request.query.limit <= 50;
+  allow create: if communitySigned() && request.resource.data.keys().hasOnly(['members','createdAt','updatedAt','lastText','lastMessageId','lastSenderId'])
+    && communityPair(id,request.resource.data.members) && communityMember(request.resource.data.members)
+    && communityFriends(id,request.resource.data.members)
+    && request.resource.data.createdAt == request.time && request.resource.data.updatedAt == request.time
+    && request.resource.data.lastText == '' && request.resource.data.lastMessageId == '' && request.resource.data.lastSenderId == request.auth.uid;
+  allow update: if communityMember(resource.data.members)
+    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['updatedAt','lastText','lastMessageId','lastSenderId'])
+    && request.resource.data.updatedAt == request.time && request.resource.data.lastSenderId == request.auth.uid
+    && getAfter(/databases/$(database)/documents/communityThreads/$(id)/messages/$(request.resource.data.lastMessageId)).data.createdAt == request.time
+    && getAfter(/databases/$(database)/documents/communityThreads/$(id)/messages/$(request.resource.data.lastMessageId)).data.senderId == request.auth.uid
+    && getAfter(/databases/$(database)/documents/communityThreads/$(id)/messages/$(request.resource.data.lastMessageId)).data.text == request.resource.data.lastText;
+  match /messages/{messageId} {
+    function thread() { return get(/databases/$(database)/documents/communityThreads/$(id)).data; }
+    allow get: if communityMember(thread().members);
+    allow list: if communityMember(thread().members) && request.query.limit <= 30;
+    allow create: if communityMember(thread().members) && communityFriends(id,thread().members) && communityGate('message')
+      && request.resource.data.keys().hasOnly(['senderId','text','clientMessageId','createdAt'])
+      && request.resource.data.senderId == request.auth.uid && request.resource.data.createdAt == request.time
+      && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 2000
+      && messageId.matches('^[a-zA-Z0-9-]{20,80}$') && request.resource.data.clientMessageId == messageId
+      && getAfter(/databases/$(database)/documents/communityThreads/$(id)).data.lastMessageId == messageId;
+    allow update, delete: if false;
+  }
+  match /receipts/{uid} {
+    allow read: if communityMember(get(/databases/$(database)/documents/communityThreads/$(id)).data.members);
+    allow create, update: if communitySigned() && request.auth.uid == uid
+      && communityMember(get(/databases/$(database)/documents/communityThreads/$(id)).data.members)
+      && request.resource.data.keys().hasOnly(['readAt']) && request.resource.data.readAt == request.time;
+  }
+}
+match /communityReports/{id} {
+  allow get: if communitySigned() && resource.data.reporterId == request.auth.uid;
+  allow create: if communitySigned() && communityGate('report')
+    && request.resource.data.keys().hasOnly(['reporterId','peerId','threadId','messageId','reason','detail','createdAt'])
+    && request.resource.data.reporterId == request.auth.uid && request.resource.data.peerId != request.auth.uid
+    && request.resource.data.peerId is string && request.resource.data.peerId.size() <= 128
+    && request.resource.data.threadId is string && request.resource.data.messageId is string
+    && request.resource.data.reason in ['spam','abuse','other']
+    && request.resource.data.detail is string && request.resource.data.detail.size() <= 500
+    && request.resource.data.createdAt == request.time
+    && (request.resource.data.threadId == '' || (communityMember(get(/databases/$(database)/documents/communityThreads/$(request.resource.data.threadId)).data.members)
+      && request.resource.data.peerId in get(/databases/$(database)/documents/communityThreads/$(request.resource.data.threadId)).data.members))
+    && (request.resource.data.messageId == '' || get(/databases/$(database)/documents/communityThreads/$(request.resource.data.threadId)/messages/$(request.resource.data.messageId)).data.senderId == request.resource.data.peerId);
+}
+
+// END KimKim Community beta v1
+}
+}

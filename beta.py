@@ -4,14 +4,16 @@ No local ONNX/Chromium runtime is loaded by this entrypoint. Token verification
 uses Google's public certificates; no Firebase service-account secret is needed.
 """
 import os
+import asyncio
 import time
+import re
 from collections import OrderedDict, deque
 
 import cachecontrol
 import requests
 from google.auth.transport.requests import Request as GoogleRequest
 from google.oauth2 import id_token
-from fastapi import Request
+from fastapi import Request, HTTPException
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
@@ -22,6 +24,59 @@ CERT_REQUEST = GoogleRequest(session=cachecontrol.CacheControl(requests.Session(
 USER_RPM = int(os.getenv("BETA_USER_RPM", "10"))
 GLOBAL_RPM = int(os.getenv("BETA_GLOBAL_RPM", "25"))
 _buckets = OrderedDict()
+_presence = {}
+_presence_rate = {}
+PRESENCE_TTL = 85
+_uid_pattern = re.compile(r'^[a-zA-Z0-9_-]{1,128}$')
+
+
+@app.post('/api/community/presence')
+async def presence_heartbeat(request: Request):
+    """Short-lived online signal; never accept a target UID from the client."""
+    now = time.monotonic()
+    uid = request.state.uid
+    recent = [at for at in _presence_rate.get(uid, ()) if at > now - 60]
+    if len(recent) >= 4:
+        raise HTTPException(429, 'Too many presence updates')
+    _presence_rate[uid] = (recent + [now])[-4:]
+    _presence[uid] = now + PRESENCE_TTL
+    if len(_presence) > 2000:
+        for uid, expiry in list(_presence.items()):
+            if expiry <= now:
+                _presence.pop(uid, None)
+                _presence_rate.pop(uid, None)
+    return {'online': True}
+
+
+@app.get('/api/community/presence/{peer}')
+async def presence_lookup(peer: str, request: Request):
+    own = request.state.uid
+    if not _uid_pattern.fullmatch(peer) or peer == own:
+        raise HTTPException(404, 'Not found')
+    # Only existing accepted connections can see each other's presence.
+    from routes.message_push import access_token, base
+    from urllib.parse import quote
+    import httpx
+    pair = '~'.join(sorted((own, peer)))
+    async with httpx.AsyncClient(timeout=8) as client:
+        result = await client.get(base() + '/communityConnections/' + quote(pair, safe=''),
+                                  headers={'Authorization': 'Bearer ' + access_token()})
+        blocked = await asyncio.gather(*(client.get(
+            base() + '/communityBlocks/' + quote(uid, safe='') + '/targets/' + quote(target, safe=''),
+            headers={'Authorization': 'Bearer ' + access_token()})
+            for uid, target in ((own, peer), (peer, own))))
+    if result.status_code == 404:
+        raise HTTPException(404, 'Not found')
+    if not result.is_success:
+        raise HTTPException(503, 'Presence unavailable')
+    fields = result.json().get('fields', {})
+    if fields.get('status', {}).get('stringValue') != 'accepted':
+        raise HTTPException(404, 'Not found')
+    if any(r.status_code == 200 for r in blocked):
+        raise HTTPException(404, 'Not found')
+    if any(r.status_code not in (200, 404) for r in blocked):
+        raise HTTPException(503, 'Presence unavailable')
+    return {'online': _presence.get(peer, 0) > time.monotonic()}
 
 
 def verify_token(token):
@@ -77,7 +132,7 @@ async def beta_auth(request: Request, call_next):
         return await dispatch(request)
     if path.startswith("/api/meet-bot/"):
         return JSONResponse({"detail": "KimKim Meeting needs a separate meeting worker; it is not deployed on this free beta server."}, status_code=503)
-    if request.method != "GET" and not consume_quota(claims["sub"]):
+    if request.method != "GET" and path != '/api/community/presence' and not consume_quota(claims["sub"]):
         return JSONResponse({"detail": "Beta request limit reached. Please try again in one minute."}, status_code=429, headers={"Retry-After": "60"})
     response = await call_next(request)
     if path.rstrip("/") in ("/api/transcribe", "/transcribe") and response.status_code in (502, 503, 504):

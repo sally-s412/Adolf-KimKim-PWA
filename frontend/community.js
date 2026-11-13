@@ -9,8 +9,8 @@
   };
   Object.assign(COPY.vi,{intro:'Tìm những người bạn muốn giữ kết nối.',profile:'Hồ sơ',peopleKicker:'KIMKIM PEOPLE',about:'Giới thiệu',aboutMe:'Một chút về tôi',editShort:'Chỉnh sửa hồ sơ',joined:'Tham gia',friendCount:'bạn bè',privateFriends:'Danh sách bạn bè của người này không được công khai.',profilePrivacy:'Email và nội dung cuộc họp luôn được giữ riêng tư.',noBio:'Chưa có giới thiệu.',friendStatus:'Đã kết bạn',manage:'Tuỳ chọn',inboxSearch:'Tìm cuộc trò chuyện',all:'Tất cả',unread:'Chưa đọc',noMatches:'Không có cuộc trò chuyện phù hợp.',newChat:'Tin nhắn mới',seen:'Đã xem',cancelEdit:'Huỷ chỉnh sửa',closeMenu:'Đóng tuỳ chọn',cover:'Đổi ảnh bìa'});
   Object.assign(COPY.en,{intro:'Find the people you want to stay connected with.',profile:'Profile',peopleKicker:'KIMKIM PEOPLE',about:'About',aboutMe:'A little about me',editShort:'Edit profile',joined:'Joined',friendCount:'friends',privateFriends:'This person’s friend list is private.',profilePrivacy:'Your email and meeting content stay private.',noBio:'No bio yet.',friendStatus:'Friends',manage:'Options',inboxSearch:'Search conversations',all:'All',unread:'Unread',noMatches:'No matching conversations.',newChat:'New message',seen:'Seen',cancelEdit:'Cancel editing',closeMenu:'Close options',cover:'Edit cover'});
-  Object.assign(COPY.vi,{group:'Tạo nhóm chat',groupName:'Tên nhóm',groupHelp:'Chọn 2–3 bạn bè để tạo nhóm (tối đa 4 người trong beta).',create:'Tạo nhóm',theme:'Chủ đề cuộc trò chuyện',typing:'đang nhập…',attach:'Gửi hình ảnh',remove:'Bỏ ảnh',changeAvatar:'Đổi ảnh đại diện',notifications:'Thông báo',noNotifications:'Bạn đã xem hết thông báo',markAll:'Đánh dấu đã đọc',accepted:'đã chấp nhận lời mời kết bạn',invited:'đã gửi lời mời kết bạn',sentImage:'Đã gửi hình ảnh',members:'thành viên',posts:'Bài đăng',social:'Không gian social'});
-  Object.assign(COPY.en,{group:'Create group',groupName:'Group name',groupHelp:'Choose 2–3 friends (up to 4 people during beta).',create:'Create group',theme:'Conversation theme',typing:'is typing…',attach:'Send an image',remove:'Remove image',changeAvatar:'Change profile photo',notifications:'Notifications',noNotifications:'You are all caught up',markAll:'Mark all as read',accepted:'accepted your friend request',invited:'sent you a friend request',sentImage:'Sent an image',members:'members',posts:'Posts',social:'Social space'});
+  Object.assign(COPY.vi,{peerOnline:'Đang online',peerOffline:'Offline',group:'Tạo nhóm chat',groupName:'Tên nhóm',groupHelp:'Chọn 2–3 bạn bè để tạo nhóm (tối đa 4 người trong beta).',create:'Tạo nhóm',theme:'Chủ đề cuộc trò chuyện',typing:'đang nhập…',attach:'Gửi hình ảnh',remove:'Bỏ ảnh',changeAvatar:'Đổi ảnh đại diện',notifications:'Thông báo',noNotifications:'Bạn đã xem hết thông báo',markAll:'Đánh dấu đã đọc',accepted:'đã chấp nhận lời mời kết bạn',invited:'đã gửi lời mời kết bạn',sentImage:'Đã gửi hình ảnh',members:'thành viên',posts:'Bài đăng',social:'Không gian social'});
+  Object.assign(COPY.en,{peerOnline:'Online',peerOffline:'Offline',group:'Create group',groupName:'Group name',groupHelp:'Choose 2–3 friends (up to 4 people during beta).',create:'Create group',theme:'Conversation theme',typing:'is typing…',attach:'Send an image',remove:'Remove image',changeAvatar:'Change profile photo',notifications:'Notifications',noNotifications:'You are all caught up',markAll:'Mark all as read',accepted:'accepted your friend request',invited:'sent you a friend request',sentImage:'Sent an image',members:'members',posts:'Posts',social:'Social space'});
   const tr=k=>(COPY[typeof lang!=='undefined'&&lang==='en'?'en':'vi'][k]||k);
   const $=id=>document.getElementById(id);
   const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
@@ -22,6 +22,25 @@
   let imageGeneration=0;
   let peerReadAt=0,typingOff=null,typingRows=[],lastTyped=0,notificationRead=0,notificationReady=false,connectionReady=false,threadReady=false;
   const imageCache=new Map(),attachments=new Map(),groupReads=new Map();
+  let presenceTimer=null,presencePeer=null,presenceOnline=false,presenceCheck=0;
+  async function presenceRequest(path,method='GET'){
+    const user=firebase.auth().currentUser;if(!user)return null;
+    const base=String(window.AKK_CONFIG?.apiBaseUrl||location.origin).replace(/\/$/,'');
+    const response=await fetch(base+'/api/community/presence'+path,{method,headers:{Authorization:'Bearer '+await user.getIdToken()},signal:AbortSignal.timeout(10000)});
+    if(!response.ok)throw Error('presence unavailable');return response.json();
+  }
+  async function refreshPresence(){
+    if(!me||!navigator.onLine)return;
+    presenceRequest('','POST').catch(()=>{});
+    const target=active&&!isGroup()&&canSend(peer)?peer:null;
+    if(!target){presencePeer=null;presenceOnline=false;return;}
+    const check=++presenceCheck;
+    try {const result=await presenceRequest('/'+encodeURIComponent(target));if(check!==presenceCheck||peer!==target)return;presencePeer=target;presenceOnline=!!result?.online;}
+    catch {if(check!==presenceCheck)return;presencePeer=target;presenceOnline=false;}
+    const indicator=document.getElementById('communityPeerPresence');
+    if(indicator&&peer===target){indicator.textContent=tr(presenceOnline?'peerOnline':'peerOffline');indicator.classList.toggle('is-online',presenceOnline);}
+  }
+  function startPresence(){clearInterval(presenceTimer);presenceTimer=setInterval(refreshPresence,30000);refreshPresence();}
   const activeThread=()=>threads.find(t=>t.id===active);
   const isGroup=()=>activeThread()?.type==='group';
   let lastRead='',queryEpoch=0,profileEpoch=0,formSequence=0,reportTarget=null;
@@ -49,7 +68,7 @@
   function clearImages(){imageGeneration++;imageCache.forEach(x=>{if(typeof x==='string')URL.revokeObjectURL(x);});imageCache.clear();}
   function stopTyping(){if(active&&me)S.clearTyping?.(active).catch(()=>{});typingOff?.();typingOff=null;typingRows=[];}
   function attachStop(){stopTyping();listeners.splice(0).forEach(fn=>fn());messageOff?.();receiptOff?.();messageOff=receiptOff=null;}
-  function reset(){epoch++;queryEpoch++;profileEpoch++;attachStop();releases.splice(0).forEach(fn=>fn());me=own=null;enabled=null;failure=null;connections=[];blocks=[];threads=[];results=null;peer=peerProfile=active=null;recent=[];older=[];cursor=olderCursor=null;lastRead='';profiles.clear();receipts.clear();pending.clear();drafts.clear();imageCache.forEach(x=>{if(typeof x==='string')URL.revokeObjectURL(x);});imageCache.clear();attachments.forEach(x=>URL.revokeObjectURL(x.url));attachments.clear();groupReads.clear();notificationRead=0;notificationReady=connectionReady=threadReady=false;window.KimKimMessagePush?.setUnread(0);window.KimKimStudio?.reset();document.body.classList.remove('community-chat-open','community-social-open');editingProfile=false;profileTab='about';inboxFilter='';onlyUnread=false;window.CommunityCover?.close();
+  function reset(){clearInterval(presenceTimer);presenceTimer=null;presencePeer=null;presenceOnline=false;presenceCheck++;epoch++;queryEpoch++;profileEpoch++;attachStop();releases.splice(0).forEach(fn=>fn());me=own=null;enabled=null;failure=null;connections=[];blocks=[];threads=[];results=null;peer=peerProfile=active=null;recent=[];older=[];cursor=olderCursor=null;lastRead='';profiles.clear();receipts.clear();pending.clear();drafts.clear();imageCache.forEach(x=>{if(typeof x==='string')URL.revokeObjectURL(x);});imageCache.clear();attachments.forEach(x=>URL.revokeObjectURL(x.url));attachments.clear();groupReads.clear();notificationRead=0;notificationReady=connectionReady=threadReady=false;window.KimKimMessagePush?.setUnread(0);window.KimKimStudio?.reset();document.body.classList.remove('community-chat-open','community-social-open');editingProfile=false;profileTab='about';inboxFilter='';onlyUnread=false;window.CommunityCover?.close();
     for(const id of ['connections','messages','communityProfile','notifications','socialSettings'])$('view-'+id)?.replaceChildren();}
   function gate(view){
     if(!me){$('view-'+view).replaceChildren(empty('signIn'));return false;}
@@ -118,7 +137,7 @@
     const start=epoch;const threadId=await S.openThread(id);if(start!==epoch)return;peer=id;active=threadId;showView('messages',document.querySelector('[data-view=messages]'));selectThread(threadId,id);
   }
   function selectThread(id,other){
-    stopTyping();clearImages();messageOff?.();receiptOff?.();groupReads.clear();active=id;peer=other;recent=[];older=[];cursor=olderCursor=null;more=true;lastRead='';peerReadAt=0;lastTyped=0;document.body.classList.add('community-chat-open');renderMessages();
+    stopTyping();clearImages();messageOff?.();receiptOff?.();groupReads.clear();active=id;peer=other;presencePeer=null;presenceOnline=false;recent=[];refreshPresence();older=[];cursor=olderCursor=null;more=true;lastRead='';peerReadAt=0;lastTyped=0;document.body.classList.add('community-chat-open');renderMessages();
     const start=epoch;
     typingOff=S.watchTyping?.(id,rows=>{if(start===epoch&&active===id){typingRows=rows;renderTyping();}},()=>{});
     messageOff=S.watchMessages(id,(rows,last)=>{if(start!==epoch||active!==id)return;recent=rows;cursor=last;if(!older.length)more=rows.length===30;
@@ -149,7 +168,7 @@
     const focused=document.activeElement?.id==='communityMessageInput',selStart=$('communityMessageInput')?.selectionStart,selEnd=$('communityMessageInput')?.selectionEnd;
     const oldList=$('communityMessageList'),nearBottom=!oldList||oldList.scrollHeight-oldList.scrollTop-oldList.clientHeight<80,scroll=oldList?.scrollTop||0;
     root.replaceChildren();const p=profiles.get(peer);const head=el('div','community-chat-head');head.append(button('←',()=>{stopTyping();messageOff?.();receiptOff?.();messageOff=receiptOff=null;active=null;document.body.classList.remove('community-chat-open');renderMessages();},'btn btn-ghost community-back'));
-    const who=button('',()=>isGroup()?groupInfo():openProfile(peer),'community-identity');const identity=el('span');identity.append(el('strong','',activeThread()?.name||p?.name||tr('unknown')),el('span','community-muted',isGroup()?activeThread().members.length+' '+tr('members'):(p?.handle?'@'+p.handle:'')));who.append(avatar(isGroup()?{name:activeThread().name,id:active}:p),identity);const themeButton=button('◉',openTheme);themeButton.setAttribute('aria-label',tr('theme'));themeButton.title=tr('theme');themeButton.replaceChildren(el('span','sally-icon sally-sun'));head.append(who,themeButton);if(!isGroup())head.append(profileMenu(peer));root.append(head);
+    const who=button('',()=>isGroup()?groupInfo():openProfile(peer),'community-identity');const identity=el('span');identity.append(el('strong','',activeThread()?.name||p?.name||tr('unknown')),el('span','community-muted',isGroup()?activeThread().members.length+' '+tr('members'):(p?.handle?'@'+p.handle:'')));if(!isGroup()&&canSend(peer)){const status=el('span','community-peer-presence'+(presencePeer===peer&&presenceOnline?' is-online':''),tr(presencePeer===peer&&presenceOnline?'peerOnline':'peerOffline'));status.id='communityPeerPresence';identity.append(status);}who.append(avatar(isGroup()?{name:activeThread().name,id:active}:p),identity);const themeButton=button('◉',openTheme);themeButton.setAttribute('aria-label',tr('theme'));themeButton.title=tr('theme');themeButton.replaceChildren(el('span','sally-icon sally-sun'));head.append(who,themeButton);if(!isGroup())head.append(profileMenu(peer));root.append(head);
     const list=el('div','community-message-list');list.id='communityMessageList';list.setAttribute('role','log');list.setAttribute('aria-live','polite');list.setAttribute('aria-relevant','additions');
     if(more){const b=button(loadingOlder?tr('loading'):tr('loadOlder'),()=>action(b,loadOlder));b.disabled=loadingOlder;list.append(b);}
     const all=new Map([...older,...recent].map(m=>[m.id,m]));for(const m of (pending.get(active)||new Map()).values())if(!all.has(m.id))all.set(m.id,m);
@@ -205,7 +224,7 @@
     updateNotifications();if(isView('notifications'))renderNotifications();if(isView('connections'))renderConnections();if(isView('messages'))renderMessages();if(isView('communityProfile'))renderProfile();if(isView('socialSettings'))renderSocialSettings();
   }
   async function start(user){
-    reset();me=user;if(!user)return;window.KimKimMessagePush?.restore(user);const start=epoch;
+    reset();me=user;if(!user)return;startPresence();window.KimKimMessagePush?.restore(user);const start=epoch;
     const failed=e=>{if(start!==epoch)return;failure=e;enabled=false;refresh();};
     releases.push(S.watchRelease(on=>{
       if(start!==epoch)return;enabled=on;failure=null;

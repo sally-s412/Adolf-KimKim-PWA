@@ -17,3 +17,4 @@ dist/
 .openai/*.tar.gz
 google_meet_record/meet_bot_profile*/
 *.wav
+!frontend/assets/sounds/*.wav

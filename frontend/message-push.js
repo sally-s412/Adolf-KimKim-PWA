@@ -7,34 +7,17 @@
   let currentUid = null;
   let currentId = null;
   let currentToken = null;
-  let audio;
+  let chime;
   const baseTitle = document.title;
   const favicon = document.querySelector('link[rel="icon"][sizes="32x32"]');
   const originalFavicon = favicon?.getAttribute('href');
   const tr = (vi, en) => document.documentElement.lang === 'en' ? en : vi;
   const supported = () => !!(window.isSecureContext && window.Notification && navigator.serviceWorker && window.PushManager && window.firebase?.messaging?.isSupported?.());
   const soundEnabled = () => localStorage.getItem(soundKey()) !== 'off';
-  async function unlockSound() {
-    try {
-      audio ||= new (window.AudioContext || window.webkitAudioContext)();
-      if (audio.state === 'suspended') await audio.resume();
-    } catch { /* Audio may be blocked until the page receives a gesture. */ }
-  }
   async function sound() {
-    try {
-      await unlockSound();
-      if (!audio || audio.state === 'suspended') return;
-      const start = audio.currentTime;
-      for (const [index, frequency] of [660, 880].entries()) {
-        const oscillator = audio.createOscillator(), gain = audio.createGain();
-        oscillator.type = 'sine'; oscillator.frequency.value = frequency;
-        gain.gain.setValueAtTime(.0001, start + index * .14);
-        gain.gain.exponentialRampToValueAtTime(.065, start + index * .14 + .015);
-        gain.gain.exponentialRampToValueAtTime(.0001, start + index * .14 + .19);
-        oscillator.connect(gain).connect(audio.destination);
-        oscillator.start(start + index * .14); oscillator.stop(start + index * .14 + .2);
-      }
-    } catch { /* OS notification sound is still available. */ }
+    chime ||= new Audio(new URL('assets/sounds/kimkim-chime.wav', location.href).href);
+    chime.pause(); chime.currentTime = 0; chime.volume = 1;
+    await chime.play();
   }
   function setUnread(count) {
     count = Math.max(0, Number(count) || 0);
@@ -80,8 +63,6 @@
     await ref.set({token, createdAt:existing.exists ? existing.data().createdAt : FC.serverTimestamp(), updatedAt:FC.serverTimestamp()});
     currentUid = user.uid; currentId = id; currentToken = token;
     localStorage.setItem(key, JSON.stringify({uid:user.uid,id}));
-    // The click that enabled notifications also unlocks the in-app chime.
-    await unlockSound();
     return true;
   }
   async function disable() {
@@ -103,7 +84,7 @@
       localStorage.setItem(stamp, String(Date.now()));
       setTimeout(() => localStorage.removeItem(stamp), 20000);
     } catch {}
-    if (soundEnabled()) await sound();
+    if (soundEnabled()) sound().catch(() => {});
     if (window.Notification && Notification.permission === 'granted') {
       if (document.visibilityState === 'visible' && !document.hasFocus()) {
         try {
@@ -132,7 +113,7 @@
       <div class="message-settings-row"><div><strong>${tr('Thông báo đẩy', 'Push notifications')}</strong><p>${tr('Hiện thông báo khi có tin nhắn mới, kể cả khi đóng app.', 'Show new messages even when the app is closed.')}</p></div><button type="button" class="message-settings-switch ${enabled?'on':''}" role="switch" aria-checked="${enabled}" id="messagePushSwitch" ${!supported()?'disabled':''} aria-label="${tr('Thông báo đẩy', 'Push notifications')}"><i></i></button></div>
       <p class="message-settings-status" id="messagePushStatus" role="status">${status}</p>
       <div class="message-settings-row"><div><strong>${tr('Âm thanh trong app', 'In-app sound')}</strong><p>${tr('Phát tiếng chuông khi tab KimKim vẫn đang chạy. Không ảnh hưởng tiếng thông báo hệ thống.', 'Play a chime while the KimKim tab is running. System notification sounds are separate.')}</p></div><button type="button" class="message-settings-switch ${soundEnabled()?'on':''}" role="switch" aria-checked="${soundEnabled()}" id="messageSoundSwitch" aria-label="${tr('Âm thanh trong app', 'In-app sound')}"><i></i></button></div>
-      <button type="button" class="btn btn-ghost message-sound-preview" id="messageSoundPreview">${tr('Nghe thử tiếng chuông', 'Preview chime')}</button>`;
+      <button type="button" class="btn btn-ghost message-sound-preview" id="messageSoundPreview">${tr('Nghe thử tiếng chuông', 'Preview chime')}</button><p class="message-sound-feedback" id="messageSoundFeedback" role="status" aria-live="polite"></p>`;
     pane.querySelector('#messagePushSwitch').addEventListener('click', async event => {
       const button = event.currentTarget, label = pane.querySelector('#messagePushStatus');
       button.disabled = true; label.textContent = tr('Đang cập nhật…', 'Updating…');
@@ -141,10 +122,19 @@
     });
     pane.querySelector('#messageSoundSwitch').addEventListener('click', () => {
       localStorage.setItem(soundKey(), soundEnabled() ? 'off' : 'on');
-      if (soundEnabled()) sound();
       renderSettings();
     });
-    pane.querySelector('#messageSoundPreview').addEventListener('click', sound);
+    pane.querySelector('#messageSoundPreview').addEventListener('click', async () => {
+      const feedback = pane.querySelector('#messageSoundFeedback');
+      try {
+        await sound();
+        feedback.textContent = tr('Đã phát chuông. Nếu vẫn không nghe thấy, kiểm tra tab có bị tắt tiếng và âm lượng đầu ra của thiết bị.', 'Chime played. If you still hear nothing, check whether this tab is muted and your device output volume.');
+      } catch (error) {
+        feedback.textContent = error?.name === 'NotAllowedError'
+          ? tr('Chrome đang chặn phát âm thanh trên trang này. Hãy tương tác với trang rồi thử lại.', 'Chrome blocked audio on this page. Interact with the page and try again.')
+          : tr('Không tải hoặc phát được tiếng chuông. Hãy tải lại trang rồi thử lại.', 'The chime could not load or play. Reload the page and try again.');
+      }
+    });
   }
   function mountSettings() {
     const tabs = document.querySelector('.settings-tabs'), password = tabs?.querySelector('[data-s="password"]');
@@ -163,7 +153,6 @@
     document.addEventListener('akk:viewchange', event => { if (event.detail?.view === 'settings') renderSettings(); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountSettings); else mountSettings();
-  document.addEventListener('pointerdown', () => { if (soundEnabled()) unlockSound(); }, {passive:true});
   navigator.serviceWorker?.addEventListener?.('message', event => {
     if (event.data?.type === 'kimkim-message' && firebase.auth().currentUser) foreground(event.data);
   });

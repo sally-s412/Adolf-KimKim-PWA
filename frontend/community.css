@@ -51,9 +51,38 @@ html[data-theme=light] .community-message.theirs{background:var(--social-field);
 .community-peer-presence::before{content:"";width:7px;height:7px;border-radius:50%;background:#8b96ae;flex:none}
 .community-peer-presence.is-online{color:#38b987}
 .community-peer-presence.is-online::before{background:#38b987;box-shadow:0 0 0 3px rgba(56,185,135,.15)}
-.community-reply-quote{display:block;width:100%;max-width:100%;text-align:left;border:0;border-left:3px solid currentColor;background:rgba(128,128,128,.13);color:inherit;border-radius:5px;padding:6px 9px;margin-bottom:8px;font:inherit;cursor:pointer}
-.community-reply-text{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;opacity:.85}
-.community-message-tools{display:flex;align-items:center;gap:8px;margin-top:8px}.community-message-action,.community-reaction-picker summary{border:0;background:transparent;color:inherit;opacity:.8;font:inherit;font-size:12px;cursor:pointer;padding:3px 5px}.community-reaction-picker{position:relative}.community-reaction-picker summary{list-style:none;font-size:18px}.community-reaction-picker summary::-webkit-details-marker{display:none}.community-reaction-choices{position:absolute;bottom:100%;left:0;display:flex;gap:2px;padding:5px;border:1px solid var(--border);border-radius:12px;background:var(--social-field);box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:4}.community-reaction-option{border:0;background:transparent;border-radius:7px;font-size:20px;cursor:pointer;padding:5px}.community-reaction-option:hover,.community-reaction-option:focus-visible{background:var(--social-primary);outline:2px solid transparent}
-.community-reaction-bar{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}.community-reaction-pill{border:1px solid var(--border);border-radius:20px;padding:2px 7px;background:var(--social-field);color:var(--text-1);font-size:12px;cursor:pointer}.community-reaction-pill.selected{border-color:var(--social-primary)}
-.community-reply-preview{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 20px;border-top:1px solid var(--border);font-size:12px;color:var(--text-2)}.community-reply-preview span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.community-reply-cancel{border:0;background:transparent;color:inherit;font-size:20px;cursor:pointer}
-@media(max-width:700px){.community-reply-preview{padding:8px 12px}.community-reaction-choices{left:auto;right:0}}
+.community-message-line{display:flex;align-items:center;gap:4px;flex:none;align-self:flex-start;max-width:100%;min-width:0}
+.community-message-line.mine{align-self:flex-end;flex-direction:row-reverse}
+.community-message-stack{position:relative;display:flex;flex-direction:column;align-items:flex-start;min-width:0;max-width:min(62vw,360px)}
+.community-message-line.mine .community-message-stack{align-items:flex-end}
+.community-message-line .community-message{max-width:100%;min-width:0;touch-action:pan-y}
+.community-message-line .community-message.mine{align-self:flex-end}
+.community-message-line .community-message-sender{margin:0 8px 3px}
+.community-message-tools{display:flex;align-items:center;gap:1px;flex:none}
+.community-message-action{display:grid;place-items:center;width:30px;height:32px;border:0;background:transparent;color:var(--text-2);border-radius:50%;font:inherit;font-size:19px;cursor:pointer;padding:0}
+.community-message-action:hover,.community-message-action:focus-visible{background:var(--social-field);color:var(--text-1)}
+@media(hover:hover) and (pointer:fine){
+  .community-message-tools{opacity:0;pointer-events:none}
+  .community-message-line:hover .community-message-tools,.community-message-line:focus-within .community-message-tools,.community-message-line.actions-open .community-message-tools{opacity:1;pointer-events:auto}
+}
+@media(hover:none),(pointer:coarse){
+  .community-message-tools>.community-message-action:not(:first-child):not(:last-child){display:none}
+  .community-message-line.mine .community-message-tools>.community-message-action:nth-child(2){display:none}
+  .community-message-action{width:32px;height:36px}
+}
+.community-reaction-choices{position:fixed;inset:auto;margin:0;padding:5px;max-width:calc(100vw - 16px);border:1px solid var(--border);border-radius:20px;background:var(--social-field);color:var(--text-1);box-shadow:0 8px 24px rgba(0,0,0,.28)}
+.community-reaction-choices:popover-open{display:flex;align-items:center;flex-wrap:wrap;gap:2px}
+.community-reaction-option,.community-picker-reply{border:0;background:transparent;color:inherit;border-radius:12px;cursor:pointer;padding:6px}
+.community-reaction-option{font-size:21px;line-height:1.2}
+.community-picker-reply{font:inherit;font-size:13px;min-height:36px}
+.community-reaction-option:hover,.community-reaction-option[aria-pressed=true],.community-picker-reply:hover{background:var(--compat-color-102)}
+.community-reaction-bar{display:flex;flex-wrap:wrap;gap:2px;margin:-6px 5px 0;position:relative}
+.community-reaction-pill{border:1px solid var(--border);border-radius:20px;padding:2px 6px;background:var(--social-field);color:var(--text-1);font-size:12px}
+button.community-reaction-pill{cursor:pointer}
+.community-reaction-pill.selected{border-color:var(--social-primary)}
+.community-reply-quote{max-width:100%;text-align:left;border:0;border-radius:13px 13px 4px 4px;background:var(--compat-color-102);color:var(--text-2);padding:6px 10px;margin:0 4px 2px;font:inherit;cursor:pointer}
+.community-reply-author,.community-reply-preview strong{display:block;font-size:11px;color:var(--text-1);margin-bottom:2px}
+.community-reply-text{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.community-reply-preview{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 16px;border-top:1px solid var(--border);color:var(--text-2)}
+.community-reply-preview>div{min-width:0;border-left:3px solid var(--social-primary);padding-left:9px}
+.community-reply-cancel{border:0;background:transparent;color:inherit;font-size:20px;cursor:pointer;width:36px;height:36px;flex:none}

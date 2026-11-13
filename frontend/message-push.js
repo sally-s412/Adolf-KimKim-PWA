@@ -70,8 +70,8 @@
       localStorage.setItem(stamp, String(Date.now()));
       setTimeout(() => localStorage.removeItem(stamp), 20000);
     } catch {}
-    if (Notification.permission === 'granted') {
-      if (soundEnabled()) sound();
+    if (soundEnabled()) sound();
+    if (window.Notification && Notification.permission === 'granted') {
       if (document.visibilityState === 'visible' && !document.hasFocus()) {
         try {
           const registration = await navigator.serviceWorker.ready;
@@ -108,6 +108,7 @@
     });
     pane.querySelector('#messageSoundSwitch').addEventListener('click', () => {
       localStorage.setItem(soundKey(), soundEnabled() ? 'off' : 'on');
+      if (soundEnabled()) sound();
       renderSettings();
     });
     pane.querySelector('#messageSoundPreview').addEventListener('click', sound);

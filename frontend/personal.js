@@ -145,6 +145,7 @@
   }
   function modal(title, content) {
     const dialog = document.getElementById("personalDialog");
+    dialog.classList.remove("capsule-compose-dialog");
     dialog.innerHTML = `<header class="personal-dialog-header"><h2 id="personalDialogTitle">${esc(title)}</h2><button type="button" data-action="close" aria-label="${tr("Đóng", "Close")}">×</button></header><div class="personal-dialog-body">${content}</div>`;
     if (!dialog.open) dialog.showModal();
     return dialog;
@@ -456,12 +457,18 @@
       cancelled: tr("Đã hủy lịch gửi", "Delivery cancelled"),
     })[item.status] || item.status;
   function renderCapsules() {
-    const items = [
+    const all = [
       ...state.drafts
         .filter((d) => !state.sent.some((c) => c.draftId === d.id))
         .map((d) => ({ ...d, status: "draft" })),
       ...state.sent,
-    ].filter((c) =>
+    ];
+    const counts = {
+      waiting: all.filter(c => ["scheduled", "sending", "failed", "delivery_unknown"].includes(c.status)).length,
+      sent: all.filter(c => ["sent", "cancelled"].includes(c.status)).length,
+      draft: all.filter(c => c.status === "draft").length,
+    };
+    const items = all.filter((c) =>
       state.tab === "draft"
         ? c.status === "draft"
         : state.tab === "sent"
@@ -470,22 +477,22 @@
     );
     const view = document.getElementById("view-capsules");
     if (!view) return;
-    view.innerHTML = `<div class="personal-kicker">KIMKIM CAPSULE</div><header class="personal-head"><div><h1>${tr("Gửi một chút hôm nay,<br>để KimKim giữ hộ.", "A little of today,<br>kept for tomorrow by KimKim.")}</h1><p>${tr("Những lời nhắn hôm nay, dành cho một ngày mai.", "Today’s words, for a day yet to come.")}</p></div>${button(icon("plus") + tr("Tạo KimKim Capsule", "Create KimKim Capsule"), "capsule", true)}</header>
+    view.innerHTML = `<section class="capsule-library-hero"><div class="capsule-library-copy"><div class="personal-kicker">KIMKIM CAPSULE · ${tr("THƯ GỬI TƯƠNG LAI", "LETTERS THROUGH TIME")}</div><h1>${tr("Một lá thư cho<br>ngày mai.", "A letter for<br>tomorrow.")}</h1><p>${tr("Viết hôm nay. KimKim giữ hộ và gửi vào đúng ngày bạn chọn.", "Write today. KimKim keeps it and delivers it on the day you choose.")}</p>${button(icon("plus") + tr("Viết thư mới", "Write a letter"), "capsule", true)}</div><div class="capsule-library-art" aria-hidden="true"><div class="capsule-art-paper"><span>KIMKIM CAPSULE</span><i>Dear tomorrow,</i><b>✦ ✦ ✦</b></div><div class="capsule-art-envelope"><span class="capsule-art-seal"></span></div></div></section>
     ${!state.configReady ? `<div class="personal-notice">${tr("Bạn có thể soạn thư và lưu bản nháp. Gửi email hẹn giờ sẽ mở khi dịch vụ gửi thư được cấu hình.", "You can write and save drafts. Scheduled email delivery becomes available when the mail service is configured.")}</div>` : ""}
     ${state.configReady && !state.emailVerified ? `<div class="personal-notice">${tr("Xác minh email tài khoản để gửi Capsule đến người nhận bên ngoài.", "Verify your account email to send a Capsule to an external recipient.")} ${button(tr("Gửi email xác minh", "Send verification email"), "verify-email")}</div>` : ""}
-    <div class="personal-toolbar"><div class="personal-tabs">${[
+    <div class="capsule-library-section"><div><div class="personal-kicker">${tr("BỘ SƯU TẬP CỦA BẠN", "YOUR LETTERS")}</div><h2>${tr("Những lá thư", "Your letters")}</h2></div><span class="capsule-library-total">${all.length} ${tr("lá thư", "letters")}</span></div><div class="personal-toolbar capsule-library-toolbar"><div class="personal-tabs">${[
       ["waiting", tr("Đang chờ", "Waiting")],
       ["sent", tr("Đã gửi / Đã hủy", "Sent / Cancelled")],
       ["draft", tr("Bản nháp", "Drafts")],
     ]
       .map(
         ([id, label]) =>
-          `<button data-action="capsule-tab" data-id="${id}" aria-pressed="${state.tab === id}">${label}</button>`,
+          `<button data-action="capsule-tab" data-id="${id}" aria-pressed="${state.tab === id}">${label}<span class="capsule-tab-count">${counts[id]}</span></button>`,
       )
       .join(
         "",
       )}</div>${button(tr("Làm mới", "Refresh"), "refresh-capsules")}</div><div class="personal-status" id="capsuleStatus" role="status"></div>
-    <div class="personal-grid">${items.map((c) => `<button type="button" class="personal-card capsule-card" data-action="${c.status === "draft" ? "capsule" : "capsule-detail"}" data-id="${c.id}">${coverMarkup(c)}<div class="capsule-card-body"><span class="personal-badge">${esc(capsuleStatus(c))}</span><h2>${esc(c.title)}</h2><p class="personal-muted">${esc(c.email || "")}<br>${c.sendAt ? esc(new Date(c.sendAt).toLocaleString(tr("vi-VN", "en-US"))) : tr("Chưa chọn ngày gửi", "Choose a delivery date")}</p></div></button>`).join("")}</div>${items.length ? "" : `<div class="personal-empty">${icon("message")}<p>${tr("Có điều gì bạn muốn gửi đến tương lai?<br>KimKim sẽ giữ giúp bạn từ lời nhắn đầu tiên.", "Something you want to send into the future?<br>Start with a letter, kept by KimKim.")}</p>${button(tr("Viết lá thư đầu tiên", "Write your first letter"), "capsule", true)}</div>`}`;
+    <div class="personal-grid capsule-library-grid">${items.map((c) => `<button type="button" class="personal-card capsule-card" data-action="${c.status === "draft" ? "capsule" : "capsule-detail"}" data-id="${c.id}">${coverMarkup(c)}<div class="capsule-card-body"><span class="personal-badge capsule-status-${esc(c.status)}">${esc(capsuleStatus(c))}</span><h2>${esc(c.title)}</h2><p class="personal-muted">${esc(c.email || tr("Chưa chọn người nhận", "No recipient yet"))}</p><div class="capsule-card-foot"><span>${c.sendAt ? esc(new Date(c.sendAt).toLocaleString(tr("vi-VN", "en-US"), {dateStyle:"medium",timeStyle:"short"})) : tr("Chưa chọn ngày gửi", "No delivery date")}</span><span aria-hidden="true">↗</span></div></div></button>`).join("")}</div>${items.length ? "" : `<div class="capsule-library-empty"><span aria-hidden="true">✉</span><h3>${state.tab === "waiting" ? tr("Chưa có thư đang chờ", "No letters on their way") : state.tab === "sent" ? tr("Chưa có thư đã gửi", "No delivered letters yet") : tr("Chưa có bản nháp", "No drafts yet")}</h3><p>${tr("Lá thư của bạn sẽ xuất hiện ở đây.", "Your letters will appear here.")}</p></div>`}`;
   }
   async function refreshCapsules() {
     const owner = state.uid;
@@ -600,6 +607,48 @@
       `<form id="personalCapsule" class="personal-form" data-id="${draftId}"><fieldset class="capsule-cover-picker"><legend>${tr("Chọn bìa thư", "Choose a cover")}</legend><div id="capsuleCoverLive">${coverMarkup({cover, photos, coverPhoto, seal})}</div><div class="capsule-cover-options">${Object.entries(capsuleCovers).map(([key, labels]) => `<label class="capsule-cover-option"><input type="radio" name="cover" value="${key}" ${cover === key ? "checked" : ""}><span class="capsule-cover-swatch capsule-cover-${key}" aria-hidden="true">${key === "photo" ? icon("upload") : ""}</span><span>${labels[tr("0", "1")]}</span></label>`).join("")}</div><label class="capsule-cover-upload">${tr("Tải ảnh bìa riêng", "Upload a separate cover photo")}<input id="capsuleCoverPhoto" type="file" accept="image/jpeg,image/png,image/webp"></label><p class="personal-muted">${tr("Ảnh bìa chỉ dùng cho phong bì, không tính vào 3 ảnh đính kèm.", "Your cover photo is separate from the three letter attachments.")}</p></fieldset><fieldset class="capsule-choice-picker"><legend>${tr("Chọn giấy viết thư", "Choose letter paper")}</legend><div class="capsule-choice-options">${Object.entries(capsulePapers).map(([key, labels]) => `<label class="capsule-choice-option"><input type="radio" name="paper" value="${key}" ${paper === key ? "checked" : ""}><span class="capsule-paper-swatch capsule-paper-${key}" aria-hidden="true"></span><span>${labels[tr("0", "1")]}</span></label>`).join("")}</div><div class="capsule-paper-live-label">${tr("Xem trước giấy viết", "Paper preview")}</div><div id="capsuleLetterLive" class="capsule-letter capsule-letter-paper capsule-paper-${paper} capsule-font-${font}" aria-live="polite">${esc(old.body || tr("Lá thư của bạn sẽ hiện ở đây…", "Your letter will appear here…"))}</div></fieldset><fieldset class="capsule-choice-picker"><legend>${tr("Chọn con dấu", "Choose a wax seal")}</legend><div class="capsule-choice-options capsule-seal-options">${Object.entries(capsuleSeals).map(([key, labels]) => `<label class="capsule-choice-option"><input type="radio" name="seal" value="${key}" ${seal === key ? "checked" : ""}><span class="capsule-seal-swatch capsule-seal-${key}" aria-hidden="true"></span><span>${labels[tr("0", "1")]}</span></label>`).join("")}</div></fieldset><fieldset class="capsule-choice-picker"><legend>${tr("Kiểu chữ viết tay", "Handwriting style")}</legend><div class="capsule-font-options">${Object.entries(capsuleFonts).map(([key, labels]) => `<label class="capsule-font-option"><input type="radio" name="font" value="${key}" ${font === key ? "checked" : ""}><span class="capsule-font-sample capsule-font-${key}" aria-hidden="true">${tr("Gửi KimKim", "Dear KimKim")}</span><span>${labels[tr("0", "1")]}</span></label>`).join("")}</div></fieldset><label>${tr("Tiêu đề", "Title")}<input name="title" maxlength="100" required value="${esc(old.title || "")}" placeholder="${tr("Gửi tôi của một năm sau", "To me, a year from now")}"></label><label>${tr("Lời nhắn của bạn", "Your letter")}<textarea name="body" maxlength="12000" required placeholder="${tr("Hôm nay bạn muốn kể điều gì?", "What would you like to remember about today?")}">${esc(old.body || "")}</textarea></label><label>${tr("Ảnh đính kèm (tối đa 3)", "Photos (up to 3)")}<input id="capsulePhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple></label><div class="capsule-photo-strip" id="capsulePhotoPreview">${photos.map((p) => `<img src="${esc(p)}" alt="">`).join("")}</div><div class="personal-form-grid"><label>${tr("Email người nhận", "Recipient email")}<input name="email" type="email" maxlength="254" value="${esc(old.email || "")}" placeholder="sally@example.com"></label><label>${tr("Ngày KimKim gửi", "Delivery date")}<input name="sendAt" type="datetime-local" value="${old.sendAt ? localDate(new Date(old.sendAt)) + "T" + new Date(old.sendAt).toTimeString().slice(0, 5) : ""}"></label></div><p class="personal-muted">${tr("Gửi tới email bên ngoài. Người nhận mở thư qua liên kết riêng, không cần tài khoản KimKim. Giờ gửi theo múi giờ của thiết bị.", "Send to any email. The recipient opens a private link without a KimKim account. Delivery time uses your device timezone.")}</p><p class="personal-error" role="alert"></p><div class="personal-actions">${id ? button(tr("Xóa nháp", "Delete draft"), "delete-draft") : ""}<button type="submit" class="personal-btn" name="mode" value="draft">${tr("Lưu nháp", "Save draft")}</button><button type="submit" class="personal-btn primary" name="mode" value="preview">${tr("Xem trước", "Preview")}</button></div></form>`,
     );
     const form = document.getElementById("personalCapsule");
+    document.getElementById("personalDialog").classList.add("capsule-compose-dialog");
+    const compose = document.createElement("div");
+    compose.className = "capsule-compose-grid";
+    const writing = document.createElement("div");
+    writing.className = "capsule-compose-writing";
+    const stationery = document.createElement("div");
+    stationery.className = "capsule-compose-stationery";
+    const stage = document.createElement("div");
+    stage.className = "capsule-compose-stage";
+    stage.innerHTML = `<div class="capsule-compose-stage-head"><span>${tr("BẢN XEM TRƯỚC", "LIVE PREVIEW")}</span><span>${tr("Thư của bạn", "Your letter")}</span></div>`;
+    const coverLive = document.getElementById("capsuleCoverLive");
+    const letterLive = document.getElementById("capsuleLetterLive");
+    const paperLive = document.createElement("article");
+    paperLive.id = "capsulePaperLive";
+    paperLive.className = `capsule-letter-paper capsule-paper-${paper} capsule-font-${font}`;
+    paperLive.innerHTML = `<div class="capsule-letter-kicker">KIMKIM CAPSULE</div><h2 id="capsuleTitleLive"></h2>`;
+    paperLive.append(letterLive);
+    stage.append(coverLive, paperLive);
+    form.querySelector(".capsule-paper-live-label").remove();
+    const options = document.createElement("div");
+    options.className = "capsule-compose-options";
+    options.append(...form.querySelectorAll(":scope > fieldset"));
+    stationery.append(stage, options);
+    const writingHeading = document.createElement("div");
+    writingHeading.className = "capsule-compose-heading";
+    writingHeading.innerHTML = `<span>${tr("01 / VIẾT THƯ", "01 / WRITE")}</span><h3>${tr("Lời nhắn của bạn", "Your message")}</h3>`;
+    writing.append(writingHeading,
+      form.elements.title.closest("label"), form.elements.body.closest("label"),
+      document.getElementById("capsulePhotos").closest("label"),
+      document.getElementById("capsulePhotoPreview"),
+      form.querySelector(":scope > .personal-form-grid"),
+      form.querySelector(":scope > p.personal-muted"),
+      form.querySelector(":scope > .personal-error"));
+    const actions = form.querySelector(":scope > .personal-actions");
+    actions.classList.add("capsule-compose-actions");
+    compose.append(writing, stationery, actions);
+    form.append(compose);
+    const updateTitleLive = () => {
+      document.getElementById("capsuleTitleLive").textContent = form.elements.title.value || tr("Tiêu đề lá thư", "Letter title");
+    };
+    form.elements.title.addEventListener("input", updateTitleLive);
+    updateTitleLive();
     form.querySelectorAll('input[name="cover"]').forEach(input => input.onchange = () => {
       cover = input.value;
       document.getElementById("capsuleCoverLive").innerHTML = coverMarkup({cover, photos, coverPhoto, seal});
@@ -614,9 +663,11 @@
     });
     const updateLetterLive = () => {
       const live = document.getElementById("capsuleLetterLive");
-      live.className = `capsule-letter capsule-letter-paper capsule-paper-${paper} capsule-font-${font}`;
+      paperLive.className = `capsule-letter-paper capsule-paper-${paper} capsule-font-${font}`;
+      live.className = "capsule-letter";
       live.textContent = form.elements.body.value || tr("Lá thư của bạn sẽ hiện ở đây…", "Your letter will appear here…");
     };
+    updateLetterLive();
     form.querySelectorAll('input[name="font"]').forEach(input => input.onchange = () => {
       font = input.value;
       updateLetterLive();

@@ -1,0 +1,34 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const {JSDOM} = require('jsdom');
+
+(async () => {
+  const dom = new JSDOM('<!doctype html><html lang="vi"><body><div class="settings-wrap"><div class="settings-tabs"><button data-s="password"></button></div><div id="settingsPassword"></div></div></body></html>', {url:'https://kimkim.test/',runScripts:'outside-only'});
+  const w = dom.window;
+  const store = new Map();
+  Object.defineProperty(w, 'localStorage', {value:{getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v),removeItem:k=>store.delete(k)}});
+  w.FirebaseClient = {db:{},serverTimestamp:()=>0};
+  w.firebase = {auth:()=>({currentUser:{uid:'sally'}}),messaging:Object.assign(()=>({}),{isSupported:()=>true})};
+  w.Notification = {permission:'granted'};
+  w.PushManager = class {};
+  Object.defineProperty(w, 'isSecureContext', {value:true});
+  Object.defineProperty(w.navigator, 'serviceWorker', {value:{ready:Promise.resolve({showNotification:async()=>{}})}});
+  w.showSettings = () => {};
+  let chimes = 0;
+  w.AudioContext = class {state='running';currentTime=0;destination={};createOscillator(){return {frequency:{},connect(){return this},start(){chimes++},stop(){}}}createGain(){return {gain:{setValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){return this}}}};
+  w.eval(fs.readFileSync('frontend/message-push.js','utf8'));
+  w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
+  assert(w.document.querySelector('[data-s=notifications]'));
+  const pane = w.document.querySelector('#settingsNotifications');
+  assert.match(pane.textContent,/Thông báo tin nhắn/);
+  assert.equal(pane.querySelector('#messageSoundSwitch').getAttribute('aria-checked'),'true');
+  pane.querySelector('#messageSoundSwitch').click();
+  assert.equal(w.KimKimMessagePush.soundEnabled(),false);
+  assert.equal(pane.querySelector('#messageSoundSwitch').getAttribute('aria-checked'),'false');
+  await w.KimKimMessagePush.foreground({threadId:'one',messageId:'12345678901234567890'});
+  assert.equal(chimes,0);
+  pane.querySelector('#messageSoundPreview').click();
+  assert.equal(chimes,2);
+  dom.window.close();
+  console.log('Passed notification settings, sound preference, and chime preview.');
+})().catch(error=>{console.error(error);process.exitCode=1});

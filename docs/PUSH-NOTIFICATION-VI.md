@@ -2,7 +2,7 @@
 
 ## Đã có trong mã nguồn
 
-- Nút **Bật thông báo** trong màn Tin nhắn. Người dùng tự cấp quyền; mỗi thiết bị có token riêng.
+- Màn **Cài đặt → Thông báo** (cũng mở từ màn Tin nhắn) có công tắc push, công tắc **Âm thanh trong app** và nút nghe thử. Người dùng tự cấp quyền; mỗi thiết bị có token riêng. Âm thanh trong app lưu riêng theo tài khoản trên thiết bị này.
 - Khi trang vẫn đang chạy (kể cả chuyển sang tab khác): tiếng chuông ngắn sau khi người dùng đã tương tác với trang. Tab đang hiển thị nhưng không được chọn có thêm thông báo hệ thống. Khi trang chạy nền hoặc đã đóng: push hệ thống qua service worker.
 - Khi đóng trang/PWA: Cloud Function nhận tin nhắn mới từ Firestore và gửi FCM đến thiết bị đã đăng ký. Nội dung push chỉ báo có tin mới, không đưa lời thoại riêng tư vào payload.
 - Đăng xuất hoặc tắt thông báo sẽ xóa token thiết bị. Token cũ bị FCM từ chối sẽ được dọn trên server.

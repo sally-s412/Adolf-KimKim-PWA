@@ -245,7 +245,7 @@ function showView(v,el){
   document.dispatchEvent(new CustomEvent('akk:viewchange',{detail:{view:v}}));
 }
 function showSettings(section, element){
-  const ids={account:'settingsAccount',meeting:'settingsMeeting',ai:'settingsAI',password:'settingsPassword'};
+  const ids={account:'settingsAccount',meeting:'settingsMeeting',ai:'settingsAI',notifications:'settingsNotifications',password:'settingsPassword'};
   if(!ids[section]) return;
   for(const [key,id] of Object.entries(ids)) document.getElementById(id)?.classList.toggle('hidden',key!==section);
   for(const tab of document.querySelectorAll('.settings-tabs [data-s]')){

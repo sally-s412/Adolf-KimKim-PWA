@@ -51,13 +51,14 @@ test('offline navigation returns the explanatory offline page', async () => {
 
 test('private message push shows a generic notification and opens its thread', async () => {
   const listeners = new Map(), notices = [];
-  const page = {url:'https://example.test/',visibilityState:'hidden',focused:false,navigate:async url=>{page.url=url},focus:async()=>{}};
+  const page = {url:'https://example.test/',visibilityState:'hidden',focused:false,messages:[],postMessage(data){this.messages.push(data)},navigate:async url=>{page.url=url},focus:async()=>{}};
   const self = {location:{href:'https://example.test/sw.js'},addEventListener:(name,fn)=>listeners.set(name,fn),clients:{matchAll:async()=>[page]},registration:{showNotification:async(title,options)=>notices.push({title,options})}};
   vm.runInNewContext(readFileSync('frontend/sw.js','utf8'),{self,URL,Response,caches:{},fetch:async()=>{}});
   let work;
   listeners.get('push')({data:{json:()=>({data:{type:'kimkim-message',threadId:'thread-1',messageId:'12345678901234567890',title:'Sally',body:'Bạn có tin nhắn mới'}})},waitUntil:promise=>{work=promise}});
   await work;
   assert.equal(notices.length,1);
+  assert.equal(page.messages[0].messageId,'12345678901234567890');
   assert.equal(notices[0].options.body,'Bạn có tin nhắn mới');
   assert.equal(notices[0].options.data.url,'https://example.test/#messages/thread-1');
   listeners.get('notificationclick')({notification:{data:notices[0].options.data,close(){}},waitUntil:promise=>{work=promise}});

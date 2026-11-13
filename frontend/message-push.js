@@ -8,13 +8,22 @@
   let currentId = null;
   let currentToken = null;
   let audio;
+  const baseTitle = document.title;
+  const favicon = document.querySelector('link[rel="icon"][sizes="32x32"]');
+  const originalFavicon = favicon?.getAttribute('href');
   const tr = (vi, en) => document.documentElement.lang === 'en' ? en : vi;
   const supported = () => !!(window.isSecureContext && window.Notification && navigator.serviceWorker && window.PushManager && window.firebase?.messaging?.isSupported?.());
   const soundEnabled = () => localStorage.getItem(soundKey()) !== 'off';
-  function sound() {
+  async function unlockSound() {
     try {
       audio ||= new (window.AudioContext || window.webkitAudioContext)();
-      if (audio.state === 'suspended') audio.resume().catch(() => {});
+      if (audio.state === 'suspended') await audio.resume();
+    } catch { /* Audio may be blocked until the page receives a gesture. */ }
+  }
+  async function sound() {
+    try {
+      await unlockSound();
+      if (!audio || audio.state === 'suspended') return;
       const start = audio.currentTime;
       for (const [index, frequency] of [660, 880].entries()) {
         const oscillator = audio.createOscillator(), gain = audio.createGain();
@@ -26,6 +35,30 @@
         oscillator.start(start + index * .14); oscillator.stop(start + index * .14 + .2);
       }
     } catch { /* OS notification sound is still available. */ }
+  }
+  function setUnread(count) {
+    count = Math.max(0, Number(count) || 0);
+    document.title = count ? `(${count > 99 ? '99+' : count}) ${baseTitle}` : baseTitle;
+    if (favicon && originalFavicon) {
+      if (!count) favicon.href = originalFavicon;
+      else {
+        const canvas = document.createElement('canvas'); canvas.width = canvas.height = 32;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          const icon = new Image();
+          icon.onload = () => {
+            if (!document.title.startsWith('(')) return;
+            ctx.drawImage(icon, 0, 0, 32, 32);
+            ctx.fillStyle = '#ec7298'; ctx.beginPath(); ctx.arc(25, 8, 7, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = '#111a3d'; ctx.lineWidth = 2; ctx.stroke();
+            favicon.href = canvas.toDataURL('image/png');
+          };
+          icon.src = new URL(originalFavicon, location.href).href;
+        }
+      }
+    }
+    if (navigator.setAppBadge && count) navigator.setAppBadge(count).catch(() => {});
+    else if (navigator.clearAppBadge && !count) navigator.clearAppBadge().catch(() => {});
   }
   const tokenRef = (uid, id) => FC.db.collection('communityPushTokens').doc(uid).collection('devices').doc(id);
   async function enable() {
@@ -48,7 +81,7 @@
     currentUid = user.uid; currentId = id; currentToken = token;
     localStorage.setItem(key, JSON.stringify({uid:user.uid,id}));
     // The click that enabled notifications also unlocks the in-app chime.
-    try { audio ||= new (window.AudioContext || window.webkitAudioContext)(); await audio.resume(); } catch {}
+    await unlockSound();
     return true;
   }
   async function disable() {
@@ -70,7 +103,7 @@
       localStorage.setItem(stamp, String(Date.now()));
       setTimeout(() => localStorage.removeItem(stamp), 20000);
     } catch {}
-    if (soundEnabled()) sound();
+    if (soundEnabled()) await sound();
     if (window.Notification && Notification.permission === 'granted') {
       if (document.visibilityState === 'visible' && !document.hasFocus()) {
         try {
@@ -130,5 +163,9 @@
     document.addEventListener('akk:viewchange', event => { if (event.detail?.view === 'settings') renderSettings(); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountSettings); else mountSettings();
-  window.KimKimMessagePush = {supported,enable,disable,foreground,restore,renderSettings,soundEnabled};
+  document.addEventListener('pointerdown', () => { if (soundEnabled()) unlockSound(); }, {passive:true});
+  navigator.serviceWorker?.addEventListener?.('message', event => {
+    if (event.data?.type === 'kimkim-message' && firebase.auth().currentUser) foreground(event.data);
+  });
+  window.KimKimMessagePush = {supported,enable,disable,foreground,restore,renderSettings,soundEnabled,setUnread};
 })();

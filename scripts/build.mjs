@@ -53,6 +53,7 @@ self.addEventListener('push', event => {
     const data = payload?.data || payload;
     if (data?.type !== 'kimkim-message' || !/^[a-zA-Z0-9-]{20,80}$/.test(data.messageId || '')) return;
     const clients = await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    await Promise.all(clients.map(client => client.postMessage({type:'kimkim-message',threadId:data.threadId,messageId:data.messageId,title:data.title})));
     // A visible page handles its own notice and chime via the Firestore listener.
     if (clients.some(client => client.visibilityState === 'visible')) return;
     const url = new URL('./#messages/' + encodeURIComponent(data.threadId || ''), BASE).href;

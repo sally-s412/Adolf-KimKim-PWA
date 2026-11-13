@@ -66,6 +66,7 @@
   }
   const watchThreads=(cb,fail)=>col('Threads').where('members','array-contains',uid()).limit(50).onSnapshot(s=>cb(rows(s).sort((a,b)=>(b.updatedAt?.toMillis?.()||0)-(a.updatedAt?.toMillis?.()||0))),fail);
   const messagesRef=id=>col('Threads').doc(id).collection('messages');
+  const getMessage=(id,messageId)=>messagesRef(id).doc(messageId).get().then(data);
   const watchMessages=(id,cb,fail)=>messagesRef(id).orderBy('createdAt','desc').limit(30).onSnapshot(s=>cb(rows(s).reverse(),s.docs.at(-1)||null),fail);
   const olderMessages=async(id,cursor)=>{
     if(!cursor)return {rows:[],cursor:null};
@@ -73,18 +74,20 @@
     return {rows:rows(snap).reverse(),cursor:snap.docs.at(-1)||null};
   };
   const messageId=()=>global.crypto.randomUUID?global.crypto.randomUUID():Array.from(global.crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');
-  async function sendMessage(id,text,clientMessageId,mediaId=null){
+  async function sendMessage(id,text,clientMessageId,mediaId=null,replyTo=null){
     const me=uid(); text=String(text||'').trim();
     if((!text&&!mediaId)||text.length>2000||!/^[a-zA-Z0-9-]{20,80}$/.test(clientMessageId))throw new Error('community/message-format');
+    if(replyTo!==null&&!/^[a-zA-Z0-9-]{20,80}$/.test(replyTo))throw new Error('community/message-format');
     const tr=col('Threads').doc(id),mr=messagesRef(id).doc(clientMessageId);
     // Transaction retries and explicit client retry share one document ID.
     await FC.db.runTransaction(async tx=>{
       const old=await tx.get(mr);
-      if(old.exists){if(old.data().senderId!==me||old.data().text!==text||(old.data().mediaId||null)!==mediaId)throw new Error('community/message-conflict');return;}
+      if(old.exists){if(old.data().senderId!==me||old.data().text!==text||(old.data().mediaId||null)!==mediaId||(old.data().replyTo&&old.data().replyTo!==replyTo))throw new Error('community/message-conflict');return;}
       tx.set(gate('message'),{lastAt:stamp()});
       tx.set(mr,{senderId:me,text,clientMessageId,createdAt:stamp(),...(mediaId?{mediaId}:{})});
       tx.update(tr,{updatedAt:stamp(),lastText:text,lastMessageId:clientMessageId,lastSenderId:me});
     });
+    if(replyTo)await messageAction({threadId:id,messageId:clientMessageId,replyTo});
     // Render verifies the Firebase ID token and the committed Firestore message.
     // Push failure does not turn a successfully sent message into a failed one.
     try {
@@ -95,6 +98,18 @@
         if(!response.ok)console.warn('KimKim push unavailable',response.status);
       }
     } catch(e) { console.warn('KimKim push unavailable',e?.message||e); }
+  }
+  const REACTIONS=['❤️','😂','😮','😢','👍','🎉'];
+  async function messageAction(payload){
+    const user=global.firebase.auth().currentUser;
+    if(!user||user.uid!==uid())throw new Error('community/sign-in');
+    const base=String(global.AKK_CONFIG?.apiBaseUrl||global.location.origin).replace(/\/$/,'');
+    const response=await fetch(base+'/api/community/message-actions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await user.getIdToken()},body:JSON.stringify(payload),signal:AbortSignal.timeout(12000)});
+    if(!response.ok)throw new Error('community/message-action');
+  }
+  async function reactMessage(id,messageId,emoji){
+    if(!/^[a-zA-Z0-9-]{20,80}$/.test(messageId)||!REACTIONS.includes(emoji))throw new Error('community/message-format');
+    await messageAction({threadId:id,messageId,emoji});
   }
   const markRead=id=>col('Threads').doc(id).collection('receipts').doc(uid()).set({readAt:stamp()});
   const watchReceipt=(id,cb,fail)=>col('Threads').doc(id).collection('receipts').doc(uid()).onSnapshot(s=>cb(data(s)),fail);
@@ -123,5 +138,5 @@
   const watchNotificationState=(cb,fail)=>notificationRef().onSnapshot(s=>cb(s.exists?s.data().readAt?.toMillis?.()||0:0),fail);
   const readNotifications=()=>notificationRef().set({readAt:stamp()});
 
-  global.CommunityService={createGroup,setTheme,watchTyping,setTyping,clearTyping,watchReceipts,watchNotificationState,readNotifications,pair,normalizeHandle,saveProfile,getProfile,watchRelease,watchProfile,search,watchConnections,invite,respond,unfriend,watchBlocks,block,unblock,openThread,watchThreads,watchMessages,olderMessages,messageId,sendMessage,markRead,watchReceipt,watchPeerReceipt,getReceipt,report};
+  global.CommunityService={createGroup,setTheme,watchTyping,setTyping,clearTyping,watchReceipts,watchNotificationState,readNotifications,pair,normalizeHandle,saveProfile,getProfile,watchRelease,watchProfile,search,watchConnections,invite,respond,unfriend,watchBlocks,block,unblock,openThread,watchThreads,watchMessages,olderMessages,getMessage,messageId,sendMessage,reactMessage,markRead,watchReceipt,watchPeerReceipt,getReceipt,report};
 })(window);

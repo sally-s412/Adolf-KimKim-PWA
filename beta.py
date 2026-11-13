@@ -81,8 +81,10 @@ async def presence_lookup(peer: str, request: Request):
 
 # app.py mounts the static PWA at "/". Keep beta-only API routes ahead of that
 # catch-all mount so authenticated requests reach these handlers.
-_presence_routes = app.router.routes[-2:]
-del app.router.routes[-2:]
+from routes.message_actions import router as message_actions_router
+app.include_router(message_actions_router)
+_presence_routes = app.router.routes[-3:]
+del app.router.routes[-3:]
 _static_mount = next(i for i, route in enumerate(app.router.routes) if type(route).__name__ == 'Mount' and getattr(route, 'path', None) == '')
 app.router.routes[_static_mount:_static_mount] = _presence_routes
 

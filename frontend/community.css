@@ -38,3 +38,7 @@ html[data-theme=light] .community-message.theirs{background:var(--social-field);
 /* Flex parents must not shrink social views to their intrinsic content width. */
 .community-view{width:100%;box-sizing:border-box;flex-shrink:0}.community-profile-preview{width:100%;box-sizing:border-box}
 .community-message{position:relative}.community-message-report{position:absolute;right:6px;top:4px;font-size:16px;padding:0 4px;opacity:0}.community-message:hover .community-message-report,.community-message-report:focus-visible{opacity:1}.community-seen{align-self:flex-end;font-size:10px;color:var(--social-muted);padding-right:48px}@media(hover:none){.community-message-report{opacity:.65}}
+/* Explicit, reversible notification opt-in in the inbox header. */
+.community-heading .community-push-toggle{margin-left:auto;white-space:nowrap;border:1px solid var(--social-border);border-radius:12px;background:var(--surface);color:var(--text-0);font-size:12px;padding:10px 14px}
+.community-heading .community-push-toggle[aria-pressed="true"]{border-color:var(--social-primary);background:var(--accent-soft);color:var(--accent)}
+@media(max-width:700px){.community-heading .community-push-toggle{margin:12px 0 0;width:100%}}

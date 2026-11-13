@@ -46,6 +46,36 @@ self.addEventListener('activate', event => {
 self.addEventListener('message', event => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
+self.addEventListener('push', event => {
+  event.waitUntil((async () => {
+    let payload;
+    try { payload = event.data?.json(); } catch { return; }
+    const data = payload?.data || payload;
+    if (data?.type !== 'kimkim-message' || !/^[a-zA-Z0-9-]{20,80}$/.test(data.messageId || '')) return;
+    const clients = await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    // A visible page handles its own notice and chime via the Firestore listener.
+    if (clients.some(client => client.visibilityState === 'visible')) return;
+    const url = new URL('./#messages/' + encodeURIComponent(data.threadId || ''), BASE).href;
+    await self.registration.showNotification(data.title || 'KimKim', {
+      body: data.body || 'Bạn có tin nhắn mới / You have a new message',
+      icon: new URL('assets/icons/icon-192.png', BASE).href,
+      badge: new URL('assets/icons/icon-192.png', BASE).href,
+      tag: 'kimkim-message-' + data.messageId,
+      data: {url}, silent: false
+    });
+  })());
+});
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil((async () => {
+    const target = event.notification.data?.url;
+    if (!target || new URL(target).origin !== BASE.origin) return;
+    const clients = await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    const page = clients.find(client => client.url.startsWith(BASE.href));
+    if (page) { await page.navigate(target); await page.focus(); }
+    else await self.clients.openWindow(target);
+  })());
+});
 self.addEventListener('fetch', event => {
   const request = event.request;
   const url = new URL(request.url);

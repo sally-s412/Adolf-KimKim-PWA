@@ -211,20 +211,20 @@
         (e) => (totals[e.category] = (totals[e.category] || 0) + e.amount),
       );
     view.classList.toggle("personal-hidden-finance", state.hideAmounts);
-    view.innerHTML = `<div class="personal-kicker">${tr("KIMKIM TÀI CHÍNH", "KIMKIM FINANCE")}</div><header class="personal-head"><div><h1>${tr("Tiền của mình, KimKim ghi giúp.", "Your money, kept with KimKim.")}</h1><p>${tr("Một chút rõ ràng cho những kế hoạch của bạn.", "A little clarity for the plans that matter to you.")}</p></div>${button(icon("plus") + tr("Thêm giao dịch", "Add transaction"), "entry", true)}</header>
-      <div class="personal-toolbar"><label><span class="sr-only">${tr("Tháng", "Month")}</span><input aria-label="${tr("Tháng", "Month")}" type="month" id="financeMonth" value="${state.month}"></label><select id="financeWallet" aria-label="${tr("Lọc ví", "Filter wallet")}"><option value="">${tr("Tất cả ví", "All wallets")}</option>${state.wallets.map((w) => `<option value="${w.id}" ${state.wallet === w.id ? "selected" : ""}>${esc(w.name)}</option>`).join("")}</select>${button(tr("Ví của tôi", "My wallets"), "wallets")}${button(state.hideAmounts ? tr("Hiện số tiền", "Show amounts") : tr("Ẩn số tiền", "Hide amounts"), "privacy-amounts")}${button(tr("Xuất CSV", "Export CSV"), "export")}</div>
+    view.innerHTML = `<section class="finance-hero"><div class="finance-hero-copy"><div class="personal-kicker">${tr("KIMKIM TÀI CHÍNH", "KIMKIM FINANCE")}</div><h1>${tr("Rõ tiền bạc.<br>Nhẹ đầu hơn.", "Know your money.<br>Feel lighter.")}</h1><p>${tr("Theo dõi từng khoản, dành chỗ cho những điều bạn mong.", "Track the little things. Make room for what matters.")}</p>${button(icon("plus") + tr("Ghi một khoản", "Add a transaction"), "entry", true)}</div><div class="finance-hero-visual" aria-hidden="true"><div class="finance-orbit orbit-one"></div><div class="finance-orbit orbit-two"></div><div class="finance-visual-card"><span>KIMKIM</span><b>✦</b><i>finance journal</i></div></div></section>
+      <div class="personal-toolbar finance-toolbar"><div class="finance-toolbar-filters"><label><span>${tr("Tháng", "Month")}</span><input aria-label="${tr("Tháng", "Month")}" type="month" id="financeMonth" value="${state.month}"></label><label><span>${tr("Ví", "Wallet")}</span><select id="financeWallet" aria-label="${tr("Lọc ví", "Filter wallet")}"><option value="">${tr("Tất cả ví", "All wallets")}</option>${state.wallets.map((w) => `<option value="${esc(w.id)}" ${state.wallet === w.id ? "selected" : ""}>${esc(w.name)}</option>`).join("")}</select></label></div><div class="finance-toolbar-actions">${button(tr("Quản lý ví", "Manage wallets"), "wallets")}${button(state.hideAmounts ? tr("Hiện số tiền", "Show amounts") : tr("Ẩn số tiền", "Hide amounts"), "privacy-amounts")}${button(tr("Xuất CSV", "Export CSV"), "export")}</div></div>
       <div class="personal-status" id="financeStatus" role="status">${state.ready ? "" : tr("KimKim đang mở sổ…", "KimKim is opening your ledger…")}</div>
-      <div class="personal-metrics">${[
+      <div class="finance-section-title"><div><span class="personal-kicker">${tr("TỔNG QUAN", "OVERVIEW")}</span><h2>${tr("Tháng này của bạn", "Your month at a glance")}</h2></div></div><div class="personal-metrics finance-metrics">${[
         [tr("Chênh lệch thu chi", "Net cash flow"), income - expense],
         [tr("Thu nhập", "Income"), income],
         [tr("Chi tiêu", "Expenses"), expense],
       ]
         .map(
           ([label, value]) =>
-            `<div class="personal-card personal-metric"><span>${label}</span><strong>${money(value)}</strong></div>`,
+            `<div class="personal-card personal-metric"><span>${label}</span><strong>${money(value)}</strong><span class="finance-metric-mark" aria-hidden="true">${label === tr("Thu nhập", "Income") ? "↗" : label === tr("Chi tiêu", "Expenses") ? "↘" : "✦"}</span></div>`,
         )
         .join("")}</div>
-      <div class="personal-columns"><section class="personal-card"><h2>${tr("KimKim ghi lại gần đây", "Recently in your KimKim ledger")}</h2>${
+      <div class="personal-columns finance-columns"><section class="personal-card finance-ledger"><div class="finance-card-head"><div><span class="personal-kicker">${tr("DÒNG TIỀN", "ACTIVITY")}</span><h2>${tr("Giao dịch gần đây", "Recent transactions")}</h2></div><span class="finance-row-count">${rows.length} ${tr("giao dịch", "transactions")}</span></div>${
         rows.length
           ? rows
               .slice()
@@ -236,7 +236,7 @@
               .join("")
           : `<div class="personal-empty">${tr("Tháng này còn là một trang mới.<br>Ghi khoản đầu tiên cùng KimKim nhé.", "A fresh page for this month.<br>Add your first transaction with KimKim.")}</div>`
       }</section>
-      <div class="personal-stack"><section class="personal-card"><h2>${tr("KimKim giữ nhịp ngân sách", "Your budget with KimKim")}</h2><div class="personal-stat-line"><b>${money(allExpense)}</b><span>${budget ? "/ " + money(budget) : tr("Chưa đặt ngân sách", "No budget set")}</span></div>${budget ? `<progress class="personal-bar" max="${budget}" value="${Math.min(allExpense, budget)}"></progress><p class="personal-muted">${allExpense > budget ? tr("Đã vượt ngân sách ", "Over budget by ") + money(allExpense - budget) : tr("Còn ", "Remaining ") + money(budget - allExpense)}</p>` : ""}${button(tr("Đặt ngân sách tháng", "Set monthly budget"), "budget")}</section>
+      <div class="personal-stack finance-stack"><section class="personal-card finance-budget"><div class="finance-card-head"><div><span class="personal-kicker">${tr("KẾ HOẠCH", "PLAN")}</span><h2>${tr("Ngân sách tháng", "Monthly budget")}</h2></div><span class="finance-card-symbol" aria-hidden="true">◎</span></div><div class="personal-stat-line"><b>${money(allExpense)}</b><span>${budget ? "/ " + money(budget) : tr("Chưa đặt ngân sách", "No budget set")}</span></div>${budget ? `<progress class="personal-bar" max="${budget}" value="${Math.min(allExpense, budget)}"></progress><p class="personal-muted">${allExpense > budget ? tr("Đã vượt ngân sách ", "Over budget by ") + money(allExpense - budget) : tr("Còn ", "Remaining ") + money(budget - allExpense)}</p>` : ""}${button(tr("Đặt ngân sách tháng", "Set monthly budget"), "budget")}</section>
       <section class="personal-card"><h2>${tr("Bạn đã chi cho điều gì?", "Where did your money go?")}</h2>${
         Object.entries(totals)
           .sort((a, b) => b[1] - a[1])

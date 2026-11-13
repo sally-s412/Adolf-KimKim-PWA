@@ -89,6 +89,8 @@
 
   async function signOut() {
     if (!FC.ready) return;
+    try { await global.KimKimMessagePush?.disable(); }
+    catch (error) { console.warn('Could not remove this device push token before sign-out:', error); }
     await firebase.auth().signOut();
   }
 

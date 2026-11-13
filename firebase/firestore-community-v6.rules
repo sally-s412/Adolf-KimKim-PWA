@@ -242,6 +242,22 @@ match /communityProfiles/{author}/posts/{post}/comments/{comment} {
  allow update: if false;
 }
 
+// Push tokens are private to their owner. Only the server reads recipient tokens.
+match /communityConfig/push {
+  allow get: if communitySigned();
+  allow list, write: if false;
+}
+match /communityPushTokens/{uid}/devices/{deviceId} {
+  allow get: if communitySigned() && request.auth.uid == uid;
+  allow list: if false;
+  allow create, update: if communitySigned() && request.auth.uid == uid
+    && deviceId.matches('^[a-f0-9]{64}$')
+    && request.resource.data.keys().hasOnly(['token','createdAt','updatedAt'])
+    && request.resource.data.token is string && request.resource.data.token.size() >= 50 && request.resource.data.token.size() <= 4096
+    && request.resource.data.updatedAt == request.time
+    && (resource == null ? request.resource.data.createdAt == request.time : request.resource.data.createdAt == resource.data.createdAt);
+  allow delete: if communitySigned() && request.auth.uid == uid;
+}
 // END KimKim Community beta v1
 }
 }

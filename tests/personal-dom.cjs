@@ -122,7 +122,7 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
   assert.equal(w.eval("Object.values(memory.capsuleDrafts).find(d => d.title === 'Photo cover').coverPhoto"), "data:image/jpeg;base64,/9j/");
   click("[data-action=close]");
   w.eval("lang='en';document.dispatchEvent(new Event('akk:languagechange'))");
-  assert.match($("#view-finance h1").textContent, /KimKim/);
+  assert.match($("#view-finance").textContent, /KIMKIM FINANCE/);
   assert.match($("#view-capsules").textContent, /drafts/i);
   w.eval("authenticated=null;authListener(null)");
   assert.equal(w.document.querySelectorAll(".capsule-card").length, 0);

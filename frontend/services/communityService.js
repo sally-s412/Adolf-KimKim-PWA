@@ -78,13 +78,23 @@
     if((!text&&!mediaId)||text.length>2000||!/^[a-zA-Z0-9-]{20,80}$/.test(clientMessageId))throw new Error('community/message-format');
     const tr=col('Threads').doc(id),mr=messagesRef(id).doc(clientMessageId);
     // Transaction retries and explicit client retry share one document ID.
-    return FC.db.runTransaction(async tx=>{
+    await FC.db.runTransaction(async tx=>{
       const old=await tx.get(mr);
       if(old.exists){if(old.data().senderId!==me||old.data().text!==text||(old.data().mediaId||null)!==mediaId)throw new Error('community/message-conflict');return;}
       tx.set(gate('message'),{lastAt:stamp()});
       tx.set(mr,{senderId:me,text,clientMessageId,createdAt:stamp(),...(mediaId?{mediaId}:{})});
       tx.update(tr,{updatedAt:stamp(),lastText:text,lastMessageId:clientMessageId,lastSenderId:me});
     });
+    // Render verifies the Firebase ID token and the committed Firestore message.
+    // Push failure does not turn a successfully sent message into a failed one.
+    try {
+      const user=global.firebase.auth().currentUser;
+      if(user?.uid===me){
+        const base=String(global.AKK_CONFIG?.apiBaseUrl||'').replace(/\/$/,'');
+        const response=await fetch(base+'/api/message-push/notify',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+await user.getIdToken()},body:JSON.stringify({threadId:id,messageId:clientMessageId}),signal:AbortSignal.timeout(7000)});
+        if(!response.ok)console.warn('KimKim push unavailable',response.status);
+      }
+    } catch(e) { console.warn('KimKim push unavailable',e?.message||e); }
   }
   const markRead=id=>col('Threads').doc(id).collection('receipts').doc(uid()).set({readAt:stamp()});
   const watchReceipt=(id,cb,fail)=>col('Threads').doc(id).collection('receipts').doc(uid()).onSnapshot(s=>cb(data(s)),fail);

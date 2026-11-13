@@ -28,6 +28,7 @@ from routes.post_bundle import router as post_bundle_router
 from routes.analysis_jobs import router as analysis_jobs_router
 from routes.google_calendar import router as google_calendar_router
 from routes.capsules import router as capsules_router, public_router as capsule_public_router
+from routes.message_push import router as message_push_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -73,6 +74,7 @@ app.include_router(analysis_jobs_router)
 app.include_router(google_calendar_router)
 app.include_router(capsules_router)
 app.include_router(capsule_public_router)
+app.include_router(message_push_router)
 
 
 @app.get("/health")

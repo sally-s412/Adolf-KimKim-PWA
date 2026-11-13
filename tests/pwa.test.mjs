@@ -113,7 +113,7 @@ test('deployment includes FINAL Figma shell, responsive theme and navigation',()
 
 test('Recording includes localized KimKim Meeting invite without robot icons',()=>{
  const html=readFileSync('frontend/index.html','utf8');
- assert(html.includes('KimKim Meeting'));assert(html.includes('Mời KimKim vào Google Meet'));assert(html.includes('Dán link Google Meet để mời KimKim vào họp'));
+ assert(html.includes('KimKim Meeting'));assert(html.includes('Mời KimKim vào Google Meet'));assert(html.includes('Dán link Google Meet của bạn hoặc người khác. Chủ phòng có thể cần duyệt KimKim vào họp.'));
  assert(!html.includes('🤖'));assert(!html.includes('Google Meet Bot (Adolf KimKim)'));
  for(const file of ['vi-vn.js','eng-en.js']){const s=readFileSync('frontend/localizations/'+file,'utf8');assert(s.includes('inviteKimkimMeet:'));assert(s.includes('kimkimMeetingDescription:'));}
 });

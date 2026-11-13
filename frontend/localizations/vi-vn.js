@@ -5,7 +5,7 @@ window.I18N.vi = {
   navRecording: 'Ghi âm',
   navMore: 'Thêm',
   kimkimMeetingTitle: 'KimKim Meeting',
-  kimkimMeetingDescription: 'Dán link Google Meet để mời KimKim vào họp',
+  kimkimMeetingDescription: 'Dán link Google Meet của bạn hoặc người khác. Chủ phòng có thể cần duyệt KimKim vào họp.',
   inviteKimkimMeet: 'Mời KimKim vào Google Meet',
   kimkimMeetingTitlePh: 'Tiêu đề cuộc họp (tuỳ chọn)',
   signinTitle: "Đăng nhập",

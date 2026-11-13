@@ -5,7 +5,7 @@ window.I18N.en = {
   navRecording: 'Recording',
   navMore: 'More',
   kimkimMeetingTitle: 'KimKim Meeting',
-  kimkimMeetingDescription: 'Paste a Google Meet link to invite KimKim to the meeting',
+  kimkimMeetingDescription: 'Paste your Google Meet link or someone else’s. The host may need to admit KimKim.',
   inviteKimkimMeet: 'Invite KimKim to Google Meet',
   kimkimMeetingTitlePh: 'Meeting title (optional)',
   signinTitle: "Sign in",
